@@ -323,7 +323,6 @@
   .avatar.stamp{ font-size:14px; background:var(--paper); }
   table.cases th.cell-actions, table.cases td.cell-actions{ width:230px; text-align:left; }
   table.cases tbody tr.done-row{ background:var(--paper); }
-  table.cases tbody tr.done-row td{ opacity:.6; }
   table.cases tbody tr.done-row:hover{ background:var(--paper); }
   .row-actions{ display:flex; align-items:center; gap:6px; }
   .row-actions .btn{ flex:none; }
@@ -583,7 +582,7 @@
             <div class="view-icon-badge bike"><svg width="17" height="17" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg></div>
             <div>
               <div class="view-title">バイク案件一覧</div>
-              <div class="view-sub">受信が古い順に並びます。対応済み（admin操作に自動連動）の案件もグレーで残るので、誰でも状況を確認できます。</div>
+              <div class="view-sub">受信が古い順に並びます。入札開始済み（admin操作に自動連動）の案件も一覧に残るので、誰でも進捗を確認できます。</div>
             </div>
           </div>
           <div class="queue-filters">
@@ -607,7 +606,7 @@
             <div class="view-icon-badge car"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>
             <div>
               <div class="view-title">車案件一覧</div>
-              <div class="view-sub">受信が古い順に並びます。対応済み（admin操作に自動連動）の案件もグレーで残るので、誰でも状況を確認できます。</div>
+              <div class="view-sub">受信が古い順に並びます。入札開始済み（admin操作に自動連動）の案件も一覧に残るので、誰でも進捗を確認できます。</div>
             </div>
           </div>
           <div class="queue-filters">
@@ -926,17 +925,17 @@
   // recMin: 値が小さいほど受信が古い（＝時系列で先に来た案件）。一覧の既定の並び順に使用。
   // elapsedMin: 受信からの経過分数。経過セルの背景色判定に使用（2時間＝120分が基準）。
   var cases = [
-    {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"山田 太郎"}, done:true, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/311742"},
-    {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:null, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/524170"},
-    {id:"#C-0015", vehicle:"car", recMin:2, title:"交渉リマインド対応、初回架電前", customer:"渡辺 美咲", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 00:15", elapsedMin:578, due:"ok", dueLabel:"本日18:00", owner:null, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/312845"},
-    {id:"#B-0012", vehicle:"bike", recMin:3, title:"アップロード内容の確認依頼", customer:"伊藤 誠", kind:"査定アップロード確認", status:"reupload", received:"07/04 03:20", elapsedMin:393, due:"ok", dueLabel:"本日18:00", owner:{name:"鈴木 花子"}, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/521769"},
-    {id:"#C-0008", vehicle:"car", recMin:4, title:"楽サツ変更依頼、担当交代のご相談", customer:"小林 拓也", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 06:20", elapsedMin:213, due:"warn", dueLabel:"2時間以内", owner:{name:"伊藤 誠"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/318822"},
-    {id:"#C-0006", vehicle:"car", recMin:5, title:"交渉リマインド対応、条件面の再提示待ち", customer:"中村 優子", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 06:58", elapsedMin:175, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/315560"},
-    {id:"#B-0005", vehicle:"bike", recMin:6, title:"再アップロード完了、内容確認済み", customer:"渡辺 美咲", kind:"再アップロード確認", status:"reviewing", received:"07/04 07:20", elapsedMin:153, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, done:true, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/523371"},
-    {id:"#C-0004", vehicle:"car", recMin:7, title:"楽サツ（楽天サツキ）の変更依頼、書類差し替え", customer:"高橋 健一", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 07:50", elapsedMin:123, due:"ok", dueLabel:"07/05", owner:{name:"伊藤 誠"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/317204"},
-    {id:"#B-0003", vehicle:"bike", recMin:8, title:"交渉リマインドの返信が来ないので確認したい", customer:"山田 一郎", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 08:10", elapsedMin:102, due:"over", dueLabel:"本日12:00・残り10分", owner:{name:"鈴木 花子"}, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/515694"},
-    {id:"#C-0002", vehicle:"car", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/311998"},
-    {id:"#B-0001", vehicle:"bike", recMin:10, title:"査定依頼アップロードの内容を確認してほしい", customer:"田中 一郎", kind:"査定アップロード確認", status:"reviewing", received:"07/04 09:30", elapsedMin:22, due:null, dueLabel:"—", owner:null, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/524187"},
+    {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"山田 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/311742"},
+    {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:null, adminUrl:"https://admin.example.com/cases/524170"},
+    {id:"#C-0015", vehicle:"car", recMin:2, title:"交渉リマインド対応、初回架電前", customer:"渡辺 美咲", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 00:15", elapsedMin:578, due:"ok", dueLabel:"本日18:00", owner:null, adminUrl:"https://admin.example.com/cases/312845"},
+    {id:"#B-0012", vehicle:"bike", recMin:3, title:"アップロード内容の確認依頼", customer:"伊藤 誠", kind:"査定アップロード確認", status:"reupload", received:"07/04 03:20", elapsedMin:393, due:"ok", dueLabel:"本日18:00", owner:{name:"鈴木 花子"}, adminUrl:"https://admin.example.com/cases/521769"},
+    {id:"#C-0008", vehicle:"car", recMin:4, title:"楽サツ変更依頼、担当交代のご相談", customer:"小林 拓也", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 06:20", elapsedMin:213, due:"warn", dueLabel:"2時間以内", owner:{name:"伊藤 誠"}, adminUrl:"https://admin.example.com/cases/318822"},
+    {id:"#C-0006", vehicle:"car", recMin:5, title:"交渉リマインド対応、条件面の再提示待ち", customer:"中村 優子", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 06:58", elapsedMin:175, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://admin.example.com/cases/315560"},
+    {id:"#B-0005", vehicle:"bike", recMin:6, title:"再アップロード完了、内容確認済み", customer:"渡辺 美咲", kind:"再アップロード確認", status:"reviewing", received:"07/04 07:20", elapsedMin:153, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/523371"},
+    {id:"#C-0004", vehicle:"car", recMin:7, title:"楽サツ（楽天サツキ）の変更依頼、書類差し替え", customer:"高橋 健一", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 07:50", elapsedMin:123, due:"ok", dueLabel:"07/05", owner:{name:"伊藤 誠"}, adminUrl:"https://admin.example.com/cases/317204"},
+    {id:"#B-0003", vehicle:"bike", recMin:8, title:"交渉リマインドの返信が来ないので確認したい", customer:"山田 一郎", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 08:10", elapsedMin:102, due:"over", dueLabel:"本日12:00・残り10分", owner:{name:"鈴木 花子"}, adminUrl:"https://admin.example.com/cases/515694"},
+    {id:"#C-0002", vehicle:"car", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://admin.example.com/cases/311998"},
+    {id:"#B-0001", vehicle:"bike", recMin:10, title:"査定依頼アップロードの内容を確認してほしい", customer:"田中 一郎", kind:"査定アップロード確認", status:"reviewing", received:"07/04 09:30", elapsedMin:22, due:null, dueLabel:"—", owner:null, adminUrl:"https://admin.example.com/cases/524187"},
   ];
   function shortUrl(url){ return url.replace(/^https?:\/\/(www\.)?/,''); }
   // 現場では「adminのURL末尾の番号」が案件の呼び名。アプリ独自のIDは表に出さない。
@@ -966,7 +965,7 @@
   var statusMeta = {
     reviewing:{label:"内容確認", cls:"review"},
     reupload:{label:"再アップロード", cls:"hold"},
-    done:{label:"対応済み", cls:"done"},
+    done:{label:"入札開始済み", cls:"done"},
   };
 
   var team = [
@@ -1117,7 +1116,7 @@
     var me = myself();
     if(c.owner && c.owner.name===CURRENT_USER && me.stats) me.stats.handled++;
     refreshAllCaseViews();
-    showSyncToast('案件 '+caseNo(c)+'：adminで「'+sourceLabel+'」を検知したため、自動で対応済みになりました');
+    showSyncToast('案件 '+caseNo(c)+'：adminで「'+sourceLabel+'」を検知したため、自動でステータスが更新されました');
   }
   function simulateAdminDone(){
     var mine = sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }));
