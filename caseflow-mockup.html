@@ -1,0 +1,1900 @@
+<title>Relay — 案件管理UIモックアップ</title>
+<style>
+  :root{
+    --ink:#1A1F2B;
+    --ink-soft:#5B6272;
+    --ink-faint:#9098A8;
+    --paper:#F4F5F9;
+    --surface:#FFFFFF;
+    --border:#E1E4EC;
+    --border-strong:#CBD0DC;
+    --accent:#4C5FD5;
+    --accent-ink:#2F3FA8;
+    --accent-soft:#EEF0FD;
+    --success:#17845A;
+    --success-soft:#E5F4EE;
+    --warning:#AD7A1E;
+    --warning-soft:#FBF1DE;
+    --critical:#C64444;
+    --critical-soft:#FBEAEA;
+    --neutral-chip:#5B6272;
+    --neutral-chip-soft:#ECEDF2;
+    --hold-chip:#7A5CB0;
+    --hold-chip-soft:#F1EBF9;
+    --car:#2F6FB0;
+    --car-soft:#E7F0F9;
+    --bike:#C1691A;
+    --bike-soft:#FCEFDE;
+    --radius-s:6px;
+    --radius-m:10px;
+    --shadow-panel:0 1px 2px rgba(26,31,43,0.04), 0 8px 24px -12px rgba(26,31,43,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic Medium","Meiryo",sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    font-size:14px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .tnum{ font-variant-numeric:tabular-nums; }
+  button{ font-family:inherit; }
+  a{ color:inherit; text-decoration:none; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- App shell ---------- */
+  .app{ display:flex; flex-direction:column; height:100vh; min-height:640px; }
+
+  .topbar{
+    height:56px; flex:none;
+    display:flex; align-items:center; gap:16px;
+    padding:0 16px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    z-index:5;
+  }
+  .brand{ display:flex; align-items:center; gap:8px; font-weight:800; font-size:16px; letter-spacing:-0.01em; color:var(--ink); min-width:110px; }
+  .brand .mark{ width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg,var(--accent),#7C8CF0); flex:none; }
+  .topbar-search{
+    flex:1; max-width:420px; min-width:120px;
+    display:flex; align-items:center; gap:8px;
+    height:34px; padding:0 10px;
+    background:var(--paper); border:1px solid var(--border); border-radius:var(--radius-s);
+    color:var(--ink-faint); font-size:13px;
+    white-space:nowrap; overflow:hidden;
+  }
+  #modeSwitch{ flex:none; white-space:nowrap; }
+  #modeSwitch button{ white-space:nowrap; }
+  .topbar-search kbd{
+    margin-left:auto; font-size:11px; color:var(--ink-faint);
+    border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:4px; padding:1px 5px; background:var(--surface);
+  }
+  .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:6px; }
+  .icon-btn{
+    width:32px; height:32px; border-radius:8px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); cursor:pointer; position:relative;
+  }
+  .icon-btn:hover{ background:var(--paper); color:var(--ink); }
+  .icon-btn.active{ background:var(--accent-soft); color:var(--accent-ink); }
+  .icon-btn .dot{
+    position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%;
+    background:var(--critical); border:1.5px solid var(--surface);
+  }
+  .who{ display:flex; align-items:center; gap:8px; padding-left:10px; margin-left:4px; border-left:1px solid var(--border); cursor:pointer; }
+
+  /* ---------- 通知ポップオーバー（履歴のみ。設定は⚙側） ---------- */
+  .notif-anchor{ position:relative; }
+  .notif-popover{
+    display:none; flex-direction:column; position:absolute; top:calc(100% + 8px); right:0; width:360px; max-height:440px;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:12px; box-shadow:var(--shadow-panel);
+    overflow:hidden; z-index:30;
+  }
+  .notif-popover.open{ display:flex; }
+  .notif-popover-head{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border); }
+  .notif-popover-title{ font-size:14px; font-weight:800; }
+  .notif-popover .notif-scroll{ flex:1; min-height:0; overflow-y:auto; }
+  .notif-popover-settings-link{
+    flex:none; display:flex; align-items:center; gap:6px; width:100%; padding:10px 14px; border:none; border-top:1px solid var(--border);
+    background:none; font-size:12.5px; color:var(--ink-soft); cursor:pointer; text-align:left;
+  }
+  .notif-popover-settings-link:hover{ background:var(--paper); }
+  .avatar{
+    width:28px; height:28px; border-radius:50%; background:var(--accent-soft); color:var(--accent-ink);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex:none;
+  }
+  .who-meta{ line-height:1.25; }
+  .who-name{ font-size:13px; font-weight:600; }
+  .who-role{ font-size:11px; color:var(--ink-faint); }
+
+  /* ---------- マイページポップオーバー ---------- */
+  .who-anchor{ position:relative; }
+  .mypage-popover{
+    display:none; flex-direction:column; position:absolute; top:calc(100% + 8px); right:0; width:300px; max-height:560px;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:12px; box-shadow:var(--shadow-panel);
+    overflow-y:auto; z-index:30;
+  }
+  .mypage-popover.open{ display:flex; flex-direction:column; }
+  .mypage-head{ flex:none; display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); }
+  .mypage-head .avatar{ width:36px; height:36px; font-size:17px; }
+  .mypage-name{ font-size:14px; font-weight:800; }
+  .mypage-role{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+  .mypage-section{ flex:none; padding:12px 14px; border-bottom:1px solid var(--border); }
+  .mypage-section:last-child{ border-bottom:none; }
+  .mypage-section-label{ font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin-bottom:8px; }
+  .stamp-grid{ display:grid; grid-template-columns:repeat(8,1fr); gap:4px; }
+  .stamp-opt{ width:28px; height:28px; border-radius:8px; border:1px solid transparent; background:var(--paper); display:flex; align-items:center; justify-content:center; font-size:15px; cursor:pointer; padding:0; }
+  .stamp-opt:hover{ background:var(--accent-soft); }
+  .stamp-opt.selected{ border-color:var(--accent); background:var(--accent-soft); }
+  .online-toggle{ display:flex; background:var(--paper); border:1px solid var(--border); border-radius:8px; padding:2px; gap:2px; }
+  .online-toggle button{ flex:1; border:none; background:transparent; padding:7px 0; font-size:12.5px; font-weight:700; border-radius:6px; cursor:pointer; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:5px; }
+  .online-toggle button.active[data-state="online"]{ background:var(--success-soft); color:var(--success); }
+  .online-toggle button.active[data-state="offline"]{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
+  .boost-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:9px; border:1px solid var(--border-strong); background:var(--surface); cursor:pointer; font-size:13px; font-weight:700; color:var(--ink); }
+  .boost-btn:hover{ background:var(--paper); }
+  .boost-btn.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .boost-note{ font-size:11px; color:var(--ink-faint); margin-top:8px; text-align:center; }
+  .mypage-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .mypage-stat{ background:var(--paper); border-radius:8px; padding:9px 6px; text-align:center; }
+  .mypage-stat-val{ font-size:16px; font-weight:800; }
+  .mypage-stat-label{ font-size:10.5px; color:var(--ink-faint); margin-top:2px; }
+
+  .body{ flex:1; display:flex; min-height:0; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:216px; flex:none; background:var(--surface); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; padding:14px 10px; gap:16px; overflow-y:auto;
+  }
+  .nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:8px; cursor:pointer;
+    color:var(--ink-soft); font-size:13.5px; font-weight:600; position:relative;
+  }
+  .nav-item svg{ flex:none; opacity:.9; }
+  .nav-item.bike svg{ color:var(--bike); }
+  .nav-item.car svg{ color:var(--car); }
+  .nav-item .badge{
+    margin-left:auto; font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--neutral-chip-soft);
+    border-radius:20px; padding:1px 7px; font-variant-numeric:tabular-nums;
+  }
+  .nav-item .badge.urgent{ background:var(--critical-soft); color:var(--critical); }
+  .nav-item:hover{ background:var(--paper); color:var(--ink); }
+  .nav-item.active{ background:var(--accent-soft); color:var(--accent-ink); }
+  .nav-item.active svg{ color:var(--accent-ink); }
+  .nav-item.active .badge{ background:rgba(255,255,255,.65); }
+  .sidebar-foot{ margin-top:auto; padding:10px 8px; border-top:1px solid var(--border); font-size:12px; color:var(--ink-faint); }
+  .sidebar-foot b{ color:var(--ink-soft); }
+
+  /* ---------- Workspace / views ---------- */
+  .workspace{ flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+  .view{ display:none; flex:1; min-height:0; flex-direction:column; }
+  .view.active{ display:flex; }
+
+  .view-head{
+    flex:none; padding:16px 22px 12px; display:flex; align-items:flex-end; gap:14px; border-bottom:1px solid var(--border); background:var(--surface);
+  }
+  .view-icon-badge{
+    width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .view-icon-badge.car{ background:var(--car-soft); color:var(--car); }
+  .view-icon-badge.bike{ background:var(--bike-soft); color:var(--bike); }
+  .view-title{ font-size:19px; font-weight:800; letter-spacing:-0.01em; }
+  .view-sub{ font-size:12.5px; color:var(--ink-faint); margin-top:2px; }
+  .view-head-actions{ margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+  .segmented{ display:flex; background:var(--paper); border:1px solid var(--border); border-radius:8px; padding:2px; gap:2px; }
+  .segmented button{
+    border:none; background:transparent; padding:6px 12px; font-size:12.5px; font-weight:600; color:var(--ink-soft);
+    border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:5px;
+  }
+  .segmented button.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(26,31,43,.08); }
+  .segmented button[data-scope="car"].active{ color:var(--car); }
+  .segmented button[data-scope="bike"].active{ color:var(--bike); }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; padding:7px 13px;
+    border-radius:8px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink); cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn:hover{ background:var(--paper); }
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn.primary:hover{ background:var(--accent-ink); }
+  .btn.ghost{ border-color:transparent; background:transparent; }
+  .btn.ghost:hover{ background:var(--paper); }
+  .btn svg{ flex:none; }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .btn:disabled:hover{ background:var(--surface); }
+  .btn.icon-only{ width:34px; height:34px; padding:0; justify-content:center; }
+  .btn.icon-only.sm{ width:28px; height:28px; }
+  .btn.sm{ height:32px; padding:0 12px; font-size:13px; gap:5px; }
+
+  /* ---------- Chips / status ---------- */
+  .chip{
+    display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:3px 9px 3px 7px;
+    border-radius:20px; white-space:nowrap; line-height:1.4;
+  }
+  .chip .dot{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .chip.review{ background:var(--warning-soft); color:var(--warning); }
+  .chip.review .dot{ background:var(--warning); }
+  .chip.hold{ background:var(--hold-chip-soft); color:var(--hold-chip); }
+  .chip.hold .dot{ background:var(--hold-chip); }
+  .chip.done{ background:var(--success-soft); color:var(--success); }
+  .chip.done .dot{ background:var(--success); }
+
+  .vtag{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700; padding:2px 7px; border-radius:6px; white-space:nowrap; }
+  .vtag.car{ background:var(--car-soft); color:var(--car); }
+  .vtag.bike{ background:var(--bike-soft); color:var(--bike); }
+  .vtag svg{ flex:none; }
+  .vtag.icononly{ padding:4px; border-radius:7px; }
+
+  .sla{ display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .sla svg{ flex:none; }
+
+  .admin-link{
+    display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:5px;
+    color:var(--ink-faint); flex:none;
+  }
+  .admin-link:hover{ background:var(--paper); color:var(--accent-ink); }
+  .id-with-link{ display:inline-flex; align-items:center; gap:5px; }
+
+  /* ---------- Queue view (バイク/車 一覧) ---------- */
+  .queue-view{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .queue-body{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .queue-filters{
+    flex:none; padding:10px 22px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); background:var(--surface); flex-wrap:wrap;
+  }
+  .search-mini{
+    display:flex; align-items:center; gap:6px; height:30px; padding:0 10px; background:var(--paper);
+    border:1px solid var(--border); border-radius:7px; color:var(--ink-faint); font-size:12.5px; width:200px;
+  }
+
+  table.cases tbody tr.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
+  @keyframes rowFlash{ 0%{ background:var(--accent-soft); } 100%{ background:transparent; } }
+
+  /* ---------- スレッド（メッセージ表示・rail・preview で共通利用） ---------- */
+  .thread-msg{ display:flex; gap:10px; padding:9px 0; }
+  .thread-msg .avatar{ width:26px; height:26px; font-size:11px; }
+  .thread-bubble{ flex:1; min-width:0; }
+  .thread-meta{ display:flex; align-items:baseline; gap:7px; }
+  .thread-name{ font-size:12.5px; font-weight:700; }
+  .thread-time{ font-size:11px; color:var(--ink-faint); }
+  .thread-text{ font-size:13px; margin-top:2px; }
+  .thread-handoff{
+    display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--accent-ink);
+    background:var(--accent-soft); border-radius:6px; padding:2px 8px; margin-top:4px;
+  }
+  .thread-empty{ font-size:12.5px; color:var(--ink-faint); padding:6px 0 4px; }
+
+  /* ---------- スレッドサイドバー（右レール） ---------- */
+  .thread-rail{ display:none; width:308px; flex:none; background:var(--surface); border-left:1px solid var(--border); flex-direction:column; }
+  .thread-rail.open{ display:flex; }
+  .rail-head{ flex:none; height:48px; display:flex; align-items:center; gap:8px; padding:0 12px; border-bottom:1px solid var(--border); }
+  .rail-title{ font-size:14px; font-weight:800; flex:1; }
+  .rail-body{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
+  .rail-search{ flex:none; padding:10px 12px; border-bottom:1px solid var(--border); }
+  .rail-search input{
+    width:100%; font-family:inherit; font-size:12.5px; padding:7px 10px; border:1px solid var(--border); border-radius:7px; background:var(--paper);
+  }
+  .rail-list{ display:flex; flex-direction:column; }
+  .rail-item{ padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .rail-item:hover{ background:var(--paper); }
+  .rail-item-top{ display:flex; align-items:center; gap:6px; }
+  .rail-item-id{ font-size:11px; font-weight:700; color:var(--ink-faint); }
+  .rail-item-time{ margin-left:auto; font-size:11px; color:var(--ink-faint); }
+  .rail-item-title{ font-size:12.5px; font-weight:700; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rail-item-url{ font-size:11px; font-family:ui-monospace,"SF Mono",Menlo,monospace; color:var(--accent-ink); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rail-item-snip{ font-size:12px; color:var(--ink-faint); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rail-item-snip.empty{ font-style:italic; }
+  .rail-case-ref{ flex:none; display:flex; flex-direction:column; gap:6px; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--paper); }
+  .rail-case-ref-row{ display:flex; align-items:center; gap:7px; }
+  .rail-case-ref-title{ font-size:12.5px; font-weight:700; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rail-case-ref-url{
+    display:flex; align-items:center; gap:5px; font-size:11.5px; font-family:ui-monospace,"SF Mono",Menlo,monospace;
+    color:var(--accent-ink); background:var(--accent-soft); border-radius:6px; padding:6px 9px; white-space:nowrap; overflow:hidden;
+  }
+  .rail-case-ref-url span{ overflow:hidden; text-overflow:ellipsis; }
+  .rail-case-ref-url svg{ flex:none; }
+  .rail-messages{ flex:1; overflow-y:auto; padding:6px 14px; }
+  .rail-compose-wrap{ position:relative; flex:none; }
+  .rail-compose{ display:flex; gap:8px; align-items:flex-end; padding:10px 14px; border-top:1px solid var(--border); }
+  .rail-compose textarea{
+    flex:1; font-family:inherit; font-size:12.5px; border:1px solid var(--border); border-radius:7px; padding:7px 9px;
+    background:var(--paper); resize:none; min-height:36px; max-height:90px;
+  }
+  .rail-compose .btn{ padding:8px 12px; }
+  .mention-tag{ color:var(--accent-ink); background:var(--accent-soft); border-radius:4px; padding:0 3px; font-weight:700; }
+
+  .mention-menu{
+    display:none; position:absolute; left:14px; right:14px; bottom:100%; margin-bottom:6px; max-height:220px; overflow-y:auto;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; box-shadow:var(--shadow-panel); z-index:10;
+  }
+  .mention-menu.open{ display:block; }
+  .mention-item{ display:flex; align-items:center; gap:8px; padding:8px 10px; cursor:pointer; }
+  .mention-item:hover{ background:var(--paper); }
+  .mention-item-icon{ width:22px; height:22px; border-radius:50%; background:var(--paper); display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
+  .mention-item-icon.team{ background:var(--accent-soft); color:var(--accent-ink); }
+  .mention-item-name{ font-size:12.5px; font-weight:700; }
+  .mention-item-sub{ margin-left:auto; font-size:11px; color:var(--ink-faint); flex:none; }
+
+  /* ---------- Table (マイ案件) ---------- */
+  .table-scroll{ flex:1; overflow:auto; padding:0 22px 22px; }
+  table.cases{ width:100%; border-collapse:collapse; font-size:14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  table.cases th{
+    text-align:left; font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em;
+    padding:10px 14px; border-bottom:1px solid var(--border); background:var(--paper); position:sticky; top:0;
+  }
+  table.cases td{ padding:14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  table.cases tbody tr:last-child td{ border-bottom:none; }
+  table.cases tbody tr{ position:relative; }
+  table.cases tbody tr:hover{ background:var(--paper); }
+  table.cases tbody tr.elapsed-over{ background:var(--warning-soft); }
+  table.cases tbody tr.elapsed-over:hover{ background:var(--warning-soft); filter:brightness(0.97); }
+  .cell-id{ font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+  .cell-person{ display:flex; align-items:center; gap:7px; }
+  .cell-person .avatar{ width:22px; height:22px; font-size:10px; }
+  .avatar.stamp{ font-size:14px; background:var(--paper); }
+  table.cases th.cell-actions, table.cases td.cell-actions{ width:230px; text-align:left; }
+  table.cases tbody tr.done-row{ background:var(--paper); }
+  table.cases tbody tr.done-row td{ opacity:.6; }
+  table.cases tbody tr.done-row:hover{ background:var(--paper); }
+  .row-actions{ display:flex; align-items:center; gap:6px; }
+  .row-actions .btn{ flex:none; }
+
+  /* ---------- Settings overlay ---------- */
+  #view-settings{ background:var(--surface); }
+  .settings-head{ flex:none; padding:16px 22px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); }
+  .settings-title{ font-size:18px; font-weight:800; }
+  .settings-close{ margin-left:auto; }
+  .settings-tabs{ flex:none; padding:12px 22px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .settings-body{ flex:1; min-height:0; overflow-y:auto; }
+  .settings-panel{ display:none; }
+  .settings-panel.active{ display:block; }
+
+  .dash-scroll{ padding:18px 22px 28px; }
+  .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+  .kpi-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:16px 18px; }
+  .kpi-card.hero{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .kpi-label{ font-size:12px; font-weight:700; color:var(--ink-faint); }
+  .kpi-card.hero .kpi-label{ color:rgba(255,255,255,.78); }
+  .kpi-value{ font-size:30px; font-weight:800; margin-top:6px; letter-spacing:-0.02em; }
+  .kpi-delta{ font-size:12px; margin-top:6px; color:var(--ink-faint); }
+  .kpi-delta.up{ color:var(--critical); }
+  .kpi-delta.down{ color:var(--success); }
+
+  .dash-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:16px; }
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:18px 20px; }
+  .panel-title{ font-size:14px; font-weight:800; }
+  .panel-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; margin-bottom:14px; }
+
+  .bar-row{ display:flex; align-items:center; gap:10px; padding:7px 0; }
+  .bar-name{ width:104px; flex:none; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .status-dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+  .status-dot.online{ background:var(--success); }
+  .status-dot.away{ background:var(--warning); }
+  .status-dot.offline{ background:var(--ink-faint); }
+  .bar-track{ flex:1; height:16px; background:var(--paper); border-radius:5px; position:relative; overflow:hidden; display:flex; }
+  .bar-fill-car{ height:100%; background:var(--car); }
+  .bar-fill-bike{ height:100%; background:var(--bike); }
+  .bar-cap-line{ position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--ink); opacity:.35; }
+  .bar-val{ width:34px; flex:none; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .legend-row{ display:flex; gap:16px; font-size:11.5px; color:var(--ink-faint); margin-top:10px; align-items:center; flex-wrap:wrap; }
+  .legend-swatch{ width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:5px; vertical-align:-1px; }
+
+  .team-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .team-table th{ text-align:left; font-size:11px; color:var(--ink-faint); font-weight:700; text-transform:uppercase; padding:6px 8px; border-bottom:1px solid var(--border); }
+  .team-table td{ padding:8px 8px; border-bottom:1px solid var(--border); }
+  .team-table tr:last-child td{ border-bottom:none; }
+  .cap-mini{ width:60px; height:6px; background:var(--paper); border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; }
+  .cap-mini-fill{ height:100%; background:var(--accent); }
+  .cap-mini-fill.over{ background:var(--critical); }
+
+  .team-edit-note{
+    display:flex; gap:8px; align-items:flex-start; padding:11px 14px; background:var(--accent-soft); color:var(--accent-ink);
+    border-radius:8px; font-size:12.5px; margin:18px 22px 0;
+  }
+  .roster-table{ width:100%; border-collapse:collapse; font-size:13px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  .roster-table th{ text-align:left; font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--paper); }
+  .roster-table td{ padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .roster-table tr:last-child td{ border-bottom:none; }
+  .role-select{
+    font-family:inherit; font-size:12.5px; font-weight:600; padding:6px 8px; border-radius:7px; border:1px solid var(--border-strong);
+    background:var(--surface); color:var(--ink); cursor:pointer;
+  }
+  .role-select.dirty{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); }
+  .roster-updated{ font-size:11.5px; color:var(--ink-faint); }
+  .save-toast{ font-size:12.5px; color:var(--success); font-weight:700; display:none; align-items:center; gap:5px; }
+  .save-toast.show{ display:inline-flex; }
+  .roster-head{ display:flex; align-items:center; gap:14px; padding:18px 22px 0; }
+  .roster-head-title{ font-size:14px; font-weight:800; }
+  .roster-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
+
+  .rules-head{ padding:18px 22px 0; }
+  .rules-head-title{ font-size:14px; font-weight:800; }
+  .rules-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; margin-bottom:4px; }
+  .rules-grid{ padding:14px 22px 28px; display:grid; grid-template-columns:1.15fr 1fr; gap:20px; align-items:start; }
+  .rule-card{ border:1px solid var(--border); border-radius:var(--radius-m); padding:14px 16px; margin-bottom:12px; background:var(--surface); }
+  .rule-card.off{ opacity:.5; }
+  .rule-card.fixed-rule{ background:var(--accent-soft); border-color:var(--accent); }
+  .rule-fixed-badge{ font-size:11px; font-weight:700; color:var(--accent-ink); background:var(--surface); border:1px solid var(--accent); border-radius:20px; padding:3px 10px; flex:none; }
+  .rule-head{ display:flex; align-items:center; gap:10px; }
+  .rule-order{ width:22px; height:22px; border-radius:6px; background:var(--paper); color:var(--ink-faint); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none; }
+  .rule-name{ font-size:13.5px; font-weight:700; flex:1; }
+  .switch{ position:relative; width:34px; height:20px; flex:none; }
+  .switch input{ display:none; }
+  .switch-track{ position:absolute; inset:0; background:var(--border-strong); border-radius:20px; cursor:pointer; transition:.15s; }
+  .switch input:checked + .switch-track{ background:var(--accent); }
+  .switch-thumb{ position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:.15s; box-shadow:0 1px 2px rgba(0,0,0,.2); pointer-events:none; }
+  .switch input:checked ~ .switch-thumb{ transform:translateX(14px); }
+  .rule-desc{ font-size:12px; color:var(--ink-faint); margin-top:6px; }
+  .rule-weight{ margin-top:10px; display:flex; align-items:center; gap:10px; }
+  .rule-weight input[type=range]{ flex:1; accent-color:var(--accent); }
+  .rule-weight-val{ width:38px; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--accent-ink); }
+
+  .sim-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:16px 18px; }
+  .sim-item{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .sim-item:last-child{ border-bottom:none; }
+  .sim-rank{ width:20px; font-size:12px; font-weight:800; color:var(--ink-faint); flex:none; }
+  .sim-main{ flex:1; min-width:0; }
+  .sim-case{ font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:6px; }
+  .sim-reason{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+  .sim-assignee{ flex:none; display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
+  .audit-note{ display:flex; gap:8px; align-items:flex-start; padding:10px 12px; background:var(--success-soft); color:var(--success); border-radius:8px; font-size:12px; margin-top:14px; }
+
+  .notif-head{ padding:18px 22px 0; }
+  .notif-head-title{ font-size:14px; font-weight:800; }
+  .notif-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
+  .notif-settings{ margin:14px 22px 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  .mine-notif-card{ flex:none; margin:16px 22px 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  .notif-settings-body{ padding:14px 16px; }
+  .notif-toggle-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .notif-toggle-row:last-child{ border-bottom:none; }
+  .notif-toggle-label{ font-size:13px; font-weight:600; flex:1; display:flex; align-items:center; gap:6px; }
+  .notif-toggle-desc{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+  .notif-toggle-row.locked .notif-toggle-label{ color:var(--ink-faint); }
+
+  .notif-scroll{ padding:6px 0 20px; }
+  .notif-daylabel{ font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:14px 22px 8px; }
+  .notif-row{ display:flex; gap:12px; align-items:flex-start; padding:11px 22px; border-bottom:1px solid var(--border); }
+  .notif-row:hover{ background:var(--paper); }
+  .notif-icon{ width:32px; height:32px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center; }
+  .notif-icon.assign{ background:var(--accent-soft); color:var(--accent-ink); }
+  .notif-icon.sla{ background:var(--critical-soft); color:var(--critical); }
+  .notif-icon.mention{ background:var(--warning-soft); color:var(--warning); }
+  .notif-icon.new{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
+  .notif-body{ flex:1; min-width:0; }
+  .notif-top{ display:flex; align-items:flex-start; gap:10px; flex-wrap:nowrap; }
+  .notif-text{ font-size:13px; flex:1; min-width:0; }
+  .notif-text b{ font-weight:700; }
+  .notif-text .vtag{ margin-right:2px; }
+  .notif-time{ font-size:11.5px; color:var(--ink-faint); flex:none; white-space:nowrap; }
+  .notif-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none; margin-top:6px; }
+  .notif-actions{ display:flex; align-items:center; gap:6px; flex:none; }
+
+  .empty-state{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; color:var(--ink-faint); text-align:center; gap:6px; }
+  .empty-state svg{ opacity:.5; margin-bottom:6px; }
+  .empty-state-title{ font-size:13.5px; font-weight:700; color:var(--ink-soft); }
+  .empty-state.celebrate .empty-state-emoji{ font-size:36px; line-height:1; margin-bottom:4px; }
+  .empty-state.celebrate .empty-state-title{ font-size:15px; color:var(--ink); }
+
+  /* ---------- 対応済みトースト（元に戻す付き） ---------- */
+  .undo-toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; border-radius:10px; padding:12px 10px 12px 16px;
+    display:none; align-items:center; gap:10px; font-size:13.5px; box-shadow:var(--shadow-panel); z-index:60; white-space:nowrap;
+  }
+  .undo-toast.show{ display:flex; }
+  .undo-toast button{
+    border:none; background:rgba(255,255,255,.12); color:#AFC3FF; font-weight:700; font-size:13px;
+    cursor:pointer; padding:6px 12px; border-radius:7px;
+  }
+  .undo-toast button:hover{ background:rgba(255,255,255,.2); }
+
+  /* ---------- 経過時間の凡例 ---------- */
+  .elapsed-legend{ display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-soft); margin-left:auto; white-space:nowrap; }
+  .elapsed-swatch{ width:14px; height:14px; border-radius:4px; background:var(--warning-soft); border:1px solid var(--warning); flex:none; }
+
+  /* ---------- モード切替（メンバー / リーダー） ---------- */
+  .app.mode-member .sidebar{ display:none; }
+  .app.mode-member #bellBtn, .app.mode-member #gearBtn{ display:none; }
+
+  /* ---------- メンバー画面（1画面カード型フィード） ---------- */
+  .member-scroll{ flex:1; min-height:0; overflow-y:auto; }
+  .member-wrap{ max-width:840px; margin:0 auto; padding:22px 24px 48px; }
+  .member-greet-row{ display:flex; align-items:flex-end; gap:14px; margin-bottom:14px; }
+  .member-greet{ font-size:20px; font-weight:800; letter-spacing:-0.01em; }
+  .member-greet-sub{ font-size:12.5px; color:var(--ink-faint); margin-top:3px; }
+  .member-greet-row .btn{ margin-left:auto; }
+  .progress-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+    padding:16px 18px; display:flex; align-items:center; gap:18px; margin-bottom:18px;
+  }
+  .progress-num{ font-size:15px; font-weight:800; white-space:nowrap; }
+  .progress-num b{ font-size:22px; }
+  .progress-track{ flex:1; height:12px; border-radius:7px; background:var(--paper); overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--success); border-radius:7px; transition:width .4s ease; }
+  .progress-pct{ font-size:13px; font-weight:700; color:var(--success); white-space:nowrap; }
+  .member-tabs{ margin-bottom:14px; }
+  .member-tabs .segmented button{ padding:9px 18px; font-size:13.5px; }
+  .member-panel{ display:none; }
+  .member-panel.active{ display:block; }
+  .case-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; display:flex; align-items:center; gap:16px; margin-bottom:10px;
+    box-shadow:0 1px 2px rgba(26,31,43,.04);
+  }
+  .case-card.elapsed-over{ background:var(--warning-soft); border-color:#E8D5A8; }
+  .case-card.done{ background:var(--paper); box-shadow:none; }
+  .case-card.done > *{ opacity:.65; }
+  .case-card-main{ flex:1; min-width:0; }
+  .case-card-top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .case-card-no{ font-size:19px; font-weight:800; letter-spacing:.01em; }
+  .case-card-meta{ display:flex; gap:14px; font-size:12.5px; color:var(--ink-faint); margin-top:5px; flex-wrap:wrap; }
+  .case-card-meta .over{ color:var(--warning); font-weight:700; }
+  .case-card-actions{ display:flex; align-items:center; gap:8px; flex:none; }
+  .btn.lg{ height:42px; padding:0 18px; font-size:14.5px; border-radius:10px; }
+  .member-done-label{ font-size:12px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin:20px 0 10px; }
+  .member-all-filters{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+</style>
+
+<div class="app">
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"></span>Relay</div>
+    <div class="topbar-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      案件番号・顧客名・キーワードで検索
+      <kbd>⌘F</kbd>
+    </div>
+    <div class="segmented" id="modeSwitch" title="役割によって表示を切り替えます（デモ用）">
+      <button class="active" data-mode="member">メンバー画面</button>
+      <button data-mode="leader">リーダー画面</button>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="threadBtn" title="スレッド"><span class="dot"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M21.25 12a9.23 9.23 0 0 1-2.705 6.54A9.25 9.25 0 0 1 12 21.25a9.2 9.2 0 0 1-3.795-.81l-3.867.572a1.195 1.195 0 0 1-1.361-1.43l.537-3.923A8.9 8.9 0 0 1 2.75 12a9.23 9.23 0 0 1 2.705-6.54A9.25 9.25 0 0 1 12 2.75a9.26 9.26 0 0 1 6.545 2.71A9.24 9.24 0 0 1 21.25 12"/><path d="M12 12.61a.61.61 0 1 0 0-1.221a.61.61 0 0 0 0 1.221m4.279 0a.61.61 0 1 0 0-1.221a.61.61 0 0 0 0 1.221m-8.558 0a.61.61 0 1 0 .001-1.221a.61.61 0 0 0 0 1.221"/></g></svg>
+      </button>
+      <div class="notif-anchor">
+        <button class="icon-btn" id="bellBtn" title="通知"><span class="dot"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+        </button>
+        <div class="notif-popover" id="notifPopover">
+          <div class="notif-popover-head">
+            <div class="notif-popover-title">通知</div>
+          </div>
+          <div class="notif-scroll" id="notifScroll"></div>
+          <button class="notif-popover-settings-link" id="notifSettingsLink">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            通知設定を開く
+          </button>
+        </div>
+      </div>
+      <button class="icon-btn" id="gearBtn" title="設定">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <div class="who-anchor" id="whoAnchor">
+        <div class="who" id="whoTrigger">
+          <div class="avatar stamp" id="whoAvatar">🔥</div>
+          <div class="who-meta"><div class="who-name">山田 太郎</div><div class="who-role" id="whoRoleLabel">バイク主担当</div></div>
+        </div>
+        <div class="mypage-popover" id="myPagePopover">
+          <div class="mypage-head">
+            <div class="avatar stamp" id="mypageAvatar">🔥</div>
+            <div>
+              <div class="mypage-name">山田 太郎</div>
+              <div class="mypage-role" id="mypageRoleLabel">バイク主担当</div>
+            </div>
+          </div>
+          <div class="mypage-section">
+            <div class="mypage-section-label">アイコンスタンプ</div>
+            <div class="stamp-grid" id="stampGrid"></div>
+          </div>
+          <div class="mypage-section">
+            <div class="mypage-section-label">稼働状況（自動振り分けに反映）</div>
+            <div class="online-toggle" id="onlineToggle">
+              <button type="button" data-state="online"><span class="status-dot online"></span>オンライン</button>
+              <button type="button" data-state="offline"><span class="status-dot offline"></span>オフライン</button>
+            </div>
+          </div>
+          <div class="mypage-section">
+            <button type="button" class="boost-btn" id="boostBtn">自分いけます！</button>
+            <div class="boost-note" id="boostNote"></div>
+          </div>
+          <div class="mypage-section">
+            <div class="mypage-section-label">今日のパフォーマンス</div>
+            <div class="mypage-stats" id="mypageStats"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- ===== Sidebar ===== -->
+    <nav class="sidebar">
+      <ul class="nav-list">
+        <li class="nav-item active" data-view="mine">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          マイ案件<span class="badge" id="navBadgeMine">2</span>
+        </li>
+        <li class="nav-item" data-view="notif">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          通知<span class="badge" id="navBadgeNotif">0</span>
+        </li>
+        <li class="nav-item bike" data-view="bike">
+          <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg>
+          バイク案件一覧<span class="badge urgent" id="navBadgeBike">4</span>
+        </li>
+        <li class="nav-item car" data-view="car">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+          車案件一覧<span class="badge" id="navBadgeCar">5</span>
+        </li>
+        <li class="nav-item" data-view="kpi">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          KPI
+        </li>
+      </ul>
+      <div class="sidebar-foot" id="sidebarFoot">今日の新着 <b>3件</b> ・ 期限超過 <b style="color:var(--critical)">1件</b></div>
+    </nav>
+
+    <!-- ===== Workspace ===== -->
+    <main class="workspace">
+
+      <!-- ============ メンバー画面（1画面カード型フィード） ============ -->
+      <section class="view active" id="view-member">
+        <div class="member-scroll">
+          <div class="member-wrap">
+            <div class="member-greet-row">
+              <div>
+                <div class="member-greet">今日の自分</div>
+                <div class="member-greet-sub">07/04（土）・adminで対応が完了（お客様への連絡・承認/入札開始）すると自動で対応済みになります</div>
+              </div>
+              <button type="button" class="btn sm" id="demoAdminBtnMember" title="admin側で「承認して入札を開始」が押された場合の自動連動をシミュレートします">▶ デモ：admin側で対応が完了した場合</button>
+            </div>
+            <div class="progress-card">
+              <div class="progress-num" id="memberProgressNum">今日の担当 <b>3</b>件中 <b>1</b>件対応済み</div>
+              <div class="progress-track"><div class="progress-fill" id="memberProgressFill" style="width:33%"></div></div>
+              <div class="progress-pct" id="memberProgressPct">33%</div>
+            </div>
+            <div class="member-tabs">
+              <div class="segmented" id="memberTabs">
+                <button class="active" data-tab="mine">自分の案件</button>
+                <button data-tab="all">みんなの案件</button>
+              </div>
+            </div>
+            <div class="member-panel active" id="memberPanel-mine">
+              <div id="memberFeed"></div>
+            </div>
+            <div class="member-panel" id="memberPanel-all">
+              <div class="member-all-filters">
+                <div class="segmented" id="memberAllScope">
+                  <button class="active" data-scope="all">すべて</button>
+                  <button data-scope="car">車</button>
+                  <button data-scope="bike">バイク</button>
+                </div>
+                <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
+              </div>
+              <table class="cases">
+                <thead><tr><th>受信</th><th>区分</th><th>案件番号</th><th>ステータス</th><th>担当者</th><th class="cell-actions">操作</th></tr></thead>
+                <tbody id="memberAllBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ バイク案件一覧 ============ -->
+      <section class="view" id="view-bike">
+        <div class="queue-view">
+          <div class="view-head">
+            <div class="view-icon-badge bike"><svg width="17" height="17" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg></div>
+            <div>
+              <div class="view-title">バイク案件一覧</div>
+              <div class="view-sub">受信が古い順に並びます。対応済み（admin操作に自動連動）の案件もグレーで残るので、誰でも状況を確認できます。</div>
+            </div>
+          </div>
+          <div class="queue-filters">
+            <div class="search-mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>このキューを検索</div>
+            <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
+          </div>
+          <div class="queue-body">
+            <div class="table-scroll" style="padding-top:14px;">
+              <table class="cases">
+                <thead><tr><th>送信日時</th><th>案件番号</th><th>ステータス</th><th>担当者</th><th class="cell-actions">操作</th></tr></thead>
+                <tbody id="queueList_bike"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 車案件一覧 ============ -->
+      <section class="view" id="view-car">
+        <div class="queue-view">
+          <div class="view-head">
+            <div class="view-icon-badge car"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>
+            <div>
+              <div class="view-title">車案件一覧</div>
+              <div class="view-sub">受信が古い順に並びます。対応済み（admin操作に自動連動）の案件もグレーで残るので、誰でも状況を確認できます。</div>
+            </div>
+          </div>
+          <div class="queue-filters">
+            <div class="search-mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>このキューを検索</div>
+            <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
+          </div>
+          <div class="queue-body">
+            <div class="table-scroll" style="padding-top:14px;">
+              <table class="cases">
+                <thead><tr><th>送信日時</th><th>案件番号</th><th>ステータス</th><th>担当者</th><th class="cell-actions">操作</th></tr></thead>
+                <tbody id="queueList_car"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ マイ案件 ============ -->
+      <section class="view" id="view-mine">
+        <div class="view-head">
+          <div>
+            <div class="view-title">マイ案件</div>
+            <div class="view-sub" id="mineSub">自分に割り当てられている案件を車・バイクまとめて表示（受信が古い順）</div>
+          </div>
+          <div class="view-head-actions">
+            <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
+            <button type="button" class="btn sm" id="demoAdminBtn" title="admin側で「承認して入札を開始」が押された場合の自動連動をシミュレートします">▶ デモ：admin側で対応が完了した場合</button>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:16px;">
+          <table class="cases">
+            <thead><tr><th>区分</th><th>案件番号</th><th>ステータス</th><th class="cell-actions">操作</th></tr></thead>
+            <tbody id="mineBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 通知 ============ -->
+      <section class="view" id="view-notif">
+        <div class="view-head">
+          <div>
+            <div class="view-title">通知</div>
+            <div class="view-sub">その場でスレッドに返信したり、adminを開けます。</div>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:16px;">
+          <div class="mine-notif-card" id="mineNotifCard">
+            <div id="mineNotifList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ KPI ============ -->
+      <section class="view" id="view-kpi">
+        <div class="view-head">
+          <div>
+            <div class="view-title">KPI</div>
+            <div class="view-sub">今日 07/04（土）9:52 時点 ・ 担当者7名 ・ 車/バイクを兼任するメンバーも含む</div>
+          </div>
+          <div class="view-head-actions">
+            <div class="segmented" id="kpiScope">
+              <button class="active" data-scope="all">すべて</button>
+              <button data-scope="car">車</button>
+              <button data-scope="bike">バイク</button>
+            </div>
+          </div>
+        </div>
+        <div class="dash-scroll">
+          <div class="kpi-row">
+            <div class="kpi-card hero">
+              <div class="kpi-label">対応待ち（未着手）</div>
+              <div class="kpi-value tnum" id="kpiWaiting">3<span style="font-size:15px;font-weight:600;">件</span></div>
+              <div class="kpi-delta" style="color:rgba(255,255,255,.85)">昨日比 +1件</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">1件あたり平均初動</div>
+              <div class="kpi-value tnum">18<span style="font-size:15px;font-weight:600;">分</span></div>
+              <div class="kpi-delta down">▼ 4分（先週比）</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">本日SLA達成率</div>
+              <div class="kpi-value tnum">86<span style="font-size:15px;font-weight:600;">%</span></div>
+              <div class="kpi-delta">目標80％以上</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">期限超過</div>
+              <div class="kpi-value tnum" style="color:var(--critical)" id="kpiOverdue">1<span style="font-size:15px;font-weight:600;">件</span></div>
+              <div class="kpi-delta up">▲ 1件（1時間前）</div>
+            </div>
+          </div>
+
+          <div class="dash-grid">
+            <div class="panel">
+              <div class="panel-title">担当者別 対応中の件数（車 / バイク内訳）</div>
+              <div class="panel-sub">件数が多い順。基準線＝1人あたりの推奨上限（8件）。上の「すべて／車／バイク」に連動します。</div>
+              <div id="workloadBars"></div>
+              <div class="legend-row">
+                <span><span class="legend-swatch" style="background:var(--car)"></span>車の案件</span>
+                <span><span class="legend-swatch" style="background:var(--bike)"></span>バイクの案件</span>
+                <span>┃ 推奨上限ライン</span>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">担当者ステータス</div>
+              <div class="panel-sub">稼働状況と主担当・兼任区分（振り分け判断の材料）</div>
+              <div style="overflow-x:auto;">
+                <table class="team-table" id="teamTable">
+                  <thead><tr><th>担当者</th><th>状況</th><th>負荷</th><th>担当区分</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 設定（運用管理） ============ -->
+      <section class="view" id="view-settings">
+        <div class="settings-head">
+          <div class="settings-title">設定</div>
+          <button class="btn ghost settings-close" id="settingsClose"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>閉じる</button>
+        </div>
+        <div class="settings-tabs">
+          <div class="segmented" id="settingsTabs">
+            <button class="active" data-tab="teams">チーム編成</button>
+            <button data-tab="rules">自動振り分け設定</button>
+            <button data-tab="notif">通知設定</button>
+          </div>
+        </div>
+
+        <div class="settings-body">
+          <!-- チーム編成 -->
+          <div class="settings-panel active" id="tab-teams">
+            <div class="roster-head">
+              <div style="flex:1;">
+                <div class="roster-head-title">チーム編成</div>
+                <div class="roster-head-sub">半年ごとの定期異動に加え、随時の変更にも対応。担当区分を変えると自動振り分けの対象プールに即反映されます。</div>
+              </div>
+              <span class="save-toast" id="saveToast"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>保存しました</span>
+              <button class="btn primary" id="saveRosterBtn">変更を保存</button>
+            </div>
+            <div class="team-edit-note">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
+              担当区分はドロップダウンから即座に変更できます。「両方対応」にすると、車・バイクどちらの自動振り分けにも組み込まれます。
+            </div>
+            <div class="table-scroll" style="padding-top:14px;">
+              <table class="roster-table" id="rosterTable">
+                <thead><tr><th>担当者</th><th>現在の担当区分</th><th>変更後の担当区分</th><th>最終更新</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 自動振り分け設定 -->
+          <div class="settings-panel" id="tab-rules">
+            <div class="rules-head">
+              <div class="rules-head-title">自動振り分け設定</div>
+              <div class="rules-head-sub">案件は必ず受信（CV）が古いものから順に自動振り分けの対象になります。以下は、その案件を「誰に割り当てるか」を決める重み付けルールです。</div>
+            </div>
+            <div class="rules-grid">
+              <div class="rules-left">
+                <div class="rule-card fixed-rule">
+                  <div class="rule-head">
+                    <div class="rule-order">1</div>
+                    <div class="rule-name">受信（CV）が古い案件から順に処理</div>
+                    <span class="rule-fixed-badge">常時適用</span>
+                  </div>
+                  <div class="rule-desc">複数の未アサイン案件がある場合、受信時刻が最も古いものを次の割り当て対象にします。処理順序の土台となる基本ルールで、オフにはできません。</div>
+                </div>
+                <div class="rule-card">
+                  <div class="rule-head">
+                    <div class="rule-order">2</div>
+                    <div class="rule-name">現在の対応件数が少ない人を優先</div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                  </div>
+                  <div class="rule-desc">対応中・確認中の合計件数で比較。同じタイミングの案件で担当者を決める際、特定の人に偏らないようにする基本ルール。</div>
+                  <div class="rule-weight"><input type="range" min="0" max="100" value="40" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">40%</span></div>
+                </div>
+                <div class="rule-card">
+                  <div class="rule-head">
+                    <div class="rule-order">3</div>
+                    <div class="rule-name">車・バイクの担当区分が一致する人を優先</div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                  </div>
+                  <div class="rule-desc">案件の車種区分（車／バイク）と、チーム編成で設定した担当区分を照合。「両方対応」の人はどちらの案件でも対象になります。</div>
+                  <div class="rule-weight"><input type="range" min="0" max="100" value="35" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">35%</span></div>
+                </div>
+                <div class="rule-card">
+                  <div class="rule-head">
+                    <div class="rule-order">4</div>
+                    <div class="rule-name">最終対応からの経過時間が長い人を優先</div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                  </div>
+                  <div class="rule-desc">担当者間の対応履歴の偏りを防ぐための補助ルール。案件の受信順とは別軸で、しばらく新規対応をしていない人を優先します。</div>
+                  <div class="rule-weight"><input type="range" min="0" max="100" value="15" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">15%</span></div>
+                </div>
+                <div class="rule-card">
+                  <div class="rule-head">
+                    <div class="rule-order">5</div>
+                    <div class="rule-name">稼働中（オンライン）の人のみに割り当てる</div>
+                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                  </div>
+                  <div class="rule-desc">離席・オフラインの担当者には新規割り当てを行わず、復帰時にキューへ反映。</div>
+                  <div class="rule-weight"><input type="range" min="0" max="100" value="10" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">10%</span></div>
+                </div>
+                <div class="rule-card off">
+                  <div class="rule-head">
+                    <div class="rule-order">6</div>
+                    <div class="rule-name">VIP顧客は指名担当者に固定割り当て</div>
+                    <label class="switch"><input type="checkbox"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                  </div>
+                  <div class="rule-desc">顧客タグに「VIP」が付いている場合、他条件より優先して指名担当者へ割り当て。</div>
+                </div>
+                <button class="btn primary" style="margin-top:4px;">変更を保存</button>
+              </div>
+              <div class="rules-right">
+                <div class="panel-title" style="margin-bottom:2px;">シミュレーション：次に来る3件の割り当て予測</div>
+                <div class="panel-sub">左の重み設定を反映した割り当て結果と、その理由。</div>
+                <div class="sim-card" id="simCard"></div>
+                <div class="audit-note">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                  割り当て結果は案件詳細に「割り当て理由」として記録され、後から担当者・件数の偏りを検証できます。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 通知設定（通知の履歴は右上の🔔から確認） -->
+          <div class="settings-panel" id="tab-notif">
+            <div class="rules-head">
+              <div class="rules-head-title">通知設定</div>
+              <div class="rules-head-sub">どの通知を受け取るかだけを設定します。通知の履歴は右上の🔔アイコンから確認できます。</div>
+            </div>
+            <div class="notif-settings" id="notifSettings">
+              <div class="notif-settings-body">
+                <div class="notif-toggle-row">
+                  <div><div class="notif-toggle-label"><span class="vtag car icononly"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span> 車の案件を通知する</div><div class="notif-toggle-desc">新着・割り当て・確認依頼などを通知</div></div>
+                  <label class="switch"><input type="checkbox" id="notifCarToggle" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                </div>
+                <div class="notif-toggle-row">
+                  <div><div class="notif-toggle-label"><span class="vtag bike icononly"><svg width="12" height="12" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg></span> バイクの案件を通知する</div><div class="notif-toggle-desc">新着・割り当て・確認依頼などを通知</div></div>
+                  <label class="switch"><input type="checkbox" id="notifBikeToggle" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                </div>
+                <div class="notif-toggle-row">
+                  <div><div class="notif-toggle-label">緊急以外は1時間ごとにまとめて通知（ダイジェスト）</div><div class="notif-toggle-desc">期限超過や対応依頼などの緊急通知はダイジェスト対象外で即時に届きます</div></div>
+                  <label class="switch"><input type="checkbox" id="notifDigestToggle"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                </div>
+                <div class="notif-toggle-row locked">
+                  <div><div class="notif-toggle-label">期限超過の通知（常にON・ミュート不可）</div><div class="notif-toggle-desc">対応漏れ防止のため、この通知だけは絞り込みの対象外です</div></div>
+                  <label class="switch"><input type="checkbox" checked disabled><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== スレッドサイドバー ===== -->
+    <aside class="thread-rail" id="threadRail">
+      <div class="rail-head">
+        <button class="icon-btn" id="railBack" style="visibility:hidden;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="rail-title" id="railTitle">スレッド</div>
+        <button class="icon-btn" id="railClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="rail-body" id="railBody"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- ===== admin連動トースト（自動同期のお知らせ） ===== -->
+<div class="undo-toast" id="undoToast">
+  <span id="undoToastText"></span>
+</div>
+
+<script>
+(function(){
+  // ---------------- Icons ----------------
+  var ICON_CAR = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>';
+  var ICON_BIKE = '<svg width="12" height="12" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg>';
+  var ICON_EXT = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg>';
+  var ICON_GOTO = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+  var ICON_THREAD = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+  var ICON_CHECK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  // ボタンはホバーなしで常時表示。アイコンだけのボタンは避け、必ず文字ラベルを併記する。
+  // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）ため、行のボタンはこの2つだけ。
+  function rowActionsHtml(c){
+    return '<div class="row-actions">'+
+      '<a class="btn '+(c.done?'':'primary ')+'sm" href="'+c.adminUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">admin'+ICON_EXT+'</a>'+
+      '<button type="button" class="btn ghost sm row-thread-btn" data-case="'+c.id+'">'+ICON_THREAD+'スレッド</button>'+
+    '</div>';
+  }
+  function bindRowActions(tr, c){
+    var tb = tr.querySelector('.row-thread-btn');
+    if(tb) tb.addEventListener('click', function(){ openRail(c.id); });
+  }
+
+  var vehicleMeta = {
+    car:{label:"車", icon:ICON_CAR, cls:"car"},
+    bike:{label:"バイク", icon:ICON_BIKE, cls:"bike"},
+  };
+  function vtag(vehicle, iconOnly){
+    var m = vehicleMeta[vehicle];
+    return '<span class="vtag '+m.cls+(iconOnly?' icononly':'')+'">'+m.icon+(iconOnly?'':m.label)+'</span>';
+  }
+  function adminLink(c){
+    return '<a class="admin-link" href="'+c.adminUrl+'" target="_blank" rel="noopener" title="管理画面で開く（別タブ）：'+c.adminUrl+'" onclick="event.stopPropagation()">'+ICON_EXT+'</a>';
+  }
+
+  // ---------------- Data ----------------
+  // recMin: 値が小さいほど受信が古い（＝時系列で先に来た案件）。一覧の既定の並び順に使用。
+  // elapsedMin: 受信からの経過分数。経過セルの背景色判定に使用（2時間＝120分が基準）。
+  var cases = [
+    {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"山田 太郎"}, done:true, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/311742"},
+    {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:null, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/524170"},
+    {id:"#C-0015", vehicle:"car", recMin:2, title:"交渉リマインド対応、初回架電前", customer:"渡辺 美咲", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 00:15", elapsedMin:578, due:"ok", dueLabel:"本日18:00", owner:null, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/312845"},
+    {id:"#B-0012", vehicle:"bike", recMin:3, title:"アップロード内容の確認依頼", customer:"伊藤 誠", kind:"査定アップロード確認", status:"reupload", received:"07/04 03:20", elapsedMin:393, due:"ok", dueLabel:"本日18:00", owner:{name:"鈴木 花子"}, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/521769"},
+    {id:"#C-0008", vehicle:"car", recMin:4, title:"楽サツ変更依頼、担当交代のご相談", customer:"小林 拓也", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 06:20", elapsedMin:213, due:"warn", dueLabel:"2時間以内", owner:{name:"伊藤 誠"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/318822"},
+    {id:"#C-0006", vehicle:"car", recMin:5, title:"交渉リマインド対応、条件面の再提示待ち", customer:"中村 優子", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 06:58", elapsedMin:175, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/315560"},
+    {id:"#B-0005", vehicle:"bike", recMin:6, title:"再アップロード完了、内容確認済み", customer:"渡辺 美咲", kind:"再アップロード確認", status:"reviewing", received:"07/04 07:20", elapsedMin:153, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, done:true, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/523371"},
+    {id:"#C-0004", vehicle:"car", recMin:7, title:"楽サツ（楽天サツキ）の変更依頼、書類差し替え", customer:"高橋 健一", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 07:50", elapsedMin:123, due:"ok", dueLabel:"07/05", owner:{name:"伊藤 誠"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/317204"},
+    {id:"#B-0003", vehicle:"bike", recMin:8, title:"交渉リマインドの返信が来ないので確認したい", customer:"山田 一郎", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 08:10", elapsedMin:102, due:"over", dueLabel:"本日12:00・残り10分", owner:{name:"鈴木 花子"}, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/515694"},
+    {id:"#C-0002", vehicle:"car", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://www.carhikaku.com/admins/upload_assessment_requests/311998"},
+    {id:"#B-0001", vehicle:"bike", recMin:10, title:"査定依頼アップロードの内容を確認してほしい", customer:"田中 一郎", kind:"査定アップロード確認", status:"reviewing", received:"07/04 09:30", elapsedMin:22, due:null, dueLabel:"—", owner:null, adminUrl:"https://www.bikehikaku.com/admins/upload_assessment_requests/524187"},
+  ];
+  function shortUrl(url){ return url.replace(/^https?:\/\/(www\.)?/,''); }
+  // 現場では「adminのURL末尾の番号」が案件の呼び名。アプリ独自のIDは表に出さない。
+  function caseNo(c){ return c.adminUrl.split('/').pop(); }
+
+  // スレッドは案件IDに紐づく。左のスレッドサイドバーから、案件一覧に移動せずに送受信できる。
+  var threadsData = [
+    {caseId:"#B-0003", messages:[
+      {name:"山田 太郎", time:"08:20", text:"@鈴木 花子 この案件の対応をお願いできますか。自分は今バイクの交渉が2件重なっていて手が回りません。@バイクチーム 他にも手が空いている人がいたら教えてください。", handoff:true},
+      {name:"鈴木 花子", time:"08:24", text:"承知しました、こちらで巻き取ります。期限が近いので優先的に対応します。"},
+    ]},
+    {caseId:"#C-0008", messages:[
+      {name:"伊藤 誠", time:"07:10", text:"小林様の担当交代について、鈴木さんに一度内容を確認してもらいたいです。"},
+      {name:"鈴木 花子", time:"07:22", text:"確認しました。楽サツの変更自体は問題なさそうです。"},
+    ]},
+  ];
+  function getThread(caseId){ return threadsData.find(function(t){ return t.caseId===caseId; }); }
+  function ensureThread(caseId){
+    var t = getThread(caseId);
+    if(!t){ t = {caseId:caseId, messages:[]}; threadsData.push(t); }
+    return t;
+  }
+
+  // ステータスは今後増える予定。現状は「内容確認」「再アップロード」の2種類のみ。
+  // 「対応済み」はステータスとは別軸のフラグ（done）。お客様への連絡または承認・入札開始まで
+  // 完了した状態を指し、現状adminを開かないと分からない「対応したかどうか」をアプリ上で見える化する。
+  var statusMeta = {
+    reviewing:{label:"内容確認", cls:"review"},
+    reupload:{label:"再アップロード", cls:"hold"},
+    done:{label:"対応済み", cls:"done"},
+  };
+
+  var team = [
+    {name:"山田 太郎", stamp:"🔥", status:"online", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:6, avgSpeed:14, dealRate:68}},
+    {name:"鈴木 花子", stamp:"🌸", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:8, avgSpeed:11, dealRate:74}},
+    {name:"伊藤 誠", stamp:"🐻", status:"online", role:"both", updated:"2025/12/02", boost:false, stats:{handled:9, avgSpeed:19, dealRate:61}},
+    {name:"田中 太郎", stamp:"🍀", status:"away", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:3, avgSpeed:22, dealRate:55}},
+    {name:"中村 優子", stamp:"🍊", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:5, avgSpeed:16, dealRate:70}},
+    {name:"高橋 健一", stamp:"⚡", status:"offline", role:"bike", updated:"2026/02/18", boost:false, stats:{handled:0, avgSpeed:0, dealRate:0}},
+    {name:"渡辺 美咲", stamp:"🎧", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:7, avgSpeed:13, dealRate:66}},
+  ];
+  // マイページのアイコンスタンプ選択肢
+  var STAMP_OPTIONS = ["🔥","🌸","🐻","🍀","🍊","⚡","🎧","🐱","🐶","🦊","🐼","🌟","💪","🚀","☕","🎯"];
+  // 担当者ごとに固定の絵文字スタンプを割り当て。Slackでの運用に合わせ、頭文字よりスタンプで担当者を判別しやすくする。
+  var STAMP_BY_NAME = {};
+  team.forEach(function(t){ STAMP_BY_NAME[t.name] = t.stamp; });
+  function stampFor(name){ return STAMP_BY_NAME[name] || "👤"; }
+  function personChip(name){ return '<span class="cell-person"><span class="avatar stamp">'+stampFor(name)+'</span>'+name+'</span>'; }
+  var roleMeta = { car:"車 主担当", bike:"バイク 主担当", both:"両方対応" };
+
+  // ---------------- @メンション（個人・チーム両方に対応） ----------------
+  // 全員がバイク・車いずれかのチームに所属しているため、個人のみ／個人＋チーム／チームのみ、
+  // どの組み合わせでもメッセージ内に@を複数個並べるだけで表現できる。
+  var MENTION_TEAMS = [
+    {key:"team-bike", label:"バイクチーム", icon:ICON_BIKE, members: team.filter(function(t){ return t.role==="bike" || t.role==="both"; })},
+    {key:"team-car", label:"車チーム", icon:ICON_CAR, members: team.filter(function(t){ return t.role==="car" || t.role==="both"; })},
+    {key:"team-all", label:"全員", icon:null, members: team},
+  ];
+  var MENTION_NAMES = MENTION_TEAMS.map(function(g){ return g.label; }).concat(team.map(function(t){ return t.name; }));
+  MENTION_NAMES.sort(function(a,b){ return b.length - a.length; }); // 長い名前から先にマッチさせ、部分一致の誤爆を防ぐ
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(ch){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
+    });
+  }
+  function highlightMentions(escapedText){
+    return MENTION_NAMES.reduce(function(text, name){
+      var needle = "@"+escapeHtml(name);
+      return text.split(needle).join('<span class="mention-tag">'+needle+'</span>');
+    }, escapedText);
+  }
+  function mentionMenuItems(query){
+    var q = query.toLowerCase();
+    var teamItems = MENTION_TEAMS.filter(function(g){ return !q || g.label.toLowerCase().indexOf(q)>=0; }).map(function(g){
+      return '<div class="mention-item" data-name="'+g.label+'"><span class="mention-item-icon team">'+(g.icon||'👥')+'</span>'+
+        '<span class="mention-item-name">'+g.label+'</span><span class="mention-item-sub">'+g.members.length+'人のチーム</span></div>';
+    });
+    var userItems = team.filter(function(t){ return !q || t.name.toLowerCase().indexOf(q)>=0; }).map(function(t){
+      return '<div class="mention-item" data-name="'+t.name+'"><span class="mention-item-icon">'+t.stamp+'</span>'+
+        '<span class="mention-item-name">'+t.name+'</span><span class="mention-item-sub">'+roleMeta[t.role]+'</span></div>';
+    });
+    return teamItems.concat(userItems).join('');
+  }
+  var CAP = 8;
+  var CURRENT_USER = "山田 太郎";
+  var notifMute = { car:true, bike:true };
+  var kpiScope = "all";   // all | car | bike — KPIページの絞り込み
+
+  function chip(status){
+    var m = statusMeta[status];
+    return '<span class="chip '+m.cls+'"><span class="dot"></span>'+m.label+'</span>';
+  }
+  function ownerHtml(c){
+    if(!c.owner) return '<span style="color:var(--ink-faint);font-size:12.5px;">自動アサイン待ち</span>';
+    return personChip(c.owner.name);
+  }
+  function sortCases(list){
+    var copy = list.slice();
+    copy.sort(function(a,b){ return a.recMin - b.recMin; }); // 時系列順：受信が古い方を先に
+    return copy;
+  }
+
+  // ---------------- Vehicle queue views (バイク案件一覧 / 車案件一覧) ----------------
+  var queueState = {
+    bike:{selected:null},
+    car:{selected:null},
+  };
+
+  function queueCasesFor(vehicle){
+    var list = cases.filter(function(c){ return c.vehicle===vehicle; });
+    return sortCases(list);
+  }
+
+  function renderQueue(vehicle){
+    var st = queueState[vehicle];
+    var list = queueCasesFor(vehicle);
+    var listEl = document.getElementById('queueList_'+vehicle);
+    listEl.innerHTML = "";
+    if(list.length===0){
+      listEl.innerHTML = '<tr><td colspan="5"><div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v10H8l-4 4z"/></svg><div class="empty-state-title">対応待ちの案件はありません</div>この条件では表示できる案件がありません。</div></td></tr>';
+    }
+    list.forEach(function(c){
+      var tr = document.createElement('tr');
+      tr.className = c.done ? 'done-row' : (c.elapsedMin>120 ? 'elapsed-over' : '');
+      tr.dataset.id = c.id;
+      tr.innerHTML =
+        '<td class="tnum">'+c.received+'</td>'+
+        '<td class="cell-id tnum">'+caseNo(c)+'</td>'+
+        '<td>'+chip(c.done ? 'done' : c.status)+'</td>'+
+        '<td>'+ownerHtml(c)+'</td>'+
+        '<td class="cell-actions">'+rowActionsHtml(c)+'</td>';
+      listEl.appendChild(tr);
+      bindRowActions(tr, c);
+    });
+    if(st.selected){
+      var flashRow = listEl.querySelector('tr[data-id="'+st.selected+'"]');
+      if(flashRow){
+        flashRow.scrollIntoView({block:'center'});
+        flashRow.classList.add('queue-row-flash');
+      }
+      st.selected = null;
+    }
+  }
+
+  // ---------------- 対応済み（done）＝admin操作との自動連動 ----------------
+  // 「対応済み」はRelay上のボタンでは操作しない。admin側で「お客様へのメッセージ送信」または
+  // 「承認して入札を開始」が行われたことをRelayが検知し、自動でステータスを更新する想定。
+  // モックアップではその動きを「デモ再生」ボタンでシミュレートする。
+  var toastTimer = null;
+  function findCase(id){ return cases.find(function(c){ return c.id===id; }); }
+  function refreshAllCaseViews(){
+    renderMine();
+    renderQueue('bike');
+    renderQueue('car');
+    renderWorkload();
+    updateNavBadges();
+    renderMypageStats();
+    renderMemberFeed();
+    renderMemberAll();
+  }
+  function markDoneFromAdmin(c, sourceLabel){
+    if(!c || c.done) return;
+    c.done = true;
+    var me = myself();
+    if(c.owner && c.owner.name===CURRENT_USER && me.stats) me.stats.handled++;
+    refreshAllCaseViews();
+    showSyncToast('案件 '+caseNo(c)+'：adminで「'+sourceLabel+'」を検知したため、自動で対応済みになりました');
+  }
+  function simulateAdminDone(){
+    var mine = sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }));
+    if(mine.length===0){
+      showSyncToast('対応待ちの案件がありません（デモ）');
+      return;
+    }
+    markDoneFromAdmin(mine[0], '承認して入札を開始');
+  }
+  function showSyncToast(text){
+    var toastEl = document.getElementById('undoToast');
+    document.getElementById('undoToastText').textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 6000);
+  }
+
+  // ---------------- メンバー画面（1画面カード型フィード） ----------------
+  var memberAllScopeVal = 'all';   // all | car | bike — みんなの案件の絞り込み
+  function fmtElapsed(min){
+    return min < 60 ? min+'分' : (Math.round(min/60*10)/10)+'時間';
+  }
+  function memberCardHtml(c){
+    var over = !c.done && c.elapsedMin > 120;
+    var actions = c.done
+      ? '<a class="btn sm" href="'+c.adminUrl+'" target="_blank" rel="noopener">admin'+ICON_EXT+'</a>'+
+        '<button type="button" class="btn ghost sm row-thread-btn" data-case="'+c.id+'">'+ICON_THREAD+'スレッド</button>'
+      : '<a class="btn primary lg" href="'+c.adminUrl+'" target="_blank" rel="noopener">adminで対応する'+ICON_EXT+'</a>'+
+        '<button type="button" class="btn ghost lg row-thread-btn" data-case="'+c.id+'">'+ICON_THREAD+'スレッド</button>';
+    return '<div class="case-card'+(c.done?' done':(over?' elapsed-over':''))+'">'+
+      vtag(c.vehicle)+
+      '<div class="case-card-main">'+
+        '<div class="case-card-top"><span class="case-card-no tnum">'+caseNo(c)+'</span>'+chip(c.done?'done':c.status)+'</div>'+
+        '<div class="case-card-meta"><span>受信 '+c.received+'</span><span class="'+(over?'over':'')+'">経過 '+fmtElapsed(c.elapsedMin)+(over?'（2時間超）':'')+'</span></div>'+
+      '</div>'+
+      '<div class="case-card-actions">'+actions+'</div>'+
+    '</div>';
+  }
+  function bindMemberThreadBtns(container){
+    container.querySelectorAll('.row-thread-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ openRail(btn.dataset.case); });
+    });
+  }
+  function renderMemberFeed(){
+    var feed = document.getElementById('memberFeed');
+    if(!feed) return;
+    var mineAll = sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER; }));
+    var pending = mineAll.filter(function(c){ return !c.done; });
+    var doneList = mineAll.filter(function(c){ return c.done; });
+    var html = '';
+    if(pending.length===0){
+      html += '<div class="empty-state celebrate" style="padding:40px 20px;"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここにカードが増えて通知が届きます。</div>';
+    } else {
+      html += pending.map(memberCardHtml).join('');
+    }
+    if(doneList.length){
+      html += '<div class="member-done-label">対応済み（今日）・'+doneList.length+'件</div>';
+      html += doneList.map(memberCardHtml).join('');
+    }
+    feed.innerHTML = html;
+    bindMemberThreadBtns(feed);
+    // 進捗バー
+    var total = mineAll.length, doneCount = doneList.length;
+    var pct = total ? Math.round(doneCount/total*100) : 0;
+    document.getElementById('memberProgressNum').innerHTML = '今日の担当 <b class="tnum">'+total+'</b>件中 <b class="tnum">'+doneCount+'</b>件対応済み';
+    document.getElementById('memberProgressFill').style.width = pct+'%';
+    document.getElementById('memberProgressPct').textContent = pct+'%';
+  }
+  function renderMemberAll(){
+    var body = document.getElementById('memberAllBody');
+    if(!body) return;
+    var list = sortCases(cases.filter(function(c){
+      return memberAllScopeVal==='all' ? true : c.vehicle===memberAllScopeVal;
+    }));
+    body.innerHTML = '';
+    list.forEach(function(c){
+      var tr = document.createElement('tr');
+      tr.className = c.done ? 'done-row' : (c.elapsedMin>120 ? 'elapsed-over' : '');
+      tr.innerHTML =
+        '<td class="tnum">'+c.received+'</td>'+
+        '<td>'+vtag(c.vehicle)+'</td>'+
+        '<td class="cell-id tnum">'+caseNo(c)+'</td>'+
+        '<td>'+chip(c.done ? 'done' : c.status)+'</td>'+
+        '<td>'+ownerHtml(c)+'</td>'+
+        '<td class="cell-actions">'+rowActionsHtml(c)+'</td>';
+      body.appendChild(tr);
+      bindRowActions(tr, c);
+    });
+  }
+
+  // ---------------- マイ案件 ----------------
+  function renderMine(){
+    var mineBody = document.getElementById('mineBody');
+    mineBody.innerHTML = "";
+    var mine = sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }));
+    mine.forEach(function(c){
+      var over = c.elapsedMin > 120;
+      var tr = document.createElement('tr');
+      tr.className = over ? 'elapsed-over' : '';
+      tr.title = over ? '受信から'+Math.round(c.elapsedMin/60*10)/10+'時間経過（2時間超）' : '';
+      tr.innerHTML =
+        '<td>'+vtag(c.vehicle)+'</td>'+
+        '<td class="cell-id tnum">'+caseNo(c)+'</td>'+
+        '<td>'+chip(c.status)+'</td>'+
+        '<td class="cell-actions">'+rowActionsHtml(c)+'</td>';
+      mineBody.appendChild(tr);
+      bindRowActions(tr, c);
+    });
+    if(mine.length===0){
+      mineBody.innerHTML = '<tr><td colspan="4"><div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div></td></tr>';
+    }
+    document.getElementById('mineSub').textContent = "自分（"+CURRENT_USER+"）の未対応の案件を車・バイクまとめて表示・"+mine.length+"件（受信が古い順）。adminで対応が完了（お客様への連絡・承認/入札開始）すると自動で対応済みになります。";
+  }
+
+  // ---------------- チーム負荷（設定内） ----------------
+  function computeLoad(){
+    return team.map(function(t){
+      var mine = cases.filter(function(c){ return c.owner && c.owner.name===t.name && !c.done; });
+      var loadCar = mine.filter(function(c){return c.vehicle==='car';}).length;
+      var loadBike = mine.filter(function(c){return c.vehicle==='bike';}).length;
+      return {t:t, loadCar:loadCar, loadBike:loadBike, total:loadCar+loadBike};
+    });
+  }
+  function renderWorkload(){
+    var loads = computeLoad();
+    var relevant = loads.map(function(l){
+      var shown = kpiScope==='all' ? l.total : (kpiScope==='car'?l.loadCar:l.loadBike);
+      return Object.assign({}, l, {shown:shown});
+    }).sort(function(a,b){ return b.shown - a.shown; });
+    var maxLoad = Math.max(CAP, relevant.reduce(function(m,l){return Math.max(m,l.shown);},0));
+
+    var barsEl = document.getElementById('workloadBars');
+    barsEl.innerHTML = "";
+    relevant.forEach(function(l){
+      var carPct = (l.loadCar/maxLoad)*100, bikePct = (l.loadBike/maxLoad)*100;
+      var showCar = kpiScope!=='bike', showBike = kpiScope!=='car';
+      var capPct = (CAP/maxLoad)*100;
+      var row = document.createElement('div');
+      row.className='bar-row';
+      row.innerHTML =
+        '<div class="bar-name"><span class="status-dot '+l.t.status+'"></span>'+l.t.name+'</div>'+
+        '<div class="bar-track">'+
+          (showCar?'<div class="bar-fill-car" style="width:'+carPct+'%"></div>':'')+
+          (showBike?'<div class="bar-fill-bike" style="width:'+bikePct+'%"></div>':'')+
+          '<div class="bar-cap-line" style="left:'+capPct+'%"></div>'+
+        '</div>'+
+        '<div class="bar-val tnum">'+l.shown+'</div>';
+      barsEl.appendChild(row);
+    });
+
+    var teamBody = document.querySelector('#teamTable tbody');
+    teamBody.innerHTML = "";
+    var statusLabel = {online:"オンライン", away:"離席中", offline:"オフライン"};
+    loads.forEach(function(l){
+      var tr = document.createElement('tr');
+      var pct = Math.min(100,(l.total/CAP)*100);
+      tr.innerHTML =
+        '<td>'+l.t.name+'</td>'+
+        '<td><span class="status-dot '+l.t.status+'" style="margin-right:5px;"></span>'+statusLabel[l.t.status]+'</td>'+
+        '<td><span class="cap-mini"><span class="cap-mini-fill'+(l.total>CAP?' over':'')+'" style="width:'+pct+'%"></span></span> <span class="tnum">'+l.total+'/'+CAP+'</span></td>'+
+        '<td>'+roleMeta[l.t.role]+'</td>';
+      teamBody.appendChild(tr);
+    });
+
+    var scopedCases = kpiScope==='all' ? cases : cases.filter(function(c){return c.vehicle===kpiScope;});
+    document.getElementById('kpiWaiting').innerHTML = scopedCases.filter(function(c){return !c.owner && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
+    document.getElementById('kpiOverdue').innerHTML = scopedCases.filter(function(c){return c.due==='over' && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
+  }
+
+  // ---------------- チーム編成 ----------------
+  var pendingRoster = {};
+  function renderRoster(){
+    var body = document.querySelector('#rosterTable tbody');
+    body.innerHTML = "";
+    team.forEach(function(t, i){
+      var tr = document.createElement('tr');
+      var options = ['bike','car','both'].map(function(r){
+        return '<option value="'+r+'"'+(t.role===r?' selected':'')+'>'+roleMeta[r]+'</option>';
+      }).join('');
+      tr.innerHTML =
+        '<td>'+personChip(t.name)+'</td>'+
+        '<td>'+roleMeta[t.role]+'</td>'+
+        '<td><select class="role-select" data-idx="'+i+'">'+options+'</select></td>'+
+        '<td class="roster-updated tnum">'+t.updated+'</td>';
+      body.appendChild(tr);
+    });
+    body.querySelectorAll('.role-select').forEach(function(sel){
+      sel.addEventListener('change', function(){
+        var idx = +sel.dataset.idx;
+        pendingRoster[idx] = sel.value;
+        sel.classList.toggle('dirty', sel.value !== team[idx].role);
+      });
+    });
+  }
+  document.getElementById('saveRosterBtn').addEventListener('click', function(){
+    var changed = 0;
+    Object.keys(pendingRoster).forEach(function(idx){
+      if(team[idx].role !== pendingRoster[idx]){ team[idx].role = pendingRoster[idx]; team[idx].updated = "たった今"; changed++; }
+    });
+    pendingRoster = {};
+    renderRoster();
+    renderWorkload();
+    var toast = document.getElementById('saveToast');
+    toast.textContent = changed>0 ? "✓ "+changed+"名の変更を保存しました" : "✓ 変更はありません";
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+  });
+
+  // ---------------- シミュレーション ----------------
+  var sim = [
+    {caseTitle:"316045 車の査定アップロード確認（09:41受信・最古）", vehicle:"car", reason:"受信が最も古い未アサイン案件。車担当のうち対応件数が最少かつ稼働中の渡辺さんへ", name:"渡辺 美咲"},
+    {caseTitle:"524501 バイクの交渉リマインド（09:47受信）", vehicle:"bike", reason:"次に受信が古い案件。バイク担当の高橋さんはオフラインのため、両方対応の伊藤さんへ", name:"伊藤 誠"},
+    {caseTitle:"524502 バイクの楽サツ変更依頼（09:52受信）", vehicle:"bike", reason:"3番目に受信が古い案件。鈴木さんは車主担当だが両方対応可、件数も平均的なため割り当て", name:"鈴木 花子"},
+  ];
+  var simCard = document.getElementById('simCard');
+  sim.forEach(function(s, i){
+    var el = document.createElement('div');
+    el.className = 'sim-item';
+    el.innerHTML =
+      '<div class="sim-rank">'+(i+1)+'</div>'+
+      '<div class="sim-main"><div class="sim-case">'+vtag(s.vehicle)+s.caseTitle+'</div><div class="sim-reason">'+s.reason+'</div></div>'+
+      '<div class="sim-assignee"><span class="avatar stamp" style="width:22px;height:22px;">'+stampFor(s.name)+'</span>'+s.name+'</div>';
+    simCard.appendChild(el);
+  });
+
+  // ---------------- 通知センター（設定内） ----------------
+  var notifications = [
+    {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', text:'<b>515694</b> の対応期限まで残り10分です（本日 12:00）', time:"08:50", unread:true, lockedType:true},
+    {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>山田 太郎</b>さんから <b>515694</b> に対応依頼が届いています', time:"08:20", unread:true},
+    {day:"today", vehicle:"car", cls:"assign", caseId:"#C-0006", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>', text:'<b>315560</b> があなたに自動で割り当てられました（理由：車担当・負荷最小）', time:"06:58", unread:true},
+    {day:"today", vehicle:"bike", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>', text:'バイクの新着案件が2件登録されました', time:"06:40", unread:false},
+    {day:"yesterday", vehicle:"car", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>', text:'車の新着案件が5件登録されました', time:"18:02", unread:false},
+  ];
+  function visibleNotifications(){
+    return notifications.filter(function(n){
+      if(!n.lockedType){
+        if(n.vehicle==='car' && !notifMute.car) return false;
+        if(n.vehicle==='bike' && !notifMute.bike) return false;
+      }
+      return true;
+    });
+  }
+  // mode: "popover"（🔔の履歴） | "mine"（通知タブ）。どちらもスレッドボタンでサイドバーを開いて返信する。
+  function notifRowHtml(n, mode){
+    var c = n.caseId ? cases.find(function(cc){ return cc.id===n.caseId; }) : null;
+    var uid = mode+'_'+(n.caseId||'none').replace(/[^A-Za-z0-9]/g,'')+'_'+n.time.replace(':','');
+    var actions = '';
+    if(c){
+      actions = '<div class="notif-actions">'+
+        '<a class="btn primary sm" href="'+c.adminUrl+'" target="_blank" rel="noopener">admin'+ICON_EXT+'</a>'+
+        '<button type="button" class="btn ghost sm notif-thread-btn" data-case="'+c.id+'">'+ICON_THREAD+'スレッド</button>'+
+      '</div>';
+    }
+    return '<div class="notif-row" data-uid="'+uid+'">'+
+        '<div class="notif-icon '+n.cls+'">'+n.icon+'</div>'+
+        '<div class="notif-body">'+
+          '<div class="notif-top">'+
+            '<div class="notif-text">'+vtag(n.vehicle,true)+' '+n.text+'</div>'+
+            '<div class="notif-time tnum">'+n.time+'</div>'+
+            (n.unread?'<div class="notif-dot"></div>':'')+
+            actions+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  }
+  function bindNotifRowActions(container){
+    container.querySelectorAll('.notif-thread-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ closeNotifPopover(); openRail(btn.dataset.case); });
+    });
+  }
+  function renderNotifications(){
+    var scroll = document.getElementById('notifScroll');
+    var filtered = visibleNotifications();
+    if(filtered.length===0){
+      scroll.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><div class="empty-state-title">表示できる通知はありません</div>通知設定を見直してください。</div>';
+      return;
+    }
+    var html = "", lastDay = null, dayLabel = {today:"今日", yesterday:"昨日"};
+    filtered.forEach(function(n){
+      if(n.day !== lastDay){ html += '<div class="notif-daylabel">'+dayLabel[n.day]+'</div>'; lastDay = n.day; }
+      html += notifRowHtml(n, 'popover');
+    });
+    scroll.innerHTML = html;
+    bindNotifRowActions(scroll);
+  }
+  function renderMineNotifPanel(){
+    var list = document.getElementById('mineNotifList');
+    var filtered = visibleNotifications();
+    if(filtered.length===0){
+      list.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><div class="empty-state-title">表示できる通知はありません</div>通知設定を見直してください。</div>';
+      return;
+    }
+    var html = "", lastDay = null, dayLabel = {today:"今日", yesterday:"昨日"};
+    filtered.forEach(function(n){
+      if(n.day !== lastDay){ html += '<div class="notif-daylabel">'+dayLabel[n.day]+'</div>'; lastDay = n.day; }
+      html += notifRowHtml(n, 'mine');
+    });
+    list.innerHTML = html;
+    bindNotifRowActions(list);
+  }
+  document.getElementById('notifCarToggle').addEventListener('change', function(e){ notifMute.car = e.target.checked; renderNotifications(); renderMineNotifPanel(); });
+  document.getElementById('notifBikeToggle').addEventListener('change', function(e){ notifMute.bike = e.target.checked; renderNotifications(); renderMineNotifPanel(); });
+
+  // ---------------- スレッドサイドバー ----------------
+  var railView = 'list';   // list | detail
+  var railCaseId = null;
+  var railSearchQuery = '';
+
+  function messageBubbleHtml(m){
+    return '<div class="thread-msg"><span class="avatar stamp">'+stampFor(m.name)+'</span>'+
+      '<div class="thread-bubble"><div class="thread-meta"><span class="thread-name">'+m.name+'</span><span class="thread-time tnum">'+m.time+'</span></div>'+
+      (m.handoff?'<div class="thread-handoff">→ 対応をお願いしました</div>':'')+
+      '<div class="thread-text">'+highlightMentions(escapeHtml(m.text))+'</div></div></div>';
+  }
+  function switchToVehicleCase(vehicle, caseId){
+    if(appMode==='member'){
+      // メンバー画面では管理画面に飛ばさず「みんなの案件」タブで該当区分を表示する
+      memberAllScopeVal = vehicle;
+      document.querySelectorAll('#memberAllScope button').forEach(function(b){ b.classList.toggle('active', b.dataset.scope===vehicle); });
+      renderMemberAll();
+      document.querySelectorAll('#memberTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='all'); });
+      document.querySelectorAll('.member-panel').forEach(function(p){ p.classList.remove('active'); });
+      document.getElementById('memberPanel-all').classList.add('active');
+      return;
+    }
+    lastMainView = vehicle;
+    document.querySelectorAll('.nav-item[data-view]').forEach(function(n){ n.classList.toggle('active', n.dataset.view===vehicle); });
+    document.getElementById('gearBtn').classList.remove('active');
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+    document.getElementById('view-'+vehicle).classList.add('active');
+    queueState[vehicle].selected = caseId;
+    renderQueue(vehicle);
+  }
+  function renderRailList(){
+    var container = document.getElementById('railListItems');
+    if(!container) return;
+    var q = railSearchQuery.trim().toLowerCase();
+    var list = sortCases(cases.filter(function(c){
+      if(!q) return true;
+      return caseNo(c).indexOf(q)>=0 || c.id.toLowerCase().indexOf(q)>=0 || c.customer.toLowerCase().indexOf(q)>=0 || c.title.toLowerCase().indexOf(q)>=0;
+    }));
+    if(list.length===0){
+      container.innerHTML = '<div class="rail-item-snip empty" style="padding:16px;">該当する案件がありません</div>';
+      return;
+    }
+    container.innerHTML = list.map(function(c){
+      var t = getThread(c.id);
+      var last = t && t.messages.length ? t.messages[t.messages.length-1] : null;
+      return '<div class="rail-item" data-case="'+c.id+'">'+
+        '<div class="rail-item-top">'+vtag(c.vehicle,true)+'<span class="rail-item-id tnum">'+caseNo(c)+'</span>'+(last?'<span class="rail-item-time tnum">'+last.time+'</span>':'')+'</div>'+
+        '<div class="rail-item-title">'+c.title+'</div>'+
+        '<div class="rail-item-url tnum" title="'+c.adminUrl+'">'+shortUrl(c.adminUrl)+'</div>'+
+        (last ? '<div class="rail-item-snip">'+last.name+'：'+last.text+'</div>' : '<div class="rail-item-snip empty">スレッドはまだありません・クリックして開始</div>')+
+      '</div>';
+    }).join('');
+    container.querySelectorAll('.rail-item').forEach(function(el){
+      el.addEventListener('click', function(){ railView='detail'; railCaseId=el.dataset.case; renderRail(); });
+    });
+  }
+  function renderRail(){
+    var body = document.getElementById('railBody');
+    var backBtn = document.getElementById('railBack');
+    var titleEl = document.getElementById('railTitle');
+    if(railView==='list'){
+      backBtn.style.visibility = 'hidden';
+      titleEl.textContent = 'スレッド';
+      body.innerHTML =
+        '<div class="rail-search"><input type="text" id="railSearchInput" placeholder="案件番号・顧客名で検索"></div>'+
+        '<div class="rail-list" id="railListItems"></div>';
+      document.getElementById('railSearchInput').value = railSearchQuery;
+      document.getElementById('railSearchInput').addEventListener('input', function(e){ railSearchQuery = e.target.value; renderRailList(); });
+      renderRailList();
+    } else {
+      backBtn.style.visibility = 'visible';
+      var c = cases.find(function(cc){ return cc.id===railCaseId; });
+      titleEl.innerHTML = '<span class="tnum">'+(c ? caseNo(c) : railCaseId)+'</span>';
+      var t = ensureThread(railCaseId);
+      var msgsHtml = t.messages.length ? t.messages.map(messageBubbleHtml).join('') : '<div class="thread-empty">まだメッセージはありません。最初のメッセージを送ってみましょう。</div>';
+      body.innerHTML =
+        '<div class="rail-case-ref">'+
+          '<div class="rail-case-ref-row">'+(c?vtag(c.vehicle,true):'')+'<span class="rail-case-ref-title">'+(c?c.title:'')+'</span>'+
+            '<button class="admin-link" id="railOpenCase" title="この案件をアプリ内で開く">'+ICON_GOTO+'</button>'+
+          '</div>'+
+          (c ? '<a class="rail-case-ref-url" href="'+c.adminUrl+'" target="_blank" rel="noopener" title="'+c.adminUrl+'"><span>'+shortUrl(c.adminUrl)+'</span>'+ICON_EXT+'</a>' : '')+
+        '</div>'+
+        '<div class="rail-messages">'+msgsHtml+'</div>'+
+        '<div class="rail-compose-wrap">'+
+          '<div class="mention-menu" id="mentionMenu"></div>'+
+          '<div class="rail-compose">'+
+            '<textarea id="railInput" placeholder="メッセージを入力（@でメンション）"></textarea>'+
+            '<button class="btn primary" id="railSend">送信</button>'+
+          '</div>'+
+        '</div>';
+      document.getElementById('railOpenCase').addEventListener('click', function(e){
+        e.preventDefault();
+        if(c){ closeRail(); switchToVehicleCase(c.vehicle, c.id); }
+      });
+      var railInput = document.getElementById('railInput');
+      var mentionMenu = document.getElementById('mentionMenu');
+      function currentMentionQuery(){
+        var pos = railInput.selectionStart;
+        var head = railInput.value.slice(0, pos);
+        var m = head.match(/(?:^|\s)@([^\s@]*)$/);
+        return m ? m[1] : null;
+      }
+      function closeMentionMenu(){ mentionMenu.classList.remove('open'); mentionMenu.innerHTML=''; }
+      function updateMentionMenu(){
+        var q = currentMentionQuery();
+        if(q===null){ closeMentionMenu(); return; }
+        var itemsHtml = mentionMenuItems(q);
+        if(!itemsHtml){ closeMentionMenu(); return; }
+        mentionMenu.innerHTML = itemsHtml;
+        mentionMenu.classList.add('open');
+        mentionMenu.querySelectorAll('.mention-item').forEach(function(el){
+          el.addEventListener('mousedown', function(e){
+            e.preventDefault();
+            insertMention(el.dataset.name);
+          });
+        });
+      }
+      function insertMention(name){
+        var pos = railInput.selectionStart;
+        var head = railInput.value.slice(0, pos);
+        var tail = railInput.value.slice(pos);
+        var newHead = head.replace(/@([^\s@]*)$/, '@'+name+' ');
+        railInput.value = newHead+tail;
+        var caret = newHead.length;
+        railInput.focus();
+        railInput.setSelectionRange(caret, caret);
+        closeMentionMenu();
+      }
+      railInput.addEventListener('input', updateMentionMenu);
+      railInput.addEventListener('click', updateMentionMenu);
+      railInput.addEventListener('keydown', function(e){
+        if(e.key==='Escape'){ closeMentionMenu(); }
+      });
+      document.getElementById('railSend').addEventListener('click', function(){
+        var val = railInput.value.trim();
+        if(!val) return;
+        t.messages.push({name:CURRENT_USER, time:"たった今", text:val});
+        closeMentionMenu();
+        renderRail();
+        updateThreadDot();
+      });
+    }
+  }
+  function openRail(caseId){
+    document.getElementById('threadRail').classList.add('open');
+    if(caseId){ railView='detail'; railCaseId=caseId; ensureThread(caseId); }
+    else { railView='list'; }
+    renderRail();
+  }
+  function closeRail(){ document.getElementById('threadRail').classList.remove('open'); }
+  function updateThreadDot(){
+    var needsReply = threadsData.some(function(t){
+      var last = t.messages[t.messages.length-1];
+      return last && last.name !== CURRENT_USER;
+    });
+    document.getElementById('threadBtn').querySelector('.dot').style.display = needsReply ? 'block' : 'none';
+  }
+  document.getElementById('threadBtn').addEventListener('click', function(){
+    if(document.getElementById('threadRail').classList.contains('open')){ closeRail(); }
+    else { openRail(); }
+  });
+  document.getElementById('railClose').addEventListener('click', closeRail);
+  document.getElementById('railBack').addEventListener('click', function(){ railView='list'; renderRail(); });
+
+  // ---------------- Scope switches (KPI / 通知センター) ----------------
+  document.querySelectorAll('#kpiScope button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#kpiScope button').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      kpiScope = btn.dataset.scope;
+      renderWorkload();
+    });
+  });
+  // ---------------- Settings tabs ----------------
+  document.querySelectorAll('#settingsTabs button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#settingsTabs button').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      document.querySelectorAll('.settings-panel').forEach(function(p){p.classList.remove('active');});
+      document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+  function openSettings(tab){
+    tab = tab || 'teams';
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+    document.getElementById('view-settings').classList.add('active');
+    document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
+    document.querySelectorAll('.settings-panel').forEach(function(p){p.classList.remove('active');});
+    document.getElementById('tab-'+tab).classList.add('active');
+  }
+
+  // ---------------- Nav + top bar ----------------
+  var lastMainView = 'mine';
+  function updateNavBadges(){
+    // バッジは「未対応の件数」。対応済みは一覧に残るがカウントしない。
+    document.getElementById('navBadgeBike').textContent = queueCasesFor('bike').filter(function(c){return !c.done;}).length;
+    document.getElementById('navBadgeCar').textContent = queueCasesFor('car').filter(function(c){return !c.done;}).length;
+    document.getElementById('navBadgeMine').textContent = cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done;}).length;
+    var newToday = cases.filter(function(c){return !c.owner && !c.done;}).length;
+    var overdue = cases.filter(function(c){return c.due==='over' && !c.done;}).length;
+    document.getElementById('sidebarFoot').innerHTML = '今日の新着 <b>'+newToday+'件</b> ・ 期限超過 <b style="color:var(--critical)">'+overdue+'件</b>';
+    var unreadCount = notifications.filter(function(n){return n.unread;}).length;
+    document.getElementById('bellBtn').querySelector('.dot').style.display = unreadCount>0 ? 'block' : 'none';
+    document.getElementById('navBadgeNotif').textContent = unreadCount;
+    updateThreadDot();
+  }
+  document.querySelectorAll('.nav-item[data-view]').forEach(function(item){
+    item.addEventListener('click', function(){
+      closeAllPopovers();
+      lastMainView = item.dataset.view;
+      document.querySelectorAll('.nav-item[data-view]').forEach(function(n){n.classList.remove('active');});
+      item.classList.add('active');
+      document.getElementById('gearBtn').classList.remove('active');
+      document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+      document.getElementById('view-'+item.dataset.view).classList.add('active');
+    });
+  });
+
+  document.getElementById('gearBtn').addEventListener('click', function(){
+    closeAllPopovers();
+    document.querySelectorAll('.nav-item[data-view]').forEach(function(n){n.classList.remove('active');});
+    this.classList.add('active');
+    openSettings();
+  });
+  function closeNotifPopover(){ document.getElementById('notifPopover').classList.remove('open'); }
+  function closeMyPagePopover(){ document.getElementById('myPagePopover').classList.remove('open'); }
+  function closeAllPopovers(){ closeNotifPopover(); closeMyPagePopover(); }
+  document.getElementById('bellBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    closeMyPagePopover();
+    document.getElementById('notifPopover').classList.toggle('open');
+  });
+  document.getElementById('notifPopover').addEventListener('click', function(e){ e.stopPropagation(); });
+  document.addEventListener('click', closeAllPopovers);
+  document.getElementById('notifSettingsLink').addEventListener('click', function(){
+    closeAllPopovers();
+    document.querySelectorAll('.nav-item[data-view]').forEach(function(n){n.classList.remove('active');});
+    document.getElementById('gearBtn').classList.add('active');
+    openSettings('notif');
+  });
+
+  // ---------------- マイページ（右上の名前・アイコンをクリック） ----------------
+  function myself(){ return team.find(function(t){ return t.name===CURRENT_USER; }); }
+  function refreshSelfUI(){
+    var me = myself();
+    document.getElementById('whoAvatar').textContent = me.stamp;
+    document.getElementById('mypageAvatar').textContent = me.stamp;
+  }
+  function renderStampGrid(){
+    var me = myself();
+    var grid = document.getElementById('stampGrid');
+    grid.innerHTML = STAMP_OPTIONS.map(function(s){
+      return '<button type="button" class="stamp-opt'+(s===me.stamp?' selected':'')+'" data-stamp="'+s+'">'+s+'</button>';
+    }).join('');
+    grid.querySelectorAll('.stamp-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        me.stamp = btn.dataset.stamp;
+        STAMP_BY_NAME[me.name] = me.stamp;
+        renderStampGrid();
+        refreshSelfUI();
+        renderMine();
+        renderQueue('bike');
+        renderQueue('car');
+        renderRoster();
+        renderWorkload();
+        if(document.getElementById('threadRail').classList.contains('open')) renderRail();
+      });
+    });
+  }
+  function renderOnlineToggle(){
+    var me = myself();
+    var state = me.status==='offline' ? 'offline' : 'online';
+    document.querySelectorAll('#onlineToggle button').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.state===state);
+    });
+  }
+  document.querySelectorAll('#onlineToggle button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      myself().status = btn.dataset.state;
+      renderOnlineToggle();
+      renderWorkload();
+    });
+  });
+  function renderBoost(){
+    var me = myself();
+    var btn = document.getElementById('boostBtn');
+    var note = document.getElementById('boostNote');
+    btn.classList.toggle('active', !!me.boost);
+    btn.innerHTML = me.boost ? '対応いけます！（受付中）' : '自分いけます！';
+    note.textContent = me.boost
+      ? '本日24時に自動でOFFに戻ります。次の自動振り分けで優先されやすくなっています。'
+      : '押すと次の自動振り分けで優先されやすくなります（1日で必ずリセットされます）。';
+  }
+  document.getElementById('boostBtn').addEventListener('click', function(){
+    var me = myself();
+    me.boost = !me.boost;
+    renderBoost();
+  });
+  function renderMypageStats(){
+    var s = myself().stats || {handled:0, avgSpeed:0, dealRate:0};
+    document.getElementById('mypageStats').innerHTML =
+      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+s.handled+'<span style="font-size:11px;">件</span></div><div class="mypage-stat-label">対応件数</div></div>'+
+      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+s.avgSpeed+'<span style="font-size:11px;">分</span></div><div class="mypage-stat-label">平均対応速度</div></div>'+
+      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+s.dealRate+'<span style="font-size:11px;">%</span></div><div class="mypage-stat-label">成約率</div></div>';
+  }
+  function renderMyPage(){
+    var me = myself();
+    document.getElementById('whoRoleLabel').textContent = roleMeta[me.role];
+    document.getElementById('mypageRoleLabel').textContent = roleMeta[me.role];
+    refreshSelfUI();
+    renderStampGrid();
+    renderOnlineToggle();
+    renderBoost();
+    renderMypageStats();
+  }
+  document.getElementById('whoTrigger').addEventListener('click', function(e){
+    e.stopPropagation();
+    closeNotifPopover();
+    document.getElementById('myPagePopover').classList.toggle('open');
+  });
+  document.getElementById('myPagePopover').addEventListener('click', function(e){ e.stopPropagation(); });
+  document.getElementById('settingsClose').addEventListener('click', function(){
+    document.getElementById('gearBtn').classList.remove('active');
+    document.querySelectorAll('.nav-item[data-view]').forEach(function(n){ n.classList.toggle('active', n.dataset.view===lastMainView); });
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+    document.getElementById('view-'+lastMainView).classList.add('active');
+  });
+
+  document.getElementById('demoAdminBtn').addEventListener('click', simulateAdminDone);
+  document.getElementById('demoAdminBtnMember').addEventListener('click', simulateAdminDone);
+
+  // ---------------- モード切替（メンバー / リーダー） ----------------
+  // メンバー＝1画面のカード型フィードのみ。リーダー＝一覧・KPI・設定を持つ管理コンソール。
+  var appMode = 'member';
+  function setMode(mode){
+    appMode = mode;
+    document.querySelector('.app').classList.toggle('mode-member', mode==='member');
+    document.querySelectorAll('#modeSwitch button').forEach(function(b){ b.classList.toggle('active', b.dataset.mode===mode); });
+    closeAllPopovers();
+    document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+    if(mode==='member'){
+      document.getElementById('view-member').classList.add('active');
+    } else {
+      document.getElementById('gearBtn').classList.remove('active');
+      document.querySelectorAll('.nav-item[data-view]').forEach(function(n){ n.classList.toggle('active', n.dataset.view===lastMainView); });
+      document.getElementById('view-'+lastMainView).classList.add('active');
+    }
+  }
+  document.querySelectorAll('#modeSwitch button').forEach(function(btn){
+    btn.addEventListener('click', function(){ setMode(btn.dataset.mode); });
+  });
+
+  // ---------------- メンバー画面のタブ・絞り込み ----------------
+  document.querySelectorAll('#memberTabs button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#memberTabs button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.member-panel').forEach(function(p){ p.classList.remove('active'); });
+      document.getElementById('memberPanel-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+  document.querySelectorAll('#memberAllScope button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#memberAllScope button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      memberAllScopeVal = btn.dataset.scope;
+      renderMemberAll();
+    });
+  });
+
+  // ---------------- Init ----------------
+  renderRoster();
+  renderQueue('bike');
+  renderQueue('car');
+  renderMine();
+  renderWorkload();
+  renderNotifications();
+  renderMineNotifPanel();
+  renderMyPage();
+  updateNavBadges();
+  renderMemberFeed();
+  renderMemberAll();
+  setMode('member');
+})();
+</script>
