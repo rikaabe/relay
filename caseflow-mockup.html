@@ -707,7 +707,8 @@
             </div>
           </div>
 
-          <div class="dash-grid">
+          <!-- 個人別の指標はマネージャー/作成者のみ閲覧可（一般メンバーには非表示） -->
+          <div class="dash-grid manager-only">
             <div class="panel">
               <div class="panel-title">担当者別 対応中の件数（車 / バイク内訳）</div>
               <div class="panel-sub">件数が多い順。基準線＝1人あたりの推奨上限（8件）。上の「すべて／車／バイク」に連動します。</div>
@@ -1507,6 +1508,8 @@
     document.querySelectorAll('#settingsTabs button').forEach(function(b){
       if(MANAGER_TABS.indexOf(b.dataset.tab) >= 0){ b.style.display = isManager ? '' : 'none'; }
     });
+    // マネージャー/作成者のみ閲覧可の要素（個人別KPIなど）を一般メンバーには隠す。
+    document.querySelectorAll('.manager-only').forEach(function(el){ el.style.display = isManager ? '' : 'none'; });
     // 一般メンバーが管理系タブを開いている状態だった場合は、通知設定に寄せる。
     if(!isManager){
       var active = document.querySelector('#settingsTabs button.active');
