@@ -218,10 +218,11 @@
   .sla svg{ flex:none; }
 
   .admin-link{
-    display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:5px;
+    display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
+    border:none; background:transparent; padding:0; cursor:pointer;
     color:var(--ink-faint); flex:none;
   }
-  .admin-link:hover{ background:var(--paper); color:var(--accent-ink); }
+  .admin-link:hover{ background:transparent; color:var(--accent-ink); }
   .id-with-link{ display:inline-flex; align-items:center; gap:5px; }
 
   /* ---------- Queue view (バイク/車 一覧) ---------- */
@@ -305,7 +306,7 @@
 
   /* ---------- Table (マイ案件) ---------- */
   .table-scroll{ flex:1; overflow:auto; padding:0 22px 22px; }
-  table.cases{ width:100%; border-collapse:collapse; font-size:14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  table.cases{ width:100%; border-collapse:collapse; font-size:14px; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-m); overflow:hidden; }
   table.cases th{
     text-align:left; font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em;
     padding:10px 14px; border-bottom:1px solid var(--border); background:var(--paper); position:sticky; top:0;
@@ -478,6 +479,9 @@
   /* ---------- 経過時間の凡例 ---------- */
   .elapsed-legend{ display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-soft); margin-left:auto; white-space:nowrap; }
   .elapsed-swatch{ width:14px; height:14px; border-radius:4px; background:var(--warning-soft); border:1px solid var(--warning); flex:none; }
+  /* 受信からの経過時間（30分区切り）。2時間超は行が黄色くなり、経過ラベルも強調される */
+  .elapsed-tag{ display:block; margin-top:3px; font-size:11px; color:var(--ink-faint); white-space:nowrap; }
+  table.cases tbody tr.elapsed-over .elapsed-tag{ color:var(--warning); font-weight:700; }
 
   /* ---------- マイ案件の進捗カード ---------- */
   .progress-card{
@@ -498,7 +502,6 @@
     <div class="topbar-search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       案件番号・顧客名・キーワードで検索
-      <kbd>⌘F</kbd>
     </div>
   </header>
 
@@ -585,7 +588,6 @@
           </div>
           <div class="queue-filters">
             <div class="search-mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>このキューを検索</div>
-            <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
           </div>
           <div class="queue-body">
             <div class="table-scroll" style="padding-top:14px;">
@@ -610,7 +612,6 @@
           </div>
           <div class="queue-filters">
             <div class="search-mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>このキューを検索</div>
-            <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
           </div>
           <div class="queue-body">
             <div class="table-scroll" style="padding-top:14px;">
@@ -631,7 +632,6 @@
             <div class="view-sub" id="mineSub">自分に割り当てられている案件を車・バイクまとめて表示（受信が古い順）</div>
           </div>
           <div class="view-head-actions">
-            <span class="elapsed-legend"><span class="elapsed-swatch"></span>黄色の行＝受信から2時間以上経過</span>
             <button type="button" class="btn sm" id="demoAdminBtn" title="admin側で「承認して入札を開始」が押された場合の自動連動をシミュレートします">▶ デモ：admin側で対応が完了した場合</button>
           </div>
         </div>
@@ -898,7 +898,7 @@
   var ICON_CAR = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>';
   var ICON_BIKE = '<svg width="12" height="12" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg>';
   var ICON_EXT = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg>';
-  var ICON_GOTO = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+  var ICON_GOTO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-8 8"/><path d="M3 21l8-8"/></svg>';
   var ICON_CHECK ='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
   // ボタンはホバーなしで常時表示。アイコンだけのボタンは避け、必ず文字ラベルを併記する。
   // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）ため、行のボタンはこの2つだけ。
@@ -1022,6 +1022,11 @@
   }
   var CAP = 8;
   var CURRENT_USER = "山田 太郎";
+  // 表示権限。manager＝全設定を操作可 / member＝通知設定のみ（チーム編成・自動振り分けは非表示）。
+  // メインで使わないメンバーの誤操作・不正・不満を防ぐため。実運用では管理者がユーザーごとに設定する。
+  // モックでは既定を member とし、アプリ作成者だけが URL に ?role=manager を付けて管理者ビューを確認できる。
+  // （切替UIはメンバーに見せない。メンバーが普通に開くと常に member 固定。）
+  var viewerRole = (new URLSearchParams(location.search).get('role') === 'manager') ? 'manager' : 'member';
   var notifMute = { car:true, bike:true };
   var kpiScope = "all";   // all | car | bike — KPIページの絞り込み
 
@@ -1037,6 +1042,17 @@
     var copy = list.slice();
     copy.sort(function(a,b){ return a.recMin - b.recMin; }); // 時系列順：受信が古い方を先に
     return copy;
+  }
+  // 経過分数を30分区切りのラベルに。凡例で説明する代わりに各行へ経過時間そのものを表示する。
+  function elapsedLabel(min){
+    var h = Math.floor(min/60);
+    var half = (min%60) >= 30 ? 30 : 0;
+    if(h===0 && half===0) return '30分未満';
+    return (h>0 ? h+'時間' : '') + (half>0 ? '30分' : '') + '経過';
+  }
+  // 送信日時セル：受信時刻の下に経過時間（30分区切り）を添える。
+  function receivedCell(c){
+    return '<td class="tnum">'+c.received+'<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span></td>';
   }
 
   // ---------------- Vehicle queue views (バイク案件一覧 / 車案件一覧) ----------------
@@ -1063,7 +1079,7 @@
       tr.className = c.done ? 'done-row' : (c.elapsedMin>120 ? 'elapsed-over' : '');
       tr.dataset.id = c.id;
       tr.innerHTML =
-        '<td class="tnum">'+c.received+'</td>'+
+        receivedCell(c)+
         '<td class="cell-id tnum">'+caseNo(c)+'</td>'+
         '<td>'+chip(c.done ? 'done' : c.status)+'</td>'+
         '<td>'+ownerHtml(c)+'</td>'+
@@ -1140,7 +1156,7 @@
       tr.title = over ? '受信から'+Math.round(c.elapsedMin/60*10)/10+'時間経過（2時間超）' : '';
       tr.innerHTML =
         '<td>'+vtag(c.vehicle)+'</td>'+
-        '<td class="cell-id tnum">'+caseNo(c)+'</td>'+
+        '<td class="cell-id tnum">'+caseNo(c)+'<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span></td>'+
         '<td>'+chip(c.status)+'</td>'+
         '<td class="cell-actions">'+rowActionsHtml(c)+'</td>';
       mineBody.appendChild(tr);
@@ -1269,8 +1285,8 @@
     {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', text:'<b>515694</b> の対応期限まで残り10分です（本日 12:00）', time:"08:50", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>山田 太郎</b>さんから <b>515694</b> に対応依頼が届いています', time:"08:20", unread:true},
     {day:"today", vehicle:"car", cls:"assign", caseId:"#C-0006", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>', text:'<b>315560</b> があなたに自動で割り当てられました（理由：車担当・負荷最小）', time:"06:58", unread:true},
-    {day:"today", vehicle:"bike", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>', text:'バイクの新着案件が2件登録されました', time:"06:40", unread:false},
-    {day:"yesterday", vehicle:"car", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>', text:'車の新着案件が5件登録されました', time:"18:02", unread:false},
+    {day:"today", vehicle:"bike", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg>', text:'バイクの新着案件が2件登録されました', time:"06:40", unread:false},
+    {day:"yesterday", vehicle:"car", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg>', text:'車の新着案件が5件登録されました', time:"18:02", unread:false},
   ];
   function visibleNotifications(){
     return notifications.filter(function(n){
@@ -1485,8 +1501,22 @@
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
     });
   });
+  // 権限に応じて、管理系タブ（チーム編成・自動振り分け設定）の表示可否を切り替える。
+  var MANAGER_TABS = ['teams','rules'];
+  function applyRolePermissions(){
+    var isManager = viewerRole === 'manager';
+    document.querySelectorAll('#settingsTabs button').forEach(function(b){
+      if(MANAGER_TABS.indexOf(b.dataset.tab) >= 0){ b.style.display = isManager ? '' : 'none'; }
+    });
+    // 一般メンバーが管理系タブを開いている状態だった場合は、通知設定に寄せる。
+    if(!isManager){
+      var active = document.querySelector('#settingsTabs button.active');
+      if(!active || MANAGER_TABS.indexOf(active.dataset.tab) >= 0){ openSettings('notif'); }
+    }
+  }
   function openSettings(tab){
-    tab = tab || 'teams';
+    tab = tab || (viewerRole==='manager' ? 'teams' : 'notif');
+    if(viewerRole!=='manager' && MANAGER_TABS.indexOf(tab) >= 0){ tab = 'notif'; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
     document.getElementById('view-settings').classList.add('active');
     document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
@@ -1617,6 +1647,7 @@
   renderWorkload();
   renderMineNotifPanel();
   renderMyPage();
+  applyRolePermissions();
   updateNavBadges();
 })();
 </script>
