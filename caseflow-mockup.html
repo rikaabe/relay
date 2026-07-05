@@ -696,14 +696,34 @@
               <div class="kpi-delta down">▼ 4分（先週比）</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">本日SLA達成率</div>
-              <div class="kpi-value tnum">86<span style="font-size:15px;font-weight:600;">%</span></div>
-              <div class="kpi-delta">目標80％以上</div>
+              <div class="kpi-label">CV数</div>
+              <div class="kpi-value tnum" id="kpiCv">—</div>
+              <div class="kpi-delta">本日累計</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">期限超過</div>
-              <div class="kpi-value tnum" style="color:var(--critical)" id="kpiOverdue">1<span style="font-size:15px;font-weight:600;">件</span></div>
-              <div class="kpi-delta up">▲ 1件（1時間前）</div>
+              <div class="kpi-label">アップロード数</div>
+              <div class="kpi-value tnum" id="kpiUpload">—</div>
+              <div class="kpi-delta">本日累計</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">入札開始数</div>
+              <div class="kpi-value tnum" id="kpiBid">—</div>
+              <div class="kpi-delta">本日累計</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">入札開始率</div>
+              <div class="kpi-value tnum" id="kpiBidRate">—</div>
+              <div class="kpi-delta">アップロード→入札</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">成約数</div>
+              <div class="kpi-value tnum" id="kpiDeal">—</div>
+              <div class="kpi-delta">本日累計</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">成約率</div>
+              <div class="kpi-value tnum" id="kpiDealRate">—</div>
+              <div class="kpi-delta">入札→成約</div>
             </div>
           </div>
 
@@ -1178,6 +1198,26 @@
       return {t:t, loadCar:loadCar, loadBike:loadBike, total:loadCar+loadBike};
     });
   }
+  // KPIファネル（本日のデモ値）。all = car + bike で整合。率は件数から自動計算するため常に一致する。
+  // 実運用では集計APIの結果を差し込む想定（現状はモックアップ用の固定値）。
+  var kpiFunnel = {
+    all:  {cv:42, upload:38, bid:30, deal:12},
+    car:  {cv:26, upload:23, bid:18, deal:7},
+    bike: {cv:16, upload:15, bid:12, deal:5},
+  };
+  function setKpi(id, html){ var el = document.getElementById(id); if(el) el.innerHTML = html; }
+  function renderKpiFunnel(){
+    var f = kpiFunnel[kpiScope] || kpiFunnel.all;
+    var num = function(n,u){ return n+'<span style="font-size:15px;font-weight:600;">'+u+'</span>'; };
+    var pct = function(a,b){ return b ? Math.round(a/b*100) : 0; };
+    setKpi('kpiCv',       num(f.cv, '件'));
+    setKpi('kpiUpload',   num(f.upload, '件'));
+    setKpi('kpiBid',      num(f.bid, '件'));
+    setKpi('kpiBidRate',  num(pct(f.bid, f.upload), '%'));
+    setKpi('kpiDeal',     num(f.deal, '件'));
+    setKpi('kpiDealRate', num(pct(f.deal, f.bid), '%'));
+  }
+
   function renderWorkload(){
     var loads = computeLoad();
     var relevant = loads.map(function(l){
@@ -1221,7 +1261,7 @@
 
     var scopedCases = kpiScope==='all' ? cases : cases.filter(function(c){return c.vehicle===kpiScope;});
     document.getElementById('kpiWaiting').innerHTML = scopedCases.filter(function(c){return !c.owner && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
-    document.getElementById('kpiOverdue').innerHTML = scopedCases.filter(function(c){return c.due==='over' && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
+    renderKpiFunnel();
   }
 
   // ---------------- チーム編成 ----------------
