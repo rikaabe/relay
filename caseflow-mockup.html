@@ -1064,13 +1064,8 @@
   var cases = [
     {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"山田 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/311742"},
     {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:null, adminUrl:"https://admin.example.com/cases/524170"},
-    {id:"#C-0015", vehicle:"car", recMin:2, title:"交渉リマインド対応、初回架電前", customer:"渡辺 美咲", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 00:15", elapsedMin:578, due:"ok", dueLabel:"本日18:00", owner:null, adminUrl:"https://admin.example.com/cases/312845"},
     {id:"#B-0012", vehicle:"bike", recMin:3, title:"アップロード内容の確認依頼", customer:"伊藤 誠", kind:"査定アップロード確認", status:"reupload", received:"07/04 03:20", elapsedMin:393, due:"ok", dueLabel:"本日18:00", owner:{name:"鈴木 花子"}, adminUrl:"https://admin.example.com/cases/521769"},
-    {id:"#C-0008", vehicle:"car", recMin:4, title:"楽サツ変更依頼、担当交代のご相談", customer:"小林 拓也", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 06:20", elapsedMin:213, due:"warn", dueLabel:"2時間以内", owner:{name:"伊藤 誠"}, adminUrl:"https://admin.example.com/cases/318822"},
-    {id:"#C-0006", vehicle:"car", recMin:5, title:"交渉リマインド対応、条件面の再提示待ち", customer:"中村 優子", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 06:58", elapsedMin:175, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://admin.example.com/cases/315560"},
     {id:"#B-0005", vehicle:"bike", recMin:6, title:"再アップロード完了、内容確認済み", customer:"渡辺 美咲", kind:"再アップロード確認", status:"reviewing", received:"07/04 07:20", elapsedMin:153, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/523371"},
-    {id:"#C-0004", vehicle:"car", recMin:7, title:"楽サツ（楽天サツキ）の変更依頼、書類差し替え", customer:"高橋 健一", kind:"楽サツ変更依頼", status:"reupload", received:"07/04 07:50", elapsedMin:123, due:"ok", dueLabel:"07/05", owner:{name:"伊藤 誠"}, adminUrl:"https://admin.example.com/cases/317204"},
-    {id:"#B-0003", vehicle:"bike", recMin:8, title:"交渉リマインドの返信が来ないので確認したい", customer:"山田 一郎", kind:"交渉リマインド対応", status:"reviewing", received:"07/04 08:10", elapsedMin:102, due:"over", dueLabel:"本日12:00・残り10分", owner:{name:"鈴木 花子"}, adminUrl:"https://admin.example.com/cases/515694"},
     {id:"#C-0002", vehicle:"car", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, adminUrl:"https://admin.example.com/cases/311998"},
     {id:"#B-0001", vehicle:"bike", recMin:10, title:"査定依頼アップロードの内容を確認してほしい", customer:"田中 一郎", kind:"査定アップロード確認", status:"reviewing", received:"07/04 09:30", elapsedMin:22, due:null, dueLabel:"—", owner:null, adminUrl:"https://admin.example.com/cases/524187"},
   ];
@@ -1080,13 +1075,13 @@
 
   // スレッドは案件IDに紐づく。左のスレッドサイドバーから、案件一覧に移動せずに送受信できる。
   var threadsData = [
-    {caseId:"#B-0003", messages:[
-      {name:"山田 太郎", time:"08:20", text:"@鈴木 花子 この案件の対応をお願いできますか。自分は今バイクの交渉が2件重なっていて手が回りません。@バイクチーム 他にも手が空いている人がいたら教えてください。", handoff:true},
+    {caseId:"#B-0012", messages:[
+      {name:"山田 太郎", time:"08:20", text:"@鈴木 花子 この案件の対応をお願いできますか。自分は今バイクの対応が2件重なっていて手が回りません。@バイクチーム 他にも手が空いている人がいたら教えてください。", handoff:true},
       {name:"鈴木 花子", time:"08:24", text:"承知しました、こちらで巻き取ります。期限が近いので優先的に対応します。"},
     ]},
-    {caseId:"#C-0008", messages:[
-      {name:"伊藤 誠", time:"07:10", text:"小林様の担当交代について、鈴木さんに一度内容を確認してもらいたいです。"},
-      {name:"鈴木 花子", time:"07:22", text:"確認しました。楽サツの変更自体は問題なさそうです。"},
+    {caseId:"#C-0002", messages:[
+      {name:"山田 太郎", time:"09:20", text:"佐藤様の査定アップロードの内容、二重チェックをお願いできますか。書類に不足がないか見てほしいです。"},
+      {name:"鈴木 花子", time:"09:25", text:"確認しました。書類は問題なさそうです。"},
     ]},
   ];
   function getThread(caseId){ return threadsData.find(function(t){ return t.caseId===caseId; }); }
@@ -1220,7 +1215,6 @@
   function kindRowMeta(kind){
     if(kind.indexOf('再アップロード') >= 0) return {cls:'kind-reupload', label:'再アップロード完了'};
     if(kind.indexOf('アップロード') >= 0) return {cls:'kind-upload', label:'アップロード完了'};
-    if(kind.indexOf('交渉リマインド') >= 0) return {cls:'kind-other', label:'交渉リマインド'};
     return {cls:'kind-other', label:kind};
   }
 
@@ -1638,8 +1632,8 @@
   // ---------------- シミュレーション（100点満点の採点結果を表示） ----------------
   var sim = [
     {caseTitle:"316045 車の査定アップロード確認（09:41受信・最古）", vehicle:"car", reason:"出勤中の車担当を採点：渡辺 84点（早さ54＋動ける30）＞ 中村 62点 ＞ 伊藤 58点", name:"渡辺 美咲"},
-    {caseTitle:"524501 バイクの交渉リマインド（09:47受信）", vehicle:"bike", reason:"高橋さんは退勤中・田中さんは離席中のため対象外。出勤中のバイク担当は山田さんのみ。山田 64点（早さ44＋動ける20）", name:"山田 太郎"},
-    {caseTitle:"524502 バイクの楽サツ変更依頼（09:52受信）", vehicle:"bike", reason:"山田さんは直前の割り当てで未対応が増え「動けるか」が10点に。それでも出勤中のバイク担当は山田さんのみのため54点で割り当て", name:"山田 太郎"},
+    {caseTitle:"524501 バイクの再アップロード確認（09:47受信）", vehicle:"bike", reason:"高橋さんは退勤中・田中さんは離席中のため対象外。出勤中のバイク担当は山田さんのみ。山田 64点（早さ44＋動ける20）", name:"山田 太郎"},
+    {caseTitle:"524502 バイクのアップロード確認（09:52受信）", vehicle:"bike", reason:"山田さんは直前の割り当てで未対応が増え「動けるか」が10点に。それでも出勤中のバイク担当は山田さんのみのため54点で割り当て", name:"山田 太郎"},
   ];
   var simCard = document.getElementById('simCard');
   sim.forEach(function(s, i){
@@ -1654,10 +1648,10 @@
 
   // ---------------- 通知センター（設定内） ----------------
   var notifications = [
+    {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', text:'<b>311998</b> の対応期限まで残り10分です（本日 10:15）', time:"10:05", unread:true, lockedType:true},
+    {day:"today", vehicle:"car", cls:"assign", caseId:"#C-0002", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>', text:'<b>311998</b> があなたに自動で割り当てられました', time:"09:15", unread:true},
     {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当が変わりました（期限超過のため自動振り直し）。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
-    {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', text:'<b>515694</b> の対応期限まで残り10分です（本日 12:00）', time:"08:50", unread:true, lockedType:true},
-    {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>山田 太郎</b>さんから <b>515694</b> に対応依頼が届いています', time:"08:20", unread:true},
-    {day:"today", vehicle:"car", cls:"assign", caseId:"#C-0006", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>', text:'<b>315560</b> があなたに自動で割り当てられました', time:"06:58", unread:true},
+    {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>山田 太郎</b>さんから <b>521769</b> に対応依頼が届いています', time:"08:20", unread:true},
     {day:"today", vehicle:"bike", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg>', text:'バイクの新着案件が2件登録されました', time:"06:40", unread:false},
     {day:"yesterday", vehicle:"car", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg>', text:'車の新着案件が5件登録されました', time:"18:02", unread:false},
   ];
