@@ -216,13 +216,9 @@
   .chip.hold .dot{ background:var(--hold-chip); }
   .chip.done{ background:var(--success-soft); color:var(--success); }
   .chip.done .dot{ background:var(--success); }
-  /* 対応記録（管理タブ）の種別チップ */
-  .chip.assign{ background:var(--accent-soft); color:var(--accent-ink); }
-  .chip.assign .dot{ background:var(--accent); }
+  /* メンバー別進捗（管理タブ）の補足バッジ */
   .chip.reassign{ background:var(--warning-soft); color:var(--warning); }
-  .chip.reassign .dot{ background:var(--warning); }
   .chip.waiting{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
-  .chip.waiting .dot{ background:var(--neutral-chip); }
 
   .vtag{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700; padding:2px 7px; border-radius:6px; white-space:nowrap; }
   .vtag.car{ background:var(--car-soft); color:var(--car); }
@@ -843,7 +839,7 @@
           <div class="settings-panel" id="tab-admin">
             <div class="rules-head">
               <div class="rules-head-title">管理</div>
-              <div class="rules-head-sub">leader以上だけが見られる画面です。今日の運用状況をひと目で確認し、対応記録を閲覧できます。メンバーの権限は「チーム編成」タブで変更できます（システム管理者のみ）。</div>
+              <div class="rules-head-sub">leader以上だけが見られる画面です。今日の運用状況とメンバーごとの進捗をひと目で確認できます。メンバーの権限は「チーム編成」タブで変更できます（システム管理者のみ）。</div>
             </div>
             <div class="admin-body">
               <!-- 本日の運用サマリー（朝夕にここだけ見れば運用の異常に気づける） -->
@@ -883,35 +879,11 @@
                 </div>
               </div>
 
-              <!-- 進捗と対応記録。既定はメンバー別の進捗、切り替えで時系列の全記録（自動記録・書き換え不可） -->
+              <!-- 今日の進捗（メンバー別）。割り当て・振り直し等の記録自体はサーバー側に自動で残る（画面には出さない） -->
               <div class="panel">
-                <div class="panel-head-row">
-                  <div>
-                    <div class="panel-title">今日の進捗と対応記録</div>
-                    <div class="panel-sub" id="auditPanelSub">今日、誰がどこまで対応できているか。バー＝対応済みの割合です。未対応が多い人が上に並びます。</div>
-                  </div>
-                  <div class="segmented" id="auditViewSeg">
-                    <button class="active" data-view="members">メンバー別の進捗</button>
-                    <button data-view="log">時系列の記録</button>
-                  </div>
-                </div>
+                <div class="panel-title">今日の進捗（メンバー別）</div>
+                <div class="panel-sub">今日、誰がどこまで対応できているか。バー＝対応済みの割合です。未対応が多い人が上に並びます。</div>
                 <div id="memberProgress"></div>
-                <div id="auditLogWrap" style="display:none;">
-                  <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-                    <div class="segmented" id="auditFilter">
-                      <button class="active" data-type="all">すべて</button>
-                      <button data-type="assign">割り当て</button>
-                      <button data-type="reassign">振り直し</button>
-                      <button data-type="done">対応済み</button>
-                    </div>
-                  </div>
-                  <div style="overflow-x:auto;">
-                    <table class="team-table" id="auditTable">
-                      <thead><tr><th>日時</th><th>種別</th><th>案件番号</th><th>内容</th><th>担当</th></tr></thead>
-                      <tbody></tbody>
-                    </table>
-                  </div>
-                </div>
               </div>
 
             </div>
@@ -1532,7 +1504,7 @@
 
   // ---------------- 管理タブ（設定内・leaderのみ） ----------------
   // 対応記録＝自動で残る記録（振り分けロジック.md 第5章・設計書 第9章）。実運用ではサーバーが
-  // 書き込み、画面からは閲覧のみ。ここではデモ用の固定データを表示する。
+  // 書き込む。画面には一覧表示せず、運用サマリー・メンバー別進捗の算出（振り直し件数など）にのみ使う。
   var auditLog = [
     {day:"today", time:"09:30", type:"waiting",  vehicle:"bike", caseNo:"524187", text:"受けられる人がいないため未割り当てで待機（出勤中のバイク担当が全員抱え上限）", person:null},
     {day:"today", time:"09:15", type:"assign",   vehicle:"car",  caseNo:"311998", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
@@ -1545,47 +1517,7 @@
     {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：中村 優子 → 伊藤 誠", person:"伊藤 誠", from:"中村 優子"},
     {day:"yesterday", time:"17:40", type:"done",     vehicle:"car", caseNo:"312310", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"渡辺 美咲"},
   ];
-  var auditTypeMeta = {
-    assign:{label:"割り当て", cls:"assign"},
-    reassign:{label:"振り直し", cls:"reassign"},
-    done:{label:"対応済み", cls:"done"},
-    waiting:{label:"待機", cls:"waiting"},
-  };
-  var auditFilterType = 'all';
-  function renderAuditLog(){
-    var body = document.querySelector('#auditTable tbody');
-    if(!body) return;
-    var dayLabel = {today:"今日", yesterday:"昨日"};
-    var list = auditLog.filter(function(e){
-      if(auditFilterType==='all') return true;
-      if(auditFilterType==='assign') return e.type==='assign' || e.type==='waiting'; // 待機は割り当ての一部として扱う
-      return e.type===auditFilterType;
-    });
-    if(list.length===0){
-      body.innerHTML = '<tr><td colspan="5"><div class="empty-state" style="padding:30px 20px;"><div class="empty-state-title">この種別の記録はありません</div>「すべて」に戻すと全記録が表示されます。</div></td></tr>';
-      return;
-    }
-    body.innerHTML = list.map(function(e){
-      var m = auditTypeMeta[e.type];
-      return '<tr>'+
-        '<td class="tnum" style="white-space:nowrap;">'+dayLabel[e.day]+' '+e.time+'</td>'+
-        '<td><span class="chip '+m.cls+'"><span class="dot"></span>'+m.label+'</span></td>'+
-        '<td class="tnum" style="white-space:nowrap;">'+vtag(e.vehicle,true)+' '+e.caseNo+'</td>'+
-        '<td>'+e.text+'</td>'+
-        '<td style="white-space:nowrap;">'+(e.person ? personChip(e.person) : '<span style="color:var(--ink-faint);">—</span>')+'</td>'+
-      '</tr>';
-    }).join('');
-  }
-  document.querySelectorAll('#auditFilter button').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.querySelectorAll('#auditFilter button').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      auditFilterType = btn.dataset.type;
-      renderAuditLog();
-    });
-  });
-
-  // メンバー別の進捗（既定表示）。今日の担当＝対応済み（stats.handled）＋未対応（現在の保有件数）。
+  // メンバー別の進捗。今日の担当＝対応済み（stats.handled）＋未対応（現在の保有件数）。
   // バー＝対応済みの割合。未対応が多い人ほど上に並べ、フォローすべき人がすぐ分かるようにする。
   function renderMemberProgress(){
     var el = document.getElementById('memberProgress');
@@ -1613,22 +1545,6 @@
       '</div>';
     }).join('');
   }
-  // メンバー別／時系列の表示切り替え
-  var AUDIT_SUB = {
-    members:'今日、誰がどこまで対応できているか。バー＝対応済みの割合です。未対応が多い人が上に並びます。',
-    log:'割り当て・振り直し・「誰が・いつお客様にチャットを送ったか」がすべて自動で記録されます（手で書き換えることはできません）。',
-  };
-  document.querySelectorAll('#auditViewSeg button').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.querySelectorAll('#auditViewSeg button').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      var mode = btn.dataset.view;
-      document.getElementById('memberProgress').style.display = mode==='members' ? '' : 'none';
-      document.getElementById('auditLogWrap').style.display = mode==='log' ? '' : 'none';
-      document.getElementById('auditPanelSub').textContent = AUDIT_SUB[mode];
-    });
-  });
-
   // 本日の運用サマリー。モックデータから計算できるものは計算し、できないものはデモ固定値。
   function renderAdminSummary(){
     var el = document.getElementById('adminSummary');
@@ -2148,7 +2064,6 @@
   renderMine();
   renderWorkload();
   renderTargets();
-  renderAuditLog();
   renderMineNotifPanel();
   renderMyPage();
   applyRolePermissions();
