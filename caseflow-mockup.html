@@ -370,6 +370,39 @@
   .kpi-delta.down{ color:var(--success); }
 
   .dash-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:16px; }
+
+  /* ---------- KPI：ファネル（アップロード→入札→成約） ---------- */
+  .funnel-row{ display:flex; align-items:center; gap:10px; padding:7px 0; }
+  .funnel-label{ width:96px; flex:none; font-size:12.5px; font-weight:700; }
+  .funnel-track{ flex:1; height:26px; background:var(--paper); border-radius:6px; overflow:hidden; }
+  .funnel-fill{ height:100%; border-radius:0 4px 4px 0; min-width:2px; }
+  .funnel-val{ width:64px; flex:none; text-align:right; font-size:13.5px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .funnel-conv{ padding-left:106px; font-size:11.5px; color:var(--ink-soft); }
+  .funnel-conv b{ font-size:12.5px; color:var(--ink); font-variant-numeric:tabular-nums; }
+
+  /* ---------- KPI：日別推移（直近7日の棒グラフ） ---------- */
+  .trend-chart{ display:flex; align-items:flex-end; gap:8px; padding-top:20px; }
+  .trend-day{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .trend-day.today{ background:var(--accent-soft); border-radius:8px; padding:4px 2px; margin:-4px -2px -2px; }
+  .trend-bars{ display:flex; align-items:flex-end; gap:2px; height:130px; }
+  .trend-bar{ width:15px; border-radius:4px 4px 0 0; position:relative; }
+  .trend-bar .tv{
+    position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+    font-size:10.5px; font-weight:600; color:var(--ink-soft); font-variant-numeric:tabular-nums;
+  }
+  .trend-daylabel{ font-size:11px; color:var(--ink-faint); text-align:center; line-height:1.3; white-space:nowrap; }
+  .trend-day.today .trend-daylabel{ color:var(--accent-ink); font-weight:700; }
+
+  /* ---------- 目標と応援：達成率バー ---------- */
+  .goal-track{ width:80px; height:8px; background:var(--paper); border-radius:5px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:7px; }
+  .goal-fill{ display:block; height:100%; background:var(--accent); border-radius:5px; }
+  .goal-fill.over{ background:var(--success); }
+
+  /* 幅が狭い画面ではKPIカード2列・グラフ1列に落として潰れを防ぐ */
+  @media (max-width:1100px){
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+    .dash-grid{ grid-template-columns:1fr; }
+  }
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:18px 20px; }
   .panel-title{ font-size:14px; font-weight:800; }
   .panel-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; margin-bottom:14px; }
@@ -683,9 +716,14 @@
         <div class="view-head">
           <div>
             <div class="view-title">KPI</div>
-            <div class="view-sub">今日 07/04（土）9:52 時点 ・ 担当者7名 ・ 車/バイクを兼任するメンバーも含む</div>
+            <div class="view-sub">07/04（土）9:52 更新 ・ 担当者7名（車・バイクを兼任するメンバーも含む）</div>
           </div>
           <div class="view-head-actions">
+            <div class="segmented" id="kpiPeriodSeg">
+              <button class="active" data-period="today">今日</button>
+              <button data-period="week">今週</button>
+              <button data-period="month">今月</button>
+            </div>
             <div class="segmented" id="kpiScope">
               <button class="active" data-scope="all">すべて</button>
               <button data-scope="car">車</button>
@@ -696,39 +734,41 @@
         <div class="dash-scroll">
           <div class="kpi-row">
             <div class="kpi-card hero">
-              <div class="kpi-label">対応待ち（未着手）</div>
-              <div class="kpi-value tnum" id="kpiWaiting">3<span style="font-size:15px;font-weight:600;">件</span></div>
-              <div class="kpi-delta" style="color:rgba(255,255,255,.85)">昨日比 +1件</div>
+              <div class="kpi-label">対応待ち（今この瞬間）</div>
+              <div class="kpi-value tnum" id="kpiWaiting">—</div>
+              <div class="kpi-delta" style="color:rgba(255,255,255,.85)">受けられる人が空くと自動で割り当て</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">アップロード</div>
+              <div class="kpi-value tnum" id="kpiUpload">—</div>
+              <div class="kpi-delta" id="kpiUploadNote">—</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">1件あたり平均初動</div>
-              <div class="kpi-value tnum">18<span style="font-size:15px;font-weight:600;">分</span></div>
-              <div class="kpi-delta down">▼ 4分（先週比）</div>
+              <div class="kpi-value tnum" id="kpiFirst">—</div>
+              <div class="kpi-delta" id="kpiFirstDelta">—</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">アップロード数</div>
-              <div class="kpi-value tnum" id="kpiUpload">—</div>
-              <div class="kpi-delta">本日累計</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">入札開始数</div>
-              <div class="kpi-value tnum" id="kpiBid">—</div>
-              <div class="kpi-delta">本日累計</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">入札開始率</div>
-              <div class="kpi-value tnum" id="kpiBidRate">—</div>
-              <div class="kpi-delta">アップロード→入札</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">成約数</div>
-              <div class="kpi-value tnum" id="kpiDeal">—</div>
-              <div class="kpi-delta">本日累計</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">成約率</div>
+              <div class="kpi-label">成約率（入札→成約）</div>
               <div class="kpi-value tnum" id="kpiDealRate">—</div>
-              <div class="kpi-delta">入札→成約</div>
+              <div class="kpi-delta" id="kpiDealNote">—</div>
+            </div>
+          </div>
+
+          <div class="dash-grid">
+            <div class="panel">
+              <div class="panel-title">アップロード → 入札開始 → 成約 <span id="funnelPeriodLabel"></span></div>
+              <div class="panel-sub">棒の長さ＝件数。段の間の％は、次の段へ進んだ割合です。</div>
+              <div id="funnelChart"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">日別の推移（直近7日）</div>
+              <div class="panel-sub">アップロード数と成約数。「すべて／車／バイク」の切り替えに連動します。</div>
+              <div class="trend-chart" id="trendChart"></div>
+              <div class="legend-row">
+                <span><span class="legend-swatch" style="background:var(--accent)"></span>アップロード</span>
+                <span><span class="legend-swatch" style="background:var(--success)"></span>成約</span>
+              </div>
             </div>
           </div>
 
@@ -1338,25 +1378,94 @@
       return {t:t, loadCar:loadCar, loadBike:loadBike, total:loadCar+loadBike};
     });
   }
-  // KPIファネル（本日のデモ値）。all = car + bike で整合。率は件数から自動計算するため常に一致する。
+  // KPI（今日/今週/今月 × すべて/車/バイク のデモ値）。all は car + bike から自動計算するため常に整合。
   // Relayは写真アップロード完了以降のみ管理するため、CV数は扱わない（case.created廃止）。
   // 実運用では集計APIの結果を差し込む想定（現状はモックアップ用の固定値）。
-  var kpiFunnel = {
-    all:  {upload:38, bid:30, deal:12},
-    car:  {upload:23, bid:18, deal:7},
-    bike: {upload:15, bid:12, deal:5},
+  // first=1件あたり平均初動（分）/ firstPrev=前の期間の平均初動（前日・前週・前月比の算出用）
+  var kpiPeriod = 'today';   // today | week | month — KPIページの期間切り替え
+  var KPI_PERIOD_LABEL = {today:'今日', week:'今週', month:'今月'};
+  var KPI_PREV_LABEL = {today:'前日比', week:'前週比', month:'前月比'};
+  var kpiStats = {
+    today:{ car:{upload:23, bid:18, deal:7,  first:17, firstPrev:20}, bike:{upload:15, bid:12, deal:5,  first:19, firstPrev:25} },
+    week: { car:{upload:131,bid:102,deal:36, first:20, firstPrev:23}, bike:{upload:83, bid:66, deal:23, first:22, firstPrev:26} },
+    month:{ car:{upload:502,bid:391,deal:140,first:21, firstPrev:24}, bike:{upload:324,bid:250,deal:88, first:23, firstPrev:27} },
   };
-  function setKpi(id, html){ var el = document.getElementById(id); if(el) el.innerHTML = html; }
-  function renderKpiFunnel(){
-    var f = kpiFunnel[kpiScope] || kpiFunnel.all;
-    var num = function(n,u){ return n+'<span style="font-size:15px;font-weight:600;">'+u+'</span>'; };
-    var pct = function(a,b){ return b ? Math.round(a/b*100) : 0; };
-    setKpi('kpiUpload',   num(f.upload, '件'));
-    setKpi('kpiBid',      num(f.bid, '件'));
-    setKpi('kpiBidRate',  num(pct(f.bid, f.upload), '%'));
-    setKpi('kpiDeal',     num(f.deal, '件'));
-    setKpi('kpiDealRate', num(pct(f.deal, f.bid), '%'));
+  function scopedStats(){
+    var p = kpiStats[kpiPeriod];
+    if(kpiScope!=='all') return p[kpiScope];
+    var c = p.car, b = p.bike, tot = c.upload + b.upload;
+    return {
+      upload:c.upload+b.upload, bid:c.bid+b.bid, deal:c.deal+b.deal,
+      first: Math.round((c.first*c.upload + b.first*b.upload)/tot),
+      firstPrev: Math.round((c.firstPrev*c.upload + b.firstPrev*b.upload)/tot),
+    };
   }
+  // 直近7日の日別実績（デモ値）。today:true の日が「今日」。
+  var trend7 = [
+    {label:"6/28", dow:"日", car:{up:9,  deal:2},  bike:{up:5,  deal:1}},
+    {label:"6/29", dow:"月", car:{up:24, deal:8},  bike:{up:16, deal:5}},
+    {label:"6/30", dow:"火", car:{up:21, deal:6},  bike:{up:13, deal:4}},
+    {label:"7/1",  dow:"水", car:{up:26, deal:9},  bike:{up:14, deal:3}},
+    {label:"7/2",  dow:"木", car:{up:19, deal:5},  bike:{up:12, deal:4}},
+    {label:"7/3",  dow:"金", car:{up:28, deal:10}, bike:{up:17, deal:6}},
+    {label:"7/4",  dow:"土", car:{up:23, deal:7},  bike:{up:15, deal:5}, today:true},
+  ];
+  function pctOf(a,b){ return b ? Math.round(a/b*100) : 0; }
+  function kpiUnit(u){ return '<span style="font-size:15px;font-weight:600;">'+u+'</span>'; }
+  function renderKpiCards(){
+    var s = scopedStats();
+    document.getElementById('kpiUpload').innerHTML = s.upload + kpiUnit('件');
+    document.getElementById('kpiUploadNote').textContent = KPI_PERIOD_LABEL[kpiPeriod]+'のアップロード合計';
+    document.getElementById('kpiFirst').innerHTML = s.first + kpiUnit('分');
+    var diff = s.first - s.firstPrev;
+    var fd = document.getElementById('kpiFirstDelta');
+    fd.className = 'kpi-delta ' + (diff<0 ? 'down' : (diff>0 ? 'up' : ''));
+    fd.textContent = diff===0 ? KPI_PREV_LABEL[kpiPeriod]+' ±0分' : (diff<0?'▼ ':'▲ ')+Math.abs(diff)+'分（'+KPI_PREV_LABEL[kpiPeriod]+'・短いほど良い）';
+    document.getElementById('kpiDealRate').innerHTML = pctOf(s.deal, s.bid) + kpiUnit('%');
+    document.getElementById('kpiDealNote').textContent = '成約 '+s.deal+'件 ÷ 入札開始 '+s.bid+'件';
+  }
+  // ファネル：段が進むほど濃くなる同系色（薄→濃）。棒の長さ＝件数、段の間に転換率を表示。
+  function renderFunnel(){
+    var s = scopedStats();
+    var stages = [
+      {label:"アップロード", val:s.upload, color:"#C3CBF6"},
+      {label:"入札開始",     val:s.bid,    color:"#7C8CF0"},
+      {label:"成約",         val:s.deal,   color:"var(--accent)"},
+    ];
+    var max = stages[0].val || 1;
+    var html = '';
+    stages.forEach(function(st, i){
+      if(i>0){
+        html += '<div class="funnel-conv">↓ <b>'+pctOf(st.val, stages[i-1].val)+'%</b> が'+(i===1?'入札開始に進んだ':'成約した')+'</div>';
+      }
+      html += '<div class="funnel-row">'+
+        '<div class="funnel-label">'+st.label+'</div>'+
+        '<div class="funnel-track"><div class="funnel-fill" style="width:'+(st.val/max*100)+'%;background:'+st.color+';"></div></div>'+
+        '<div class="funnel-val">'+st.val+'件</div></div>';
+    });
+    document.getElementById('funnelChart').innerHTML = html;
+    document.getElementById('funnelPeriodLabel').textContent = '（'+KPI_PERIOD_LABEL[kpiPeriod]+'）';
+  }
+  // 日別推移：直近7日の集合棒グラフ（アップロード＝青紫・成約＝緑）。今日の列は背景で強調。
+  function renderTrend(){
+    var data = trend7.map(function(d){
+      var up   = kpiScope==='all' ? d.car.up + d.bike.up     : d[kpiScope].up;
+      var deal = kpiScope==='all' ? d.car.deal + d.bike.deal : d[kpiScope].deal;
+      return {label:d.label, dow:d.dow, up:up, deal:deal, today:!!d.today};
+    });
+    var max = data.reduce(function(m,d){ return Math.max(m, d.up); }, 0) || 1;
+    var H = 110; // 最大バー高さ(px)
+    document.getElementById('trendChart').innerHTML = data.map(function(d){
+      return '<div class="trend-day'+(d.today?' today':'')+'" title="'+d.label+'（'+d.dow+'）アップロード'+d.up+'件・成約'+d.deal+'件">'+
+        '<div class="trend-bars">'+
+          '<div class="trend-bar" style="height:'+Math.round(d.up/max*H)+'px;background:var(--accent);"><span class="tv">'+d.up+'</span></div>'+
+          '<div class="trend-bar" style="height:'+Math.max(3, Math.round(d.deal/max*H))+'px;background:var(--success);"><span class="tv" style="color:var(--success);">'+d.deal+'</span></div>'+
+        '</div>'+
+        '<div class="trend-daylabel">'+d.label+'<br>'+d.dow+(d.today?'・今日':'')+'</div>'+
+      '</div>';
+    }).join('');
+  }
+  function renderKpi(){ renderKpiCards(); renderFunnel(); renderTrend(); }
 
   function renderWorkload(){
     var loads = computeLoad();
@@ -1400,7 +1509,7 @@
 
     var scopedCases = kpiScope==='all' ? cases : cases.filter(function(c){return c.vehicle===kpiScope;});
     document.getElementById('kpiWaiting').innerHTML = scopedCases.filter(function(c){return !c.owner && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
-    renderKpiFunnel();
+    renderKpi();
     renderAdminSummary();
   }
 
@@ -1408,12 +1517,16 @@
   function renderTargets(){
     var body = document.querySelector('#targetTable tbody');
     if(!body) return;
-    body.innerHTML = team.map(function(t){
+    // 達成率はバー＋数字で表示（バーの長さ＝達成率・100%以上は緑）。達成率が高い順に並べる。
+    var rows = team.map(function(t){
       var s = t.stats;
-      var rate = s.target ? Math.round(s.monthDone/s.target*100) : 0;
-      return '<tr><td>'+t.name+'</td><td class="tnum">'+s.target+'件</td><td class="tnum">'+s.monthDone+'件</td>'+
-        '<td class="tnum"'+(rate>=100?' style="color:var(--success);font-weight:700;"':'')+'>'+rate+'%</td>'+
-        '<td class="tnum">'+(s.follow||0)+'件</td><td class="tnum">'+(s.support||0)+'件</td></tr>';
+      return {t:t, s:s, rate: s.target ? Math.round(s.monthDone/s.target*100) : 0};
+    }).sort(function(a,b){ return b.rate - a.rate; });
+    body.innerHTML = rows.map(function(r){
+      return '<tr><td>'+personChip(r.t.name)+'</td><td class="tnum">'+r.s.target+'件</td><td class="tnum">'+r.s.monthDone+'件</td>'+
+        '<td style="white-space:nowrap;"><span class="goal-track"><span class="goal-fill'+(r.rate>=100?' over':'')+'" style="width:'+Math.min(100,r.rate)+'%"></span></span>'+
+        '<span class="tnum"'+(r.rate>=100?' style="color:var(--success);font-weight:700;"':'')+'>'+r.rate+'%</span></td>'+
+        '<td class="tnum">'+(r.s.follow||0)+'件</td><td class="tnum">'+(r.s.support||0)+'件</td></tr>';
     }).join('');
   }
 
@@ -1801,6 +1914,14 @@
       btn.classList.add('active');
       kpiScope = btn.dataset.scope;
       renderWorkload();
+    });
+  });
+  document.querySelectorAll('#kpiPeriodSeg button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#kpiPeriodSeg button').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      kpiPeriod = btn.dataset.period;
+      renderKpi();
     });
   });
   // ---------------- Settings tabs ----------------
