@@ -501,7 +501,6 @@
   .notif-toggle-row:last-child{ border-bottom:none; }
   .notif-toggle-label{ font-size:13px; font-weight:600; flex:1; display:flex; align-items:center; gap:6px; }
   .notif-toggle-desc{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
-  .notif-toggle-row.locked .notif-toggle-label{ color:var(--ink-faint); }
 
   .notif-scroll{ padding:6px 0 20px; }
   .notif-daylabel{ font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:14px 22px 8px; }
@@ -997,7 +996,7 @@
           <div class="settings-panel" id="tab-notif">
             <div class="rules-head">
               <div class="rules-head-title">通知設定</div>
-              <div class="rules-head-sub">どの通知を受け取るかだけを設定します。通知の履歴は左の「通知」タブから確認できます。</div>
+              <div class="rules-head-sub">どの通知を受け取るかだけを設定します。通知の履歴は左の「通知」タブから確認できます。なお「期限超過」と「担当変更」の通知は、対応漏れとお客様への二重連絡を防ぐため常に届きます（この画面での設定はありません）。</div>
             </div>
             <div class="notif-settings" id="notifSettings">
               <div class="notif-settings-body">
@@ -1012,14 +1011,6 @@
                 <div class="notif-toggle-row">
                   <div><div class="notif-toggle-label">緊急以外は1時間ごとにまとめて通知（ダイジェスト）</div><div class="notif-toggle-desc">期限超過や対応依頼などの緊急通知はダイジェスト対象外で即時に届きます</div></div>
                   <label class="switch"><input type="checkbox" id="notifDigestToggle"><span class="switch-track"></span><span class="switch-thumb"></span></label>
-                </div>
-                <div class="notif-toggle-row locked">
-                  <div><div class="notif-toggle-label">期限超過の通知（常にON・ミュート不可）</div><div class="notif-toggle-desc">対応漏れ防止のため、この通知は絞り込みの対象外です</div></div>
-                  <label class="switch"><input type="checkbox" checked disabled><span class="switch-track"></span><span class="switch-thumb"></span></label>
-                </div>
-                <div class="notif-toggle-row locked">
-                  <div><div class="notif-toggle-label">担当変更の通知（常にON・ミュート不可）</div><div class="notif-toggle-desc">振り直しで担当から外れたときの通知です。旧担当と新担当が二重にお客様へ連絡する事故を防ぐため、オフにできません</div></div>
-                  <label class="switch"><input type="checkbox" checked disabled><span class="switch-track"></span><span class="switch-thumb"></span></label>
                 </div>
               </div>
             </div>
