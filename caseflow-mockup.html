@@ -93,19 +93,19 @@
   .side-profile .who-meta{ flex:1; }
   .side-profile-chev{ flex:none; color:var(--ink-faint); }
 
-  /* ---------- トップバーの稼働状況ボタン（常設・押しやすいよう大きめに） ---------- */
-  .online-toggle.topbar-status{ margin-left:auto; flex:none; }
-  .online-toggle.topbar-status button{ flex:none; padding:10px 18px; font-size:14px; }
+  /* ---------- トップバーの稼働状況ボタン（常設・高さは検索窓と同じ34px） ---------- */
+  .online-toggle.topbar-status{ margin-left:auto; flex:none; height:34px; }
+  .online-toggle.topbar-status button{ flex:none; padding:0 16px; font-size:13.5px; }
   /* ●は選択中の状態にだけ表示（どれが今の状態か一目で分かるように） */
   .online-toggle.topbar-status .status-dot{ display:none; }
   .online-toggle.topbar-status button.active .status-dot{ display:inline-block; }
 
-  /* ---------- トップバーの「私いけます！」ボタン（稼働状況の右隣） ---------- */
+  /* ---------- トップバーの「私いけます！」ボタン（稼働状況の右隣・高さは検索窓と同じ） ---------- */
   .topbar-boost{
     flex:none; display:inline-flex; align-items:center; gap:6px;
-    height:44px; padding:0 18px; margin-left:10px;
-    border-radius:9px; border:1px solid var(--border-strong); background:var(--surface);
-    font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; white-space:nowrap;
+    height:34px; padding:0 16px; margin-left:10px;
+    border-radius:8px; border:1px solid var(--border-strong); background:var(--surface);
+    font-size:13.5px; font-weight:700; color:var(--ink); cursor:pointer; white-space:nowrap;
   }
   .topbar-boost:hover{ background:var(--paper); }
   .topbar-boost.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -528,7 +528,7 @@
       <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
     </div>
     <!-- 私いけます！＝本人単位の+10点/24時間（案件単位ではないため、案件行ではなくここに置く） -->
-    <button type="button" class="topbar-boost" id="boostTopBtn" title="押してから24時間、振り分けの点数に+10点。担当はサーバーが自動で決めます">🙋 私いけます！</button>
+    <button type="button" class="topbar-boost" id="boostTopBtn" title="押してから24時間、振り分けの点数に+10点。担当はサーバーが自動で決めます">私いけます！</button>
   </header>
 
   <div class="body">
@@ -1754,15 +1754,15 @@
     var topBtn = document.getElementById('boostTopBtn');
     var on = !!myself().boost;
     topBtn.classList.toggle('on', on);
-    topBtn.innerHTML = on ? '🙋 受付中（+10点）' : '🙋 私いけます！';
+    topBtn.innerHTML = on ? '受付中（+10点）' : '私いけます！';
     var el = document.getElementById('boostState');
     if(!el) return;
     if(on){
-      el.innerHTML = '<span style="color:var(--accent-ink);font-weight:700;">🙋 受付中（+10点・24時間で自動解除）</span>'+
+      el.innerHTML = '<span style="color:var(--accent-ink);font-weight:700;">受付中（+10点・24時間で自動解除）</span>'+
         '<button type="button" class="btn sm" id="boostCancelBtn">取り消す</button>';
       document.getElementById('boostCancelBtn').addEventListener('click', toggleBoost);
     } else {
-      el.innerHTML = '<span style="color:var(--ink-faint);">オフ。画面右上の「🙋 私いけます！」ボタンから押せます（押してから24時間+10点'+
+      el.innerHTML = '<span style="color:var(--ink-faint);">オフ。画面右上の「私いけます！」ボタンから押せます（押してから24時間+10点'+
         (boostGated() ? '・現在は期限内対応率80%未満のため押しても加点されません' : '')+'）。</span>';
     }
   }
