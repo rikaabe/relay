@@ -339,10 +339,28 @@
   table.cases tbody tr:last-child td{ border-bottom:none; }
   table.cases tbody tr{ position:relative; }
   table.cases tbody tr:hover{ background:var(--paper); }
-  /* 一覧の行背景は常に白。種別は行の左端の縦ラインで見分ける（アップロード完了=黄 / 再アップロード完了=緑） */
-  table.cases tbody tr.kind-upload td:first-child{ box-shadow:inset 4px 0 0 #ECB22E; }
-  table.cases tbody tr.kind-reupload td:first-child{ box-shadow:inset 4px 0 0 #2EB67D; }
-  .kind-cell{ font-weight:700; font-size:13px; white-space:nowrap; }
+
+  /* ---------- 案件一覧のカード表示（Slack通知風） ---------- */
+  /* 背景は常に白。種別は左の縦ラインで見分ける（アップロード完了=黄 / 再アップロード完了=緑） */
+  .case-cards{ display:flex; flex-direction:column; gap:10px; }
+  .case-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+    padding:13px 16px 13px 24px; position:relative;
+  }
+  .case-card::before{ content:""; position:absolute; left:10px; top:13px; bottom:13px; width:4px; border-radius:4px; background:var(--border); }
+  .case-card.kind-upload::before{ background:#ECB22E; }
+  .case-card.kind-reupload::before{ background:#2EB67D; }
+  .case-card-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .case-card-kind{ font-weight:800; font-size:14px; }
+  .case-card-time{ font-size:12px; color:var(--ink-faint); }
+  .case-card .elapsed-tag{ display:inline; margin:0; }
+  .case-card.elapsed-over .elapsed-tag{ color:var(--warning); font-weight:700; }
+  .case-card-line{ font-size:13px; margin-top:5px; color:var(--ink); }
+  .case-card-url{ color:var(--accent); word-break:break-all; text-decoration:underline; text-underline-offset:2px; }
+  .case-card-url:hover{ color:var(--accent-ink); }
+  .case-card-owner{ display:flex; align-items:center; gap:4px; }
+  .case-card-foot{ margin-top:9px; }
+  .case-card.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
   .cell-id{ font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
   .cell-person{ display:flex; align-items:center; gap:7px; }
   .cell-person .avatar{ width:22px; height:22px; font-size:10px; }
@@ -670,10 +688,7 @@
           </div>
           <div class="queue-body">
             <div class="table-scroll" style="padding-top:14px;">
-              <table class="cases">
-                <thead><tr><th>種別</th><th>送信日時</th><th>案件番号</th><th>ステータス</th><th>担当者</th><th class="cell-actions">操作</th></tr></thead>
-                <tbody id="queueList_bike"></tbody>
-              </table>
+              <div class="case-cards" id="queueList_bike"></div>
             </div>
           </div>
         </div>
@@ -693,10 +708,7 @@
           </div>
           <div class="queue-body">
             <div class="table-scroll" style="padding-top:14px;">
-              <table class="cases">
-                <thead><tr><th>種別</th><th>送信日時</th><th>案件番号</th><th>ステータス</th><th>担当者</th><th class="cell-actions">操作</th></tr></thead>
-                <tbody id="queueList_car"></tbody>
-              </table>
+              <div class="case-cards" id="queueList_car"></div>
             </div>
           </div>
         </div>
@@ -1224,25 +1236,28 @@
     var listEl = document.getElementById('queueList_'+vehicle);
     listEl.innerHTML = "";
     if(list.length===0){
-      listEl.innerHTML = '<tr><td colspan="6"><div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v10H8l-4 4z"/></svg><div class="empty-state-title">対応待ちの案件はありません</div>この条件では表示できる案件がありません。</div></td></tr>';
+      listEl.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v10H8l-4 4z"/></svg><div class="empty-state-title">対応待ちの案件はありません</div>この条件では表示できる案件がありません。</div>';
     }
     list.forEach(function(c){
-      var tr = document.createElement('tr');
+      var card = document.createElement('div');
       var km = kindRowMeta(c.kind);
-      tr.className = km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
-      tr.dataset.id = c.id;
-      tr.innerHTML =
-        '<td class="kind-cell">'+km.label+'</td>'+
-        receivedCell(c)+
-        '<td class="cell-id tnum">'+caseNo(c)+'</td>'+
-        '<td>'+chip(c.done ? 'done' : c.status)+'</td>'+
-        '<td>'+ownerHtml(c)+'</td>'+
-        '<td class="cell-actions">'+rowActionsHtml(c)+'</td>';
-      listEl.appendChild(tr);
-      bindRowActions(tr, c);
+      card.className = 'case-card ' + km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
+      card.dataset.id = c.id;
+      card.innerHTML =
+        '<div class="case-card-head">'+
+          '<span class="case-card-kind">'+km.label+'</span>'+
+          '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
+          (c.done ? chip('done') : '')+
+        '</div>'+
+        '<div class="case-card-line">査定依頼ID：<span class="tnum" style="font-weight:700;">'+caseNo(c)+'</span></div>'+
+        '<div class="case-card-line"><a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a></div>'+
+        '<div class="case-card-line case-card-owner">担当者：'+ownerHtml(c)+'</div>'+
+        '<div class="case-card-foot"><button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button></div>';
+      listEl.appendChild(card);
+      bindRowActions(card, c);
     });
     if(st.selected){
-      var flashRow = listEl.querySelector('tr[data-id="'+st.selected+'"]');
+      var flashRow = listEl.querySelector('[data-id="'+st.selected+'"]');
       if(flashRow){
         flashRow.scrollIntoView({block:'center'});
         flashRow.classList.add('queue-row-flash');
