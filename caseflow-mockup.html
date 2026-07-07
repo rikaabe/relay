@@ -923,7 +923,7 @@
             </div>
             <div class="team-edit-note">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
-              担当区分はドロップダウンから即座に変更できます。「両方対応」にすると、車・バイクどちらの自動振り分けにも組み込まれます。
+              担当区分は「バイク」「車」のどちらかをドロップダウンから即座に変更できます。変更すると自動振り分けの対象プールに即反映されます（応援は担当区分を変えずに行えます）。
             </div>
             <div class="table-scroll" style="padding-top:14px;">
               <table class="roster-table" id="rosterTable">
@@ -1147,7 +1147,7 @@
   var team = [
     {name:"山田 太郎", stamp:"🔥", status:"online", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:6, ontime:92, target:60, monthDone:38, follow:0, support:2}},
     {name:"鈴木 花子", stamp:"🌸", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:8, ontime:96, target:70, monthDone:71, follow:4, support:0}},
-    {name:"伊藤 誠", stamp:"🐻", status:"online", role:"both", updated:"2025/12/02", boost:true, stats:{handled:9, ontime:84, target:65, monthDone:52, follow:0, support:6}},
+    {name:"伊藤 誠", stamp:"🐻", status:"online", role:"car", updated:"2025/12/02", boost:true, stats:{handled:9, ontime:84, target:65, monthDone:52, follow:0, support:6}},
     {name:"田中 太郎", stamp:"🍀", status:"away", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:3, ontime:75, target:50, monthDone:24, follow:0, support:0}},
     {name:"中村 優子", stamp:"🍊", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:5, ontime:88, target:60, monthDone:41, follow:0, support:1}},
     {name:"高橋 健一", stamp:"⚡", status:"offline", role:"bike", updated:"2026/02/18", boost:false, stats:{handled:0, ontime:null, target:40, monthDone:0, follow:0, support:0}},
@@ -1165,14 +1165,15 @@
   team.forEach(function(t){ STAMP_BY_NAME[t.name] = t.stamp; });
   function stampFor(name){ return STAMP_BY_NAME[name] || "👤"; }
   function personChip(name){ return '<span class="cell-person"><span class="avatar stamp">'+stampFor(name)+'</span>'+name+'</span>'; }
-  var roleMeta = { car:"車 主担当", bike:"バイク 主担当", both:"両方対応" };
+  // 担当区分は車・バイクの二択（「両方対応」は廃止）。応援は担当区分を変えずに行う。
+  var roleMeta = { car:"車 主担当", bike:"バイク 主担当" };
 
   // ---------------- @メンション（個人・チーム両方に対応） ----------------
   // 全員がバイク・車いずれかのチームに所属しているため、個人のみ／個人＋チーム／チームのみ、
   // どの組み合わせでもメッセージ内に@を複数個並べるだけで表現できる。
   var MENTION_TEAMS = [
-    {key:"team-bike", label:"バイクチーム", icon:ICON_BIKE, members: team.filter(function(t){ return t.role==="bike" || t.role==="both"; })},
-    {key:"team-car", label:"車チーム", icon:ICON_CAR, members: team.filter(function(t){ return t.role==="car" || t.role==="both"; })},
+    {key:"team-bike", label:"バイクチーム", icon:ICON_BIKE, members: team.filter(function(t){ return t.role==="bike"; })},
+    {key:"team-car", label:"車チーム", icon:ICON_CAR, members: team.filter(function(t){ return t.role==="car"; })},
     {key:"team-all", label:"全員", icon:null, members: team},
   ];
   var MENTION_NAMES = MENTION_TEAMS.map(function(g){ return g.label; }).concat(team.map(function(t){ return t.name; }));
@@ -1296,7 +1297,7 @@
     cases.forEach(function(c){
       if(!(c.owner && c.owner.name===name && !c.done)) return;
       var next = team
-        .filter(function(t){ return t.name!==name && t.status==='online' && (t.role===c.vehicle || t.role==='both') && pendingCountOf(t.name) < MAX_PENDING; })
+        .filter(function(t){ return t.name!==name && t.status==='online' && t.role===c.vehicle && pendingCountOf(t.name) < MAX_PENDING; })
         .sort(function(a,b){ return pendingCountOf(a.name) - pendingCountOf(b.name); })[0];
       c.owner = next ? {name:next.name} : null; // 受けられる人がいなければ未割り当てで待機
       moved++;
@@ -1536,13 +1537,13 @@
   var auditLog = [
     {day:"today", time:"09:30", type:"waiting",  vehicle:"bike", caseNo:"524187", text:"受けられる人がいないため未割り当てで待機（出勤中のバイク担当が全員抱え上限）", person:null},
     {day:"today", time:"09:15", type:"assign",   vehicle:"car",  caseNo:"311998", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
-    {day:"today", time:"09:05", type:"reassign", vehicle:"bike", caseNo:"521769", text:"期限超過のため自動振り直し：鈴木 花子 → 伊藤 誠（新しい期限 10:05）", person:"伊藤 誠"},
+    {day:"today", time:"09:05", type:"reassign", vehicle:"bike", caseNo:"521769", text:"期限超過のため自動振り直し：鈴木 花子 → 山田 太郎（新しい期限 10:05）", person:"山田 太郎"},
     {day:"today", time:"08:47", type:"done",     vehicle:"bike", caseNo:"523371", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"田中 太郎"},
     {day:"today", time:"08:10", type:"assign",   vehicle:"bike", caseNo:"515694", text:"自動割り当て（鈴木 71点：早さ51＋動ける20）", person:"鈴木 花子"},
     {day:"today", time:"07:50", type:"assign",   vehicle:"car",  caseNo:"317204", text:"自動割り当て（伊藤 68点：早さ38＋動ける20＋私いけます10）", person:"伊藤 誠"},
     {day:"today", time:"07:20", type:"done",     vehicle:"car",  caseNo:"311742", text:"adminで承認・入札開始を検知し、対応済みに更新", person:"山田 太郎"},
     {day:"today", time:"06:58", type:"assign",   vehicle:"car",  caseNo:"315560", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
-    {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：高橋 健一 → 伊藤 誠", person:"伊藤 誠"},
+    {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：中村 優子 → 伊藤 誠", person:"伊藤 誠"},
     {day:"yesterday", time:"17:40", type:"done",     vehicle:"car", caseNo:"312310", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"渡辺 美咲"},
   ];
   var auditTypeMeta = {
@@ -1654,7 +1655,7 @@
     body.innerHTML = "";
     team.forEach(function(t, i){
       var tr = document.createElement('tr');
-      var options = ['bike','car','both'].map(function(r){
+      var options = ['bike','car'].map(function(r){
         return '<option value="'+r+'"'+(t.role===r?' selected':'')+'>'+roleMeta[r]+'</option>';
       }).join('');
       tr.innerHTML =
@@ -1689,8 +1690,8 @@
   // ---------------- シミュレーション（100点満点の採点結果を表示） ----------------
   var sim = [
     {caseTitle:"316045 車の査定アップロード確認（09:41受信・最古）", vehicle:"car", reason:"出勤中の車担当を採点：渡辺 84点（早さ54＋動ける30）＞ 中村 62点 ＞ 伊藤 58点", name:"渡辺 美咲"},
-    {caseTitle:"524501 バイクの交渉リマインド（09:47受信）", vehicle:"bike", reason:"高橋さんは退勤中・田中さんは離席中のため対象外。伊藤 71点（早さ41＋動ける20＋私いけます10）＞ 山田 64点", name:"伊藤 誠"},
-    {caseTitle:"524502 バイクの楽サツ変更依頼（09:52受信）", vehicle:"bike", reason:"伊藤さんは直前の割り当てで未対応が増え61点に。山田 64点（早さ44＋動ける20）が最高点", name:"山田 太郎"},
+    {caseTitle:"524501 バイクの交渉リマインド（09:47受信）", vehicle:"bike", reason:"高橋さんは退勤中・田中さんは離席中のため対象外。出勤中のバイク担当は山田さんのみ。山田 64点（早さ44＋動ける20）", name:"山田 太郎"},
+    {caseTitle:"524502 バイクの楽サツ変更依頼（09:52受信）", vehicle:"bike", reason:"山田さんは直前の割り当てで未対応が増え「動けるか」が10点に。それでも出勤中のバイク担当は山田さんのみのため54点で割り当て", name:"山田 太郎"},
   ];
   var simCard = document.getElementById('simCard');
   sim.forEach(function(s, i){
