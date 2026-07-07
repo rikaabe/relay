@@ -216,6 +216,13 @@
   .chip.hold .dot{ background:var(--hold-chip); }
   .chip.done{ background:var(--success-soft); color:var(--success); }
   .chip.done .dot{ background:var(--success); }
+  /* 対応記録（管理タブ）の種別チップ */
+  .chip.assign{ background:var(--accent-soft); color:var(--accent-ink); }
+  .chip.assign .dot{ background:var(--accent); }
+  .chip.reassign{ background:var(--warning-soft); color:var(--warning); }
+  .chip.reassign .dot{ background:var(--warning); }
+  .chip.waiting{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
+  .chip.waiting .dot{ background:var(--neutral-chip); }
 
   .vtag{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700; padding:2px 7px; border-radius:6px; white-space:nowrap; }
   .vtag.car{ background:var(--car-soft); color:var(--car); }
@@ -344,6 +351,12 @@
   .settings-body{ flex:1; min-height:0; overflow-y:auto; }
   .settings-panel{ display:none; }
   .settings-panel.active{ display:block; }
+
+  /* ---------- 管理タブ（設定内・leaderのみ） ---------- */
+  .admin-body{ padding:14px 22px 28px; display:flex; flex-direction:column; gap:16px; }
+  .admin-body .kpi-row{ margin-bottom:0; }
+  .panel-head-row{ display:flex; align-items:flex-start; gap:14px; }
+  .panel-head-row > div:first-child{ flex:1; }
 
   .dash-scroll{ padding:18px 22px 28px; }
   .kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
@@ -719,39 +732,7 @@
             </div>
           </div>
 
-          <!-- 個人別の指標はleaderのみ閲覧可（一般メンバーには非表示） -->
-          <div class="dash-grid leader-only">
-            <div class="panel">
-              <div class="panel-title">担当者別 未対応の件数（車 / バイク内訳）</div>
-              <div class="panel-sub">件数が多い順。基準線＝未対応の抱え上限（5件・設定で変更可）。上限に達した人には新しいtelを振り分けません。上の「すべて／車／バイク」に連動します。</div>
-              <div id="workloadBars"></div>
-              <div class="legend-row">
-                <span><span class="legend-swatch" style="background:var(--car)"></span>車の案件</span>
-                <span><span class="legend-swatch" style="background:var(--bike)"></span>バイクの案件</span>
-                <span>┃ 抱え上限ライン（5件）</span>
-              </div>
-            </div>
-            <div class="panel">
-              <div class="panel-title">担当者ステータス</div>
-              <div class="panel-sub">出勤状況と担当区分（出勤中の人だけが振り分けの対象）</div>
-              <div style="overflow-x:auto;">
-                <table class="team-table" id="teamTable">
-                  <thead><tr><th>担当者</th><th>状況</th><th>未対応</th><th>担当区分</th></tr></thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-            <div class="panel" style="grid-column:1/-1;">
-              <div class="panel-title">目標と応援（leaderのみ）</div>
-              <div class="panel-sub">目標件数はleaderだけが登録・閲覧できます（本人にも表示されません）。達成率・達成後フォロー・応援件数は人事評価の材料で、振り分けの点数には一切使いません。</div>
-              <div style="overflow-x:auto;">
-                <table class="team-table" id="targetTable">
-                  <thead><tr><th>担当者</th><th>目標（月）</th><th>対応実績</th><th>達成率</th><th>達成後フォロー</th><th>応援件数</th></tr></thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <!-- 個人別の指標（担当者別負荷・目標と応援）は設定＞管理タブ（leaderのみ）へ移設 -->
         </div>
       </section>
 
@@ -763,6 +744,7 @@
         <div class="settings-tabs">
           <div class="segmented" id="settingsTabs">
             <button class="active" data-tab="mypage">マイページ</button>
+            <button data-tab="admin">管理</button>
             <button data-tab="teams">チーム編成</button>
             <button data-tab="rules">自動振り分け設定</button>
             <button data-tab="notif">通知設定</button>
@@ -798,6 +780,92 @@
                 <div class="mypage-section">
                   <div class="mypage-section-label">私いけます！の状態</div>
                   <div class="boost-state" id="boostState"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 管理（leaderのみ。運用サマリー・チーム状況・対応記録・権限） -->
+          <div class="settings-panel" id="tab-admin">
+            <div class="rules-head">
+              <div class="rules-head-title">管理</div>
+              <div class="rules-head-sub">leaderだけが見られる画面です。今日の運用状況をひと目で確認し、対応記録の閲覧とメンバーの権限管理を行います。</div>
+            </div>
+            <div class="admin-body">
+              <!-- 本日の運用サマリー（朝夕にここだけ見れば運用の異常に気づける） -->
+              <div class="kpi-row" id="adminSummary"></div>
+
+              <!-- チーム状況（KPI画面から移設。leader以外には見せない個人別の指標） -->
+              <div class="dash-grid">
+                <div class="panel">
+                  <div class="panel-title">担当者別 未対応の件数（車 / バイク内訳）</div>
+                  <div class="panel-sub">件数が多い順。基準線＝未対応の抱え上限（5件・自動振り分け設定で変更可）。上限に達した人には新しいtelを振り分けません。</div>
+                  <div id="workloadBars"></div>
+                  <div class="legend-row">
+                    <span><span class="legend-swatch" style="background:var(--car)"></span>車の案件</span>
+                    <span><span class="legend-swatch" style="background:var(--bike)"></span>バイクの案件</span>
+                    <span>┃ 抱え上限ライン（5件）</span>
+                  </div>
+                </div>
+                <div class="panel">
+                  <div class="panel-title">担当者ステータス</div>
+                  <div class="panel-sub">出勤状況と担当区分（出勤中の人だけが振り分けの対象）</div>
+                  <div style="overflow-x:auto;">
+                    <table class="team-table" id="teamTable">
+                      <thead><tr><th>担当者</th><th>状況</th><th>未対応</th><th>担当区分</th></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-title">目標と応援</div>
+                <div class="panel-sub">目標件数はleaderだけが登録・閲覧できます（本人にも表示されません）。達成率・達成後フォロー・応援件数は人事評価の材料で、振り分けの点数には一切使いません。</div>
+                <div style="overflow-x:auto;">
+                  <table class="team-table" id="targetTable">
+                    <thead><tr><th>担当者</th><th>目標（月）</th><th>対応実績</th><th>達成率</th><th>達成後フォロー</th><th>応援件数</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 対応記録（自動で残る記録。手で書き換えることはできない） -->
+              <div class="panel">
+                <div class="panel-head-row">
+                  <div>
+                    <div class="panel-title">対応記録</div>
+                    <div class="panel-sub">割り当て・振り直し・「誰が・いつお客様にチャットを送ったか」がすべて自動で記録されます（手で書き換えることはできません）。</div>
+                  </div>
+                  <div class="segmented" id="auditFilter">
+                    <button class="active" data-type="all">すべて</button>
+                    <button data-type="assign">割り当て</button>
+                    <button data-type="reassign">振り直し</button>
+                    <button data-type="done">対応済み</button>
+                  </div>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table class="team-table" id="auditTable">
+                    <thead><tr><th>日時</th><th>種別</th><th>案件番号</th><th>内容</th><th>担当</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- メンバーの権限（member⇔leader） -->
+              <div class="panel">
+                <div class="panel-head-row" style="align-items:center;">
+                  <div>
+                    <div class="panel-title">メンバーの権限</div>
+                    <div class="panel-sub">leader＝この管理画面とチーム編成・自動振り分け設定を操作できます。member＝マイページと通知設定のみ。自分自身の権限は変更できません（変更はもう1人のleaderに依頼してください）。</div>
+                  </div>
+                  <span class="save-toast" id="permToast"></span>
+                  <button class="btn primary" id="savePermBtn">変更を保存</button>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table class="team-table" id="permTable">
+                    <thead><tr><th>担当者</th><th>担当区分</th><th>現在の権限</th><th>変更後の権限</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1045,6 +1113,10 @@
     {name:"高橋 健一", stamp:"⚡", status:"offline", role:"bike", updated:"2026/02/18", boost:false, stats:{handled:0, ontime:null, target:40, monthDone:0, follow:0, support:0}},
     {name:"渡辺 美咲", stamp:"🎧", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:7, ontime:90, target:70, monthDone:66, follow:2, support:0}},
   ];
+  // 権限（member/leader）。モックでは山田・鈴木の2名がleader。実運用はサーバー側
+  // （usersテーブルのrole列＋API認可・設計書 第4章）で管理し、画面はその写しにすぎない。
+  var PERM_BY_NAME = {"山田 太郎":"leader", "鈴木 花子":"leader"};
+  team.forEach(function(t){ t.perm = PERM_BY_NAME[t.name] || 'member'; });
   // マイページのアイコンスタンプ選択肢
   var STAMP_OPTIONS = ["🔥","🌸","🐻","🍀","🍊","⚡","🎧","🐱","🐶","🦊","🐼","🌟","💪","🚀","☕","🎯"];
   // 担当者ごとに固定の絵文字スタンプを割り当て。Slackでの運用に合わせ、頭文字よりスタンプで担当者を判別しやすくする。
@@ -1284,9 +1356,9 @@
 
   function renderWorkload(){
     var loads = computeLoad();
+    // 負荷バーは設定＞管理タブ（leaderのみ）に表示。車・バイクの内訳を常に両方積み上げで表示する。
     var relevant = loads.map(function(l){
-      var shown = kpiScope==='all' ? l.total : (kpiScope==='car'?l.loadCar:l.loadBike);
-      return Object.assign({}, l, {shown:shown});
+      return Object.assign({}, l, {shown:l.total});
     }).sort(function(a,b){ return b.shown - a.shown; });
     var maxLoad = Math.max(MAX_PENDING, relevant.reduce(function(m,l){return Math.max(m,l.shown);},0));
 
@@ -1294,15 +1366,14 @@
     barsEl.innerHTML = "";
     relevant.forEach(function(l){
       var carPct = (l.loadCar/maxLoad)*100, bikePct = (l.loadBike/maxLoad)*100;
-      var showCar = kpiScope!=='bike', showBike = kpiScope!=='car';
       var capPct = (MAX_PENDING/maxLoad)*100;
       var row = document.createElement('div');
       row.className='bar-row';
       row.innerHTML =
         '<div class="bar-name"><span class="status-dot '+l.t.status+'"></span>'+l.t.name+'</div>'+
         '<div class="bar-track">'+
-          (showCar?'<div class="bar-fill-car" style="width:'+carPct+'%"></div>':'')+
-          (showBike?'<div class="bar-fill-bike" style="width:'+bikePct+'%"></div>':'')+
+          '<div class="bar-fill-car" style="width:'+carPct+'%"></div>'+
+          '<div class="bar-fill-bike" style="width:'+bikePct+'%"></div>'+
           '<div class="bar-cap-line" style="left:'+capPct+'%"></div>'+
         '</div>'+
         '<div class="bar-val tnum">'+l.shown+'</div>';
@@ -1326,6 +1397,7 @@
     var scopedCases = kpiScope==='all' ? cases : cases.filter(function(c){return c.vehicle===kpiScope;});
     document.getElementById('kpiWaiting').innerHTML = scopedCases.filter(function(c){return !c.owner && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
     renderKpiFunnel();
+    renderAdminSummary();
   }
 
   // 目標と応援（leaderのみ・振り分けロジック第6章）。振り分けの点数には一切使わない。
@@ -1340,6 +1412,124 @@
         '<td class="tnum">'+(s.follow||0)+'件</td><td class="tnum">'+(s.support||0)+'件</td></tr>';
     }).join('');
   }
+
+  // ---------------- 管理タブ（設定内・leaderのみ） ----------------
+  // 対応記録＝自動で残る記録（振り分けロジック.md 第5章・設計書 第9章）。実運用ではサーバーが
+  // 書き込み、画面からは閲覧のみ。ここではデモ用の固定データを表示する。
+  var auditLog = [
+    {day:"today", time:"09:30", type:"waiting",  vehicle:"bike", caseNo:"524187", text:"受けられる人がいないため未割り当てで待機（出勤中のバイク担当が全員抱え上限）", person:null},
+    {day:"today", time:"09:15", type:"assign",   vehicle:"car",  caseNo:"311998", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
+    {day:"today", time:"09:05", type:"reassign", vehicle:"bike", caseNo:"521769", text:"期限超過のため自動振り直し：鈴木 花子 → 伊藤 誠（新しい期限 10:05）", person:"伊藤 誠"},
+    {day:"today", time:"08:47", type:"done",     vehicle:"bike", caseNo:"523371", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"田中 太郎"},
+    {day:"today", time:"08:10", type:"assign",   vehicle:"bike", caseNo:"515694", text:"自動割り当て（鈴木 71点：早さ51＋動ける20）", person:"鈴木 花子"},
+    {day:"today", time:"07:50", type:"assign",   vehicle:"car",  caseNo:"317204", text:"自動割り当て（伊藤 68点：早さ38＋動ける20＋私いけます10）", person:"伊藤 誠"},
+    {day:"today", time:"07:20", type:"done",     vehicle:"car",  caseNo:"311742", text:"adminで承認・入札開始を検知し、対応済みに更新", person:"山田 太郎"},
+    {day:"today", time:"06:58", type:"assign",   vehicle:"car",  caseNo:"315560", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
+    {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：高橋 健一 → 伊藤 誠", person:"伊藤 誠"},
+    {day:"yesterday", time:"17:40", type:"done",     vehicle:"car", caseNo:"312310", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"渡辺 美咲"},
+  ];
+  var auditTypeMeta = {
+    assign:{label:"割り当て", cls:"assign"},
+    reassign:{label:"振り直し", cls:"reassign"},
+    done:{label:"対応済み", cls:"done"},
+    waiting:{label:"待機", cls:"waiting"},
+  };
+  var auditFilterType = 'all';
+  function renderAuditLog(){
+    var body = document.querySelector('#auditTable tbody');
+    if(!body) return;
+    var dayLabel = {today:"今日", yesterday:"昨日"};
+    var list = auditLog.filter(function(e){
+      if(auditFilterType==='all') return true;
+      if(auditFilterType==='assign') return e.type==='assign' || e.type==='waiting'; // 待機は割り当ての一部として扱う
+      return e.type===auditFilterType;
+    });
+    if(list.length===0){
+      body.innerHTML = '<tr><td colspan="5"><div class="empty-state" style="padding:30px 20px;"><div class="empty-state-title">この種別の記録はありません</div>「すべて」に戻すと全記録が表示されます。</div></td></tr>';
+      return;
+    }
+    body.innerHTML = list.map(function(e){
+      var m = auditTypeMeta[e.type];
+      return '<tr>'+
+        '<td class="tnum" style="white-space:nowrap;">'+dayLabel[e.day]+' '+e.time+'</td>'+
+        '<td><span class="chip '+m.cls+'"><span class="dot"></span>'+m.label+'</span></td>'+
+        '<td class="tnum" style="white-space:nowrap;">'+vtag(e.vehicle,true)+' '+e.caseNo+'</td>'+
+        '<td>'+e.text+'</td>'+
+        '<td style="white-space:nowrap;">'+(e.person ? personChip(e.person) : '<span style="color:var(--ink-faint);">—</span>')+'</td>'+
+      '</tr>';
+    }).join('');
+  }
+  document.querySelectorAll('#auditFilter button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#auditFilter button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      auditFilterType = btn.dataset.type;
+      renderAuditLog();
+    });
+  });
+
+  // 本日の運用サマリー。モックデータから計算できるものは計算し、できないものはデモ固定値。
+  function renderAdminSummary(){
+    var el = document.getElementById('adminSummary');
+    if(!el) return;
+    var waiting = cases.filter(function(c){ return !c.owner && !c.done; }).length;
+    var online = team.filter(function(t){ return t.status==='online'; }).length;
+    var away = team.filter(function(t){ return t.status==='away'; }).length;
+    var reassignToday = auditLog.filter(function(e){ return e.day==='today' && e.type==='reassign'; }).length;
+    var overdueToday = 1; // デモ値：本日の期限超過件数（実運用は集計APIから）
+    function card(label, value, unit, note, tone){
+      return '<div class="kpi-card"><div class="kpi-label">'+label+'</div>'+
+        '<div class="kpi-value tnum"'+(tone?' style="color:var(--'+tone+');"':'')+'>'+value+'<span style="font-size:15px;font-weight:600;">'+unit+'</span></div>'+
+        '<div class="kpi-delta">'+note+'</div></div>';
+    }
+    el.innerHTML =
+      card('未割り当てで待機中', waiting, '件', '受けられる人が空くと自動で割り当てられます', waiting>0 ? 'critical' : null)+
+      card('期限超過（本日）', overdueToday, '件', '超過分は自動で振り直し済み', overdueToday>0 ? 'warning' : null)+
+      card('振り直し（本日）', reassignToday, '件', '同じtelの2回振り直しはleaderに通知', null)+
+      card('出勤中', online, '/'+team.length+'人', '離席'+away+'人・退勤'+(team.length-online-away)+'人', null);
+  }
+
+  // メンバーの権限（member⇔leader）。自分自身は変更不可（誤操作で管理者不在になるのを防ぐ）。
+  var permMeta = { member:"member（一般）", leader:"leader（管理者）" };
+  var pendingPerm = {};
+  function renderPermTable(){
+    var body = document.querySelector('#permTable tbody');
+    if(!body) return;
+    body.innerHTML = "";
+    team.forEach(function(t, i){
+      var isSelf = t.name===CURRENT_USER;
+      var options = ['member','leader'].map(function(p){
+        return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
+      }).join('');
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>'+personChip(t.name)+'</td>'+
+        '<td>'+roleMeta[t.role]+'</td>'+
+        '<td>'+permMeta[t.perm]+'</td>'+
+        '<td><select class="role-select" data-idx="'+i+'"'+(isSelf?' disabled title="自分自身の権限は変更できません"':'')+'>'+options+'</select>'+
+          (isSelf?' <span style="font-size:11.5px;color:var(--ink-faint);">自分は変更不可</span>':'')+'</td>';
+      body.appendChild(tr);
+    });
+    body.querySelectorAll('.role-select:not([disabled])').forEach(function(sel){
+      sel.addEventListener('change', function(){
+        var idx = +sel.dataset.idx;
+        pendingPerm[idx] = sel.value;
+        sel.classList.toggle('dirty', sel.value !== team[idx].perm);
+      });
+    });
+  }
+  document.getElementById('savePermBtn').addEventListener('click', function(){
+    var changed = 0;
+    Object.keys(pendingPerm).forEach(function(idx){
+      if(team[idx].perm !== pendingPerm[idx]){ team[idx].perm = pendingPerm[idx]; changed++; }
+    });
+    pendingPerm = {};
+    renderPermTable();
+    var toast = document.getElementById('permToast');
+    toast.textContent = changed>0 ? "✓ "+changed+"名の権限を変更しました" : "✓ 変更はありません";
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 2600);
+  });
 
   // ---------------- チーム編成 ----------------
   var pendingRoster = {};
@@ -1619,8 +1809,8 @@
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
     });
   });
-  // 権限に応じて、管理系タブ（チーム編成・自動振り分け設定）の表示可否を切り替える。
-  var LEADER_TABS = ['teams','rules'];
+  // 権限に応じて、管理系タブ（管理・チーム編成・自動振り分け設定）の表示可否を切り替える。
+  var LEADER_TABS = ['admin','teams','rules'];
   function applyRolePermissions(){
     var isLeader = viewerRole === 'leader';
     document.querySelectorAll('#settingsTabs button').forEach(function(b){
@@ -1800,6 +1990,8 @@
   renderMine();
   renderWorkload();
   renderTargets();
+  renderAuditLog();
+  renderPermTable();
   renderMineNotifPanel();
   renderMyPage();
   applyRolePermissions();
