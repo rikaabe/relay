@@ -25,6 +25,8 @@
     --car-soft:#E7F0F9;
     --bike:#C1691A;
     --bike-soft:#FCEFDE;
+    --rail-bg:#3E2C30;
+    --rail-badge:#F6E8C0;
     --radius-s:6px;
     --radius-m:10px;
     --shadow-panel:0 1px 2px rgba(26,31,43,0.04), 0 8px 24px -12px rgba(26,31,43,0.12);
@@ -137,29 +139,39 @@
 
   .body{ flex:1; display:flex; min-height:0; }
 
-  /* ---------- Sidebar ---------- */
+  /* ---------- Sidebar（濃色レール型：アイコン上・ラベル下） ---------- */
   .sidebar{
-    width:216px; flex:none; background:var(--surface); border-right:1px solid var(--border);
-    display:flex; flex-direction:column; padding:14px 10px; gap:16px;
+    width:84px; flex:none; background:var(--rail-bg);
+    display:flex; flex-direction:column; padding:14px 6px 12px; gap:8px;
   }
-  .nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; flex:1; min-height:0; overflow-y:auto; }
+  .nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; flex:1; min-height:0; overflow-y:auto; }
   .nav-item{
-    display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:8px; cursor:pointer;
-    color:var(--ink-soft); font-size:13.5px; font-weight:600; position:relative;
+    display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
+    color:rgba(255,255,255,.82); font-size:10.5px; font-weight:600; text-align:center; line-height:1.3;
   }
-  .nav-item svg{ flex:none; opacity:.9; }
-  .nav-item.bike svg{ color:var(--bike); }
-  .nav-item.car svg{ color:var(--car); }
+  .nav-icon{
+    width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    position:relative; transition:background .12s;
+  }
+  .nav-item svg{ flex:none; opacity:.92; color:rgba(255,255,255,.88); }
   .nav-item .badge{
-    margin-left:auto; font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--neutral-chip-soft);
-    border-radius:20px; padding:1px 7px; font-variant-numeric:tabular-nums;
+    position:absolute; top:-4px; right:-4px; min-width:17px; height:17px; padding:0 4px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10.5px; font-weight:700; color:var(--rail-bg); background:var(--rail-badge);
+    border-radius:20px; font-variant-numeric:tabular-nums;
   }
-  .nav-item .badge.urgent{ background:var(--critical-soft); color:var(--critical); }
-  .nav-item:hover{ background:var(--paper); color:var(--ink); }
-  .nav-item.active{ background:var(--accent-soft); color:var(--accent-ink); }
-  .nav-item.active svg{ color:var(--accent-ink); }
-  .nav-item.active .badge{ background:rgba(255,255,255,.65); }
-  .sidebar-foot{ margin-top:auto; padding-top:8px; border-top:1px solid var(--border); }
+  .nav-item .badge.urgent{ background:var(--critical); color:#fff; }
+  .nav-item:hover .nav-icon{ background:rgba(255,255,255,.12); }
+  .nav-item:hover{ color:#fff; }
+  .nav-item.active{ color:#fff; }
+  .nav-item.active .nav-icon{ background:rgba(255,255,255,.24); }
+  .nav-item.active svg{ opacity:1; color:#fff; }
+  .sidebar-foot{ margin-top:auto; padding-top:10px; border-top:1px solid rgba(255,255,255,.14); }
+  .side-profile{ flex-direction:column; gap:5px; padding:6px 2px; width:100%; }
+  .side-profile .who-meta{ flex:none; text-align:center; }
+  .side-profile .who-name{ color:rgba(255,255,255,.9); font-size:10.5px; font-weight:600; }
+  .side-profile .who-role, .side-profile-chev{ display:none; }
+  .side-profile:hover{ background:rgba(255,255,255,.1); }
 
   /* ---------- Workspace / views ---------- */
   .workspace{ flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
@@ -592,27 +604,43 @@
     <nav class="sidebar">
       <ul class="nav-list">
         <li class="nav-item active" data-view="mine">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-          マイ案件<span class="badge" id="navBadgeMine">2</span>
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+            <span class="badge" id="navBadgeMine">2</span>
+          </span>
+          マイ案件
         </li>
         <li class="nav-item" data-view="notif">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
-          通知<span class="badge" id="navBadgeNotif">0</span>
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+            <span class="badge" id="navBadgeNotif">0</span>
+          </span>
+          通知
         </li>
         <li class="nav-item bike" data-view="bike">
-          <svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg>
-          バイク案件一覧<span class="badge urgent" id="navBadgeBike">4</span>
+          <span class="nav-icon">
+          <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg>
+          <span class="badge urgent" id="navBadgeBike">4</span>
+          </span>
+          バイク案件
         </li>
         <li class="nav-item car" data-view="car">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
-          車案件一覧<span class="badge" id="navBadgeCar">5</span>
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+            <span class="badge" id="navBadgeCar">5</span>
+          </span>
+          車案件
         </li>
         <li class="nav-item" data-view="kpi">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          </span>
           KPI
         </li>
         <li class="nav-item" data-view="settings" id="navSettings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </span>
           設定
         </li>
       </ul>
@@ -1883,12 +1911,16 @@
 
   // ---------------- Nav ----------------
   function updateNavBadges(){
-    // バッジは「未対応の件数」。対応済みは一覧に残るがカウントしない。
-    document.getElementById('navBadgeBike').textContent = queueCasesFor('bike').filter(function(c){return !c.done;}).length;
-    document.getElementById('navBadgeCar').textContent = queueCasesFor('car').filter(function(c){return !c.done;}).length;
-    document.getElementById('navBadgeMine').textContent = cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done;}).length;
-    var unreadCount = notifications.filter(function(n){return n.unread;}).length;
-    document.getElementById('navBadgeNotif').textContent = unreadCount;
+    // バッジは「未対応の件数」。対応済みは一覧に残るがカウントしない。0件のときは非表示。
+    function setBadge(id, count){
+      var el = document.getElementById(id);
+      el.textContent = count;
+      el.style.display = count > 0 ? '' : 'none';
+    }
+    setBadge('navBadgeBike', queueCasesFor('bike').filter(function(c){return !c.done;}).length);
+    setBadge('navBadgeCar', queueCasesFor('car').filter(function(c){return !c.done;}).length);
+    setBadge('navBadgeMine', cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done;}).length);
+    setBadge('navBadgeNotif', notifications.filter(function(n){return n.unread;}).length);
   }
   document.querySelectorAll('.nav-item[data-view]').forEach(function(item){
     item.addEventListener('click', function(){
