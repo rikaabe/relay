@@ -342,24 +342,27 @@
 
   /* ---------- 案件一覧のカード表示（Slack通知風） ---------- */
   /* 背景は常に白。種別は左の縦ラインで見分ける（アップロード完了=黄 / 再アップロード完了=緑） */
-  .case-cards{ display:flex; flex-direction:column; gap:10px; }
+  .case-cards{ display:flex; flex-direction:column; gap:6px; }
   .case-card{
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
-    padding:13px 16px 13px 24px; position:relative;
+    padding:7px 12px 7px 22px; position:relative;
+    display:flex; align-items:center; gap:12px;
   }
-  .case-card::before{ content:""; position:absolute; left:10px; top:13px; bottom:13px; width:4px; border-radius:4px; background:var(--border); }
+  .case-card::before{ content:""; position:absolute; left:9px; top:8px; bottom:8px; width:4px; border-radius:4px; background:var(--border); }
   .case-card.kind-upload::before{ background:#ECB22E; }
   .case-card.kind-reupload::before{ background:#2EB67D; }
+  .case-card-main{ flex:1; min-width:0; }
   .case-card-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .case-card-kind{ font-weight:800; font-size:14px; }
-  .case-card-time{ font-size:12px; color:var(--ink-faint); }
+  .case-card-kind{ font-weight:800; font-size:13.5px; }
+  .case-card-time{ font-size:11.5px; color:var(--ink-faint); }
   .case-card .elapsed-tag{ display:inline; margin:0; }
   .case-card.elapsed-over .elapsed-tag{ color:var(--warning); font-weight:700; }
-  .case-card-line{ font-size:13px; margin-top:5px; color:var(--ink); }
+  .case-card-line{ font-size:12.5px; margin-top:3px; color:var(--ink); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .case-card-url{ color:var(--accent); word-break:break-all; text-decoration:underline; text-underline-offset:2px; }
   .case-card-url:hover{ color:var(--accent-ink); }
   .case-card-owner{ display:flex; align-items:center; gap:4px; }
-  .case-card-foot{ margin-top:9px; }
+  .case-card-owner .cell-person .avatar{ width:18px; height:18px; font-size:11px; }
+  .case-card .row-thread-btn{ flex:none; }
   .case-card.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
   .cell-id{ font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
   .cell-person{ display:flex; align-items:center; gap:7px; }
@@ -1244,15 +1247,19 @@
       card.className = 'case-card ' + km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
       card.dataset.id = c.id;
       card.innerHTML =
-        '<div class="case-card-head">'+
-          '<span class="case-card-kind">'+km.label+'</span>'+
-          '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
-          (c.done ? chip('done') : '')+
+        '<div class="case-card-main">'+
+          '<div class="case-card-head">'+
+            '<span class="case-card-kind">'+km.label+'</span>'+
+            '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
+            (c.done ? chip('done') : '')+
+          '</div>'+
+          '<div class="case-card-line">'+
+            '<span>査定依頼ID：<span class="tnum" style="font-weight:700;">'+caseNo(c)+'</span></span>'+
+            '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
+            '<span class="case-card-owner">担当者：'+ownerHtml(c)+'</span>'+
+          '</div>'+
         '</div>'+
-        '<div class="case-card-line">査定依頼ID：<span class="tnum" style="font-weight:700;">'+caseNo(c)+'</span></div>'+
-        '<div class="case-card-line"><a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a></div>'+
-        '<div class="case-card-line case-card-owner">担当者：'+ownerHtml(c)+'</div>'+
-        '<div class="case-card-foot"><button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button></div>';
+        '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>';
       listEl.appendChild(card);
       bindRowActions(card, c);
     });
