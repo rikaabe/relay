@@ -25,8 +25,6 @@
     --car-soft:#E7F0F9;
     --bike:#C1691A;
     --bike-soft:#FCEFDE;
-    --rail-bg:#3E2C30;
-    --rail-badge:#F6E8C0;
     --radius-s:6px;
     --radius-m:10px;
     --shadow-panel:0 1px 2px rgba(26,31,43,0.04), 0 8px 24px -12px rgba(26,31,43,0.12);
@@ -139,39 +137,41 @@
 
   .body{ flex:1; display:flex; min-height:0; }
 
-  /* ---------- Sidebar（濃色レール型：アイコン上・ラベル下） ---------- */
+  /* ---------- Sidebar（レール型：アイコン上・ラベル下） ---------- */
   .sidebar{
-    width:84px; flex:none; background:var(--rail-bg);
+    width:84px; flex:none; background:var(--surface); border-right:1px solid var(--border);
     display:flex; flex-direction:column; padding:14px 6px 12px; gap:8px;
   }
   .nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; flex:1; min-height:0; overflow-y:auto; }
   .nav-item{
     display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
-    color:rgba(255,255,255,.82); font-size:10.5px; font-weight:600; text-align:center; line-height:1.3;
+    color:var(--ink-soft); font-size:10.5px; font-weight:600; text-align:center; line-height:1.3;
   }
   .nav-icon{
     width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center;
     position:relative; transition:background .12s;
   }
-  .nav-item svg{ flex:none; opacity:.92; color:rgba(255,255,255,.88); }
+  .nav-item svg{ flex:none; opacity:.9; }
+  .nav-item.bike svg{ color:var(--bike); }
+  .nav-item.car svg{ color:var(--car); }
   .nav-item .badge{
     position:absolute; top:-4px; right:-4px; min-width:17px; height:17px; padding:0 4px;
     display:flex; align-items:center; justify-content:center;
-    font-size:10.5px; font-weight:700; color:var(--rail-bg); background:var(--rail-badge);
+    font-size:10.5px; font-weight:700; color:var(--ink-soft); background:var(--neutral-chip-soft);
     border-radius:20px; font-variant-numeric:tabular-nums;
   }
-  .nav-item .badge.urgent{ background:var(--critical); color:#fff; }
-  .nav-item:hover .nav-icon{ background:rgba(255,255,255,.12); }
-  .nav-item:hover{ color:#fff; }
-  .nav-item.active{ color:#fff; }
-  .nav-item.active .nav-icon{ background:rgba(255,255,255,.24); }
-  .nav-item.active svg{ opacity:1; color:#fff; }
-  .sidebar-foot{ margin-top:auto; padding-top:10px; border-top:1px solid rgba(255,255,255,.14); }
+  .nav-item .badge.urgent{ background:var(--critical-soft); color:var(--critical); }
+  .nav-item:hover .nav-icon{ background:var(--paper); }
+  .nav-item:hover{ color:var(--ink); }
+  .nav-item.active{ color:var(--accent-ink); }
+  .nav-item.active .nav-icon{ background:var(--accent-soft); }
+  .nav-item.active svg{ opacity:1; color:var(--accent-ink); }
+  .sidebar-foot{ margin-top:auto; padding-top:10px; border-top:1px solid var(--border); }
   .side-profile{ flex-direction:column; gap:5px; padding:6px 2px; width:100%; }
   .side-profile .who-meta{ flex:none; text-align:center; }
-  .side-profile .who-name{ color:rgba(255,255,255,.9); font-size:10.5px; font-weight:600; }
+  .side-profile .who-name{ color:var(--ink); font-size:10.5px; font-weight:600; }
   .side-profile .who-role, .side-profile-chev{ display:none; }
-  .side-profile:hover{ background:rgba(255,255,255,.1); }
+  .side-profile:hover{ background:var(--paper); }
 
   /* ---------- Workspace / views ---------- */
   .workspace{ flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
