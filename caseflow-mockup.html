@@ -398,6 +398,21 @@
   .goal-fill{ display:block; height:100%; background:var(--accent); border-radius:5px; }
   .goal-fill.over{ background:var(--success); }
 
+  /* ---------- 管理タブ：メンバー別の進捗 ---------- */
+  .mp-row{ display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--border); }
+  .mp-row:last-child{ border-bottom:none; }
+  .mp-name{ width:150px; flex:none; display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mp-name .avatar{ width:22px; height:22px; font-size:11px; }
+  .mp-track{ flex:1; height:18px; background:var(--paper); border-radius:6px; overflow:hidden; }
+  .mp-fill{ height:100%; background:var(--success); border-radius:0 4px 4px 0; min-width:2px; transition:width .3s ease; }
+  .mp-nums{ width:130px; flex:none; text-align:right; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .mp-nums b{ font-size:14px; }
+  .mp-nums.none{ color:var(--ink-faint); }
+  .mp-pct{ width:46px; flex:none; text-align:right; font-size:12.5px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .mp-pct.full{ color:var(--success); }
+  .mp-badges{ width:230px; flex:none; display:flex; gap:6px; flex-wrap:wrap; }
+  .mp-badges .chip{ padding:2px 8px; font-size:11px; }
+
   /* 幅が狭い画面ではKPIカード2列・グラフ1列に落として潰れを防ぐ */
   @media (max-width:1100px){
     .kpi-row{ grid-template-columns:repeat(2,1fr); }
@@ -868,25 +883,34 @@
                 </div>
               </div>
 
-              <!-- 対応記録（自動で残る記録。手で書き換えることはできない） -->
+              <!-- 進捗と対応記録。既定はメンバー別の進捗、切り替えで時系列の全記録（自動記録・書き換え不可） -->
               <div class="panel">
                 <div class="panel-head-row">
                   <div>
-                    <div class="panel-title">対応記録</div>
-                    <div class="panel-sub">割り当て・振り直し・「誰が・いつお客様にチャットを送ったか」がすべて自動で記録されます（手で書き換えることはできません）。</div>
+                    <div class="panel-title">今日の進捗と対応記録</div>
+                    <div class="panel-sub" id="auditPanelSub">今日、誰がどこまで対応できているか。バー＝対応済みの割合です。未対応が多い人が上に並びます。</div>
                   </div>
-                  <div class="segmented" id="auditFilter">
-                    <button class="active" data-type="all">すべて</button>
-                    <button data-type="assign">割り当て</button>
-                    <button data-type="reassign">振り直し</button>
-                    <button data-type="done">対応済み</button>
+                  <div class="segmented" id="auditViewSeg">
+                    <button class="active" data-view="members">メンバー別の進捗</button>
+                    <button data-view="log">時系列の記録</button>
                   </div>
                 </div>
-                <div style="overflow-x:auto;">
-                  <table class="team-table" id="auditTable">
-                    <thead><tr><th>日時</th><th>種別</th><th>案件番号</th><th>内容</th><th>担当</th></tr></thead>
-                    <tbody></tbody>
-                  </table>
+                <div id="memberProgress"></div>
+                <div id="auditLogWrap" style="display:none;">
+                  <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+                    <div class="segmented" id="auditFilter">
+                      <button class="active" data-type="all">すべて</button>
+                      <button data-type="assign">割り当て</button>
+                      <button data-type="reassign">振り直し</button>
+                      <button data-type="done">対応済み</button>
+                    </div>
+                  </div>
+                  <div style="overflow-x:auto;">
+                    <table class="team-table" id="auditTable">
+                      <thead><tr><th>日時</th><th>種別</th><th>案件番号</th><th>内容</th><th>担当</th></tr></thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -1486,6 +1510,7 @@
     document.getElementById('kpiWaiting').innerHTML = scopedCases.filter(function(c){return !c.owner && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
     renderKpi();
     renderAdminSummary();
+    renderMemberProgress();
   }
 
   // 目標と応援（leaderのみ・振り分けロジック第6章）。振り分けの点数には一切使わない。
@@ -1511,13 +1536,13 @@
   var auditLog = [
     {day:"today", time:"09:30", type:"waiting",  vehicle:"bike", caseNo:"524187", text:"受けられる人がいないため未割り当てで待機（出勤中のバイク担当が全員抱え上限）", person:null},
     {day:"today", time:"09:15", type:"assign",   vehicle:"car",  caseNo:"311998", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
-    {day:"today", time:"09:05", type:"reassign", vehicle:"bike", caseNo:"521769", text:"期限超過のため自動振り直し：鈴木 花子 → 山田 太郎（新しい期限 10:05）", person:"山田 太郎"},
+    {day:"today", time:"09:05", type:"reassign", vehicle:"bike", caseNo:"521769", text:"期限超過のため自動振り直し：鈴木 花子 → 山田 太郎（新しい期限 10:05）", person:"山田 太郎", from:"鈴木 花子"},
     {day:"today", time:"08:47", type:"done",     vehicle:"bike", caseNo:"523371", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"田中 太郎"},
     {day:"today", time:"08:10", type:"assign",   vehicle:"bike", caseNo:"515694", text:"自動割り当て（鈴木 71点：早さ51＋動ける20）", person:"鈴木 花子"},
     {day:"today", time:"07:50", type:"assign",   vehicle:"car",  caseNo:"317204", text:"自動割り当て（伊藤 68点：早さ38＋動ける20＋私いけます10）", person:"伊藤 誠"},
     {day:"today", time:"07:20", type:"done",     vehicle:"car",  caseNo:"311742", text:"adminで承認・入札開始を検知し、対応済みに更新", person:"山田 太郎"},
     {day:"today", time:"06:58", type:"assign",   vehicle:"car",  caseNo:"315560", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
-    {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：中村 優子 → 伊藤 誠", person:"伊藤 誠"},
+    {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：中村 優子 → 伊藤 誠", person:"伊藤 誠", from:"中村 優子"},
     {day:"yesterday", time:"17:40", type:"done",     vehicle:"car", caseNo:"312310", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"渡辺 美咲"},
   ];
   var auditTypeMeta = {
@@ -1557,6 +1582,50 @@
       btn.classList.add('active');
       auditFilterType = btn.dataset.type;
       renderAuditLog();
+    });
+  });
+
+  // メンバー別の進捗（既定表示）。今日の担当＝対応済み（stats.handled）＋未対応（現在の保有件数）。
+  // バー＝対応済みの割合。未対応が多い人ほど上に並べ、フォローすべき人がすぐ分かるようにする。
+  function renderMemberProgress(){
+    var el = document.getElementById('memberProgress');
+    if(!el) return;
+    var rows = team.map(function(t){
+      var done = (t.stats && t.stats.handled) || 0;
+      var pending = pendingCountOf(t.name);
+      var reassigned = auditLog.filter(function(e){ return e.day==='today' && e.type==='reassign' && e.from===t.name; }).length;
+      return {t:t, done:done, pending:pending, assigned:done+pending, reassigned:reassigned};
+    }).sort(function(a,b){ return b.pending - a.pending || b.assigned - a.assigned; });
+    el.innerHTML = rows.map(function(r){
+      var hasWork = r.assigned > 0;
+      var rate = hasWork ? Math.round(r.done/r.assigned*100) : 0;
+      var badges = '';
+      if(r.pending > 0) badges += '<span class="chip waiting">未対応'+r.pending+'件</span>';
+      if(r.reassigned > 0) badges += '<span class="chip reassign">振り直しで外れた'+r.reassigned+'件</span>';
+      if(r.t.status==='offline') badges += '<span class="chip waiting">退勤中</span>';
+      return '<div class="mp-row">'+
+        '<div class="mp-name"><span class="status-dot '+r.t.status+'"></span><span class="avatar stamp">'+r.t.stamp+'</span>'+r.t.name+'</div>'+
+        '<div class="mp-track">'+(hasWork && r.done>0 ? '<div class="mp-fill" style="width:'+rate+'%"></div>' : '')+'</div>'+
+        (hasWork
+          ? '<div class="mp-nums"><b>'+r.done+'</b>/'+r.assigned+'件 対応済み</div><div class="mp-pct'+(rate>=100?' full':'')+'">'+rate+'%</div>'
+          : '<div class="mp-nums none">今日の担当なし</div><div class="mp-pct" style="color:var(--ink-faint);">—</div>')+
+        '<div class="mp-badges">'+badges+'</div>'+
+      '</div>';
+    }).join('');
+  }
+  // メンバー別／時系列の表示切り替え
+  var AUDIT_SUB = {
+    members:'今日、誰がどこまで対応できているか。バー＝対応済みの割合です。未対応が多い人が上に並びます。',
+    log:'割り当て・振り直し・「誰が・いつお客様にチャットを送ったか」がすべて自動で記録されます（手で書き換えることはできません）。',
+  };
+  document.querySelectorAll('#auditViewSeg button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#auditViewSeg button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var mode = btn.dataset.view;
+      document.getElementById('memberProgress').style.display = mode==='members' ? '' : 'none';
+      document.getElementById('auditLogWrap').style.display = mode==='log' ? '' : 'none';
+      document.getElementById('auditPanelSub').textContent = AUDIT_SUB[mode];
     });
   });
 
