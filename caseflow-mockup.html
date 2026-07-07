@@ -744,10 +744,10 @@
         <div class="settings-tabs">
           <div class="segmented" id="settingsTabs">
             <button class="active" data-tab="mypage">マイページ</button>
+            <button data-tab="notif">通知設定</button>
             <button data-tab="admin">管理</button>
             <button data-tab="teams">チーム編成</button>
             <button data-tab="rules">自動振り分け設定</button>
-            <button data-tab="notif">通知設定</button>
           </div>
         </div>
 
@@ -789,7 +789,7 @@
           <div class="settings-panel" id="tab-admin">
             <div class="rules-head">
               <div class="rules-head-title">管理</div>
-              <div class="rules-head-sub">leaderだけが見られる画面です。今日の運用状況をひと目で確認し、対応記録の閲覧とメンバーの権限管理を行います。</div>
+              <div class="rules-head-sub">leader以上だけが見られる画面です。今日の運用状況をひと目で確認し、対応記録を閲覧できます（メンバーの権限の変更はシステム管理者のみ）。</div>
             </div>
             <div class="admin-body">
               <!-- 本日の運用サマリー（朝夕にここだけ見れば運用の異常に気づける） -->
@@ -851,12 +851,12 @@
                 </div>
               </div>
 
-              <!-- メンバーの権限（member⇔leader） -->
-              <div class="panel">
+              <!-- メンバーの権限（member⇔leader）。変更できるのはシステム管理者のみ -->
+              <div class="panel sysadmin-only">
                 <div class="panel-head-row" style="align-items:center;">
                   <div>
-                    <div class="panel-title">メンバーの権限</div>
-                    <div class="panel-sub">leader＝この管理画面とチーム編成・自動振り分け設定を操作できます。member＝マイページと通知設定のみ。自分自身の権限は変更できません（変更はもう1人のleaderに依頼してください）。</div>
+                    <div class="panel-title">メンバーの権限（システム管理者のみ）</div>
+                    <div class="panel-sub">leader＝管理（この画面）とチーム編成を操作できます。member＝マイページと通知設定のみ。対応をするリーダーは自分も採点される側のため、権限の変更と自動振り分け設定はお客様対応をしないシステム管理者に限定しています。システム管理者の追加・変更は画面からはできません（サーバー側で設定）。</div>
                   </div>
                   <span class="save-toast" id="permToast"></span>
                   <button class="btn primary" id="savePermBtn">変更を保存</button>
@@ -896,8 +896,8 @@
           <!-- 自動振り分け設定（ロジックは固定・変更できるのは数値のみ。振り分けロジック.md v1.1準拠） -->
           <div class="settings-panel" id="tab-rules">
             <div class="rules-head">
-              <div class="rules-head-title">自動振り分け設定</div>
-              <div class="rules-head-sub">telが届いたら、サーバーが自動で1人を選んで渡します（人は一切判断しません）。仕組みは固定で、変更できるのは「数値のみ変更可」と付いている数字だけです。</div>
+              <div class="rules-head-title">自動振り分け設定（システム管理者のみ）</div>
+              <div class="rules-head-sub">telが届いたら、サーバーが自動で1人を選んで渡します（人は一切判断しません）。仕組みは固定で、変更できるのは「数値のみ変更可」と付いている数字だけです。数値は採点＝実績評価に直結するため、この画面はお客様対応をしないシステム管理者だけが開けます。</div>
             </div>
             <div class="rules-grid">
               <div class="rules-left">
@@ -1113,7 +1113,8 @@
     {name:"高橋 健一", stamp:"⚡", status:"offline", role:"bike", updated:"2026/02/18", boost:false, stats:{handled:0, ontime:null, target:40, monthDone:0, follow:0, support:0}},
     {name:"渡辺 美咲", stamp:"🎧", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:7, ontime:90, target:70, monthDone:66, follow:2, support:0}},
   ];
-  // 権限（member/leader）。モックでは山田・鈴木の2名がleader。実運用はサーバー側
+  // 権限（member/leader）。モックでは山田・鈴木の2名がleader。sysadmin（システム管理者）は
+  // お客様対応をしないためこの一覧（対応メンバー）には含まれない。実運用はサーバー側
   // （usersテーブルのrole列＋API認可・設計書 第4章）で管理し、画面はその写しにすぎない。
   var PERM_BY_NAME = {"山田 太郎":"leader", "鈴木 花子":"leader"};
   team.forEach(function(t){ t.perm = PERM_BY_NAME[t.name] || 'member'; });
@@ -1162,11 +1163,14 @@
   // 未対応の抱え上限（maxPendingPerUser・設定で変更可）。上限に達した人には振り分けない。
   var MAX_PENDING = 5;
   var CURRENT_USER = "山田 太郎";
-  // 表示権限。leader＝全設定を操作可 / member＝通知設定のみ（チーム編成・自動振り分けは非表示）。
-  // メインで使わないメンバーの誤操作・不正・不満を防ぐため。実運用では管理者がユーザーごとに設定する。
-  // モックでは既定を member とし、アプリ作成者だけが URL に ?role=leader を付けてleaderビューを確認できる。
+  // 表示権限は3段階。member＝マイページ・通知設定のみ / leader＝＋管理・チーム編成 /
+  // sysadmin（システム管理者）＝＋自動振り分け設定・メンバーの権限管理。
+  // お客様対応をするリーダーは自分も採点される側のため、採点ルールの数値変更と権限の付け替えは
+  // 利益相反を避けて「お客様対応をしない運用管理者（システム管理者）」に限定する。
+  // モックでは既定を member とし、URL に ?role=leader / ?role=sysadmin を付けて各ビューを確認できる。
   // （切替UIはメンバーに見せない。メンバーが普通に開くと常に member 固定。）
-  var viewerRole = (new URLSearchParams(location.search).get('role') === 'leader') ? 'leader' : 'member';
+  var roleParam = new URLSearchParams(location.search).get('role');
+  var viewerRole = (roleParam==='sysadmin' || roleParam==='leader') ? roleParam : 'member';
   var notifMute = { car:true, bike:true };
   var kpiScope = "all";   // all | car | bike — KPIページの絞り込み
 
@@ -1489,15 +1493,15 @@
       card('出勤中', online, '/'+team.length+'人', '離席'+away+'人・退勤'+(team.length-online-away)+'人', null);
   }
 
-  // メンバーの権限（member⇔leader）。自分自身は変更不可（誤操作で管理者不在になるのを防ぐ）。
-  var permMeta = { member:"member（一般）", leader:"leader（管理者）" };
+  // メンバーの権限（member⇔leader）。変更できるのはシステム管理者のみ。システム管理者自身は
+  // 対応メンバーではないためこの一覧には載らず、権限もサーバー側で固定（画面から自己昇格できない）。
+  var permMeta = { member:"member（一般）", leader:"leader（リーダー）" };
   var pendingPerm = {};
   function renderPermTable(){
     var body = document.querySelector('#permTable tbody');
     if(!body) return;
     body.innerHTML = "";
     team.forEach(function(t, i){
-      var isSelf = t.name===CURRENT_USER;
       var options = ['member','leader'].map(function(p){
         return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
       }).join('');
@@ -1506,11 +1510,10 @@
         '<td>'+personChip(t.name)+'</td>'+
         '<td>'+roleMeta[t.role]+'</td>'+
         '<td>'+permMeta[t.perm]+'</td>'+
-        '<td><select class="role-select" data-idx="'+i+'"'+(isSelf?' disabled title="自分自身の権限は変更できません"':'')+'>'+options+'</select>'+
-          (isSelf?' <span style="font-size:11.5px;color:var(--ink-faint);">自分は変更不可</span>':'')+'</td>';
+        '<td><select class="role-select" data-idx="'+i+'">'+options+'</select></td>';
       body.appendChild(tr);
     });
-    body.querySelectorAll('.role-select:not([disabled])').forEach(function(sel){
+    body.querySelectorAll('.role-select').forEach(function(sel){
       sel.addEventListener('change', function(){
         var idx = +sel.dataset.idx;
         pendingPerm[idx] = sel.value;
@@ -1809,29 +1812,36 @@
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
     });
   });
-  // 権限に応じて、管理系タブ（管理・チーム編成・自動振り分け設定）の表示可否を切り替える。
-  var LEADER_TABS = ['admin','teams','rules'];
+  // 権限に応じてタブ・要素の表示可否を切り替える。
+  var LEADER_TABS = ['admin','teams'];   // leader以上（管理・チーム編成）
+  var SYSADMIN_TABS = ['rules'];         // システム管理者のみ（自動振り分け設定）
+  function tabAllowed(tab){
+    if(SYSADMIN_TABS.indexOf(tab) >= 0) return viewerRole==='sysadmin';
+    if(LEADER_TABS.indexOf(tab) >= 0) return viewerRole==='leader' || viewerRole==='sysadmin';
+    return true;
+  }
   function applyRolePermissions(){
-    var isLeader = viewerRole === 'leader';
+    var isLeader = viewerRole==='leader' || viewerRole==='sysadmin';
+    var isSysadmin = viewerRole==='sysadmin';
     document.querySelectorAll('#settingsTabs button').forEach(function(b){
-      if(LEADER_TABS.indexOf(b.dataset.tab) >= 0){ b.style.display = isLeader ? '' : 'none'; }
+      b.style.display = tabAllowed(b.dataset.tab) ? '' : 'none';
     });
-    // leaderのみ閲覧可の要素（個人別KPI・目標件数など）を一般メンバーには隠す。
+    // leader以上のみ閲覧可の要素（個人別KPI・目標件数など）を一般メンバーには隠す。
     document.querySelectorAll('.leader-only').forEach(function(el){ el.style.display = isLeader ? '' : 'none'; });
-    // 一般メンバーが管理系タブを開いている状態だった場合は、マイページタブに寄せる
+    // システム管理者のみ閲覧可の要素（メンバーの権限など）をleader以下には隠す。
+    document.querySelectorAll('.sysadmin-only').forEach(function(el){ el.style.display = isSysadmin ? '' : 'none'; });
+    // 権限のないタブを開いている状態だった場合は、マイページタブに寄せる
     // （画面は切り替えず、設定内のタブ選択だけを直す。起動時はマイ案件のまま）。
-    if(!isLeader){
-      var active = document.querySelector('#settingsTabs button.active');
-      if(!active || LEADER_TABS.indexOf(active.dataset.tab) >= 0){
-        document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='mypage'); });
-        document.querySelectorAll('.settings-panel').forEach(function(p){ p.classList.remove('active'); });
-        document.getElementById('tab-mypage').classList.add('active');
-      }
+    var active = document.querySelector('#settingsTabs button.active');
+    if(!active || !tabAllowed(active.dataset.tab)){
+      document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='mypage'); });
+      document.querySelectorAll('.settings-panel').forEach(function(p){ p.classList.remove('active'); });
+      document.getElementById('tab-mypage').classList.add('active');
     }
   }
   function openSettings(tab){
     tab = tab || 'mypage';
-    if(viewerRole!=='leader' && LEADER_TABS.indexOf(tab) >= 0){ tab = 'mypage'; }
+    if(!tabAllowed(tab)){ tab = 'mypage'; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
     document.getElementById('view-settings').classList.add('active');
     document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
