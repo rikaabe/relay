@@ -116,6 +116,7 @@
   .online-toggle{ display:flex; background:var(--paper); border:1px solid var(--border); border-radius:8px; padding:2px; gap:2px; }
   .online-toggle button{ flex:1; border:none; background:transparent; padding:7px 0; font-size:12.5px; font-weight:700; border-radius:6px; cursor:pointer; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:5px; }
   .online-toggle button.active[data-state="online"]{ background:var(--success-soft); color:var(--success); }
+  .online-toggle button.active[data-state="away"]{ background:var(--warning-soft); color:var(--warning); }
   .online-toggle button.active[data-state="offline"]{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
   .boost-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:9px; border:1px solid var(--border-strong); background:var(--surface); cursor:pointer; font-size:13px; font-weight:700; color:var(--ink); }
   .boost-btn:hover{ background:var(--paper); }
@@ -416,6 +417,16 @@
   .rule-weight input[type=range]{ flex:1; accent-color:var(--accent); }
   .rule-weight-val{ width:38px; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--accent-ink); }
 
+  /* 100点満点の採点内訳バー（振り分けロジック第2章） */
+  .score-bar{ display:flex; gap:3px; margin-top:10px; }
+  .score-seg{ padding:7px 8px; text-align:center; font-size:11px; font-weight:600; color:#fff; line-height:1.35; }
+  .score-seg b{ font-size:12.5px; }
+  .score-seg.speed{ flex:6; background:var(--accent); border-radius:6px 0 0 6px; }
+  .score-seg.ready{ flex:3; background:#7C8CF0; }
+  .score-seg.boost{ flex:2; background:var(--surface); color:var(--accent-ink); border:2px dashed var(--accent); border-radius:0 6px 6px 0; }
+  .rule-num-row{ display:flex; align-items:center; gap:6px; margin-top:10px; font-size:12.5px; font-weight:600; flex-wrap:wrap; }
+  .rule-num-row input[type=number]{ width:60px; font-family:inherit; font-size:13px; font-weight:700; padding:5px 7px; border:1px solid var(--border-strong); border-radius:7px; text-align:right; background:var(--surface); }
+
   .sim-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:16px 18px; }
   .sim-item{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
   .sim-item:last-child{ border-bottom:none; }
@@ -555,16 +566,18 @@
             <div class="mypage-section">
               <div class="mypage-section-label">稼働状況（自動振り分けに反映）</div>
               <div class="online-toggle" id="onlineToggle">
-                <button type="button" data-state="online"><span class="status-dot online"></span>オンライン</button>
-                <button type="button" data-state="offline"><span class="status-dot offline"></span>オフライン</button>
+                <button type="button" data-state="online"><span class="status-dot online"></span>出勤</button>
+                <button type="button" data-state="away"><span class="status-dot away"></span>離席</button>
+                <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
               </div>
+              <div class="boost-note">離席・退勤中は新しい振り分けの対象外。営業時間内に退勤すると、未対応の案件は確認のうえ即・別の担当へ振り直されます。</div>
             </div>
             <div class="mypage-section">
-              <button type="button" class="boost-btn" id="boostBtn">自分いけます！</button>
+              <button type="button" class="boost-btn" id="boostBtn">私いけます！</button>
               <div class="boost-note" id="boostNote"></div>
             </div>
             <div class="mypage-section">
-              <div class="mypage-section-label">今日のパフォーマンス</div>
+              <div class="mypage-section-label">私の実績</div>
               <div class="mypage-stats" id="mypageStats"></div>
             </div>
           </div>
@@ -582,7 +595,7 @@
             <div class="view-icon-badge bike"><svg width="17" height="17" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg></div>
             <div>
               <div class="view-title">バイク案件一覧</div>
-              <div class="view-sub">受信が古い順に並びます。入札開始済み（admin操作に自動連動）の案件も一覧に残るので、誰でも進捗を確認できます。</div>
+              <div class="view-sub">受信が古い順に並びます。対応済み（adminのチャット送信に自動連動）の案件も一覧に残るので、誰でも進捗を確認できます。</div>
             </div>
           </div>
           <div class="queue-filters">
@@ -606,7 +619,7 @@
             <div class="view-icon-badge car"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>
             <div>
               <div class="view-title">車案件一覧</div>
-              <div class="view-sub">受信が古い順に並びます。入札開始済み（admin操作に自動連動）の案件も一覧に残るので、誰でも進捗を確認できます。</div>
+              <div class="view-sub">受信が古い順に並びます。対応済み（adminのチャット送信に自動連動）の案件も一覧に残るので、誰でも進捗を確認できます。</div>
             </div>
           </div>
           <div class="queue-filters">
@@ -631,7 +644,7 @@
             <div class="view-sub" id="mineSub">自分に割り当てられている案件を車・バイクまとめて表示（受信が古い順）</div>
           </div>
           <div class="view-head-actions">
-            <button type="button" class="btn sm" id="demoAdminBtn" title="admin側で「承認して入札を開始」が押された場合の自動連動をシミュレートします">▶ デモ：admin側で対応が完了した場合</button>
+            <button type="button" class="btn sm" id="demoAdminBtn" title="admin側でお客様にチャットを送信（コメント）した場合の自動連動をシミュレートします">▶ デモ：adminでお客様にチャットを送った場合</button>
           </div>
         </div>
         <div class="progress-card">
@@ -696,11 +709,6 @@
               <div class="kpi-delta down">▼ 4分（先週比）</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">CV数</div>
-              <div class="kpi-value tnum" id="kpiCv">—</div>
-              <div class="kpi-delta">本日累計</div>
-            </div>
-            <div class="kpi-card">
               <div class="kpi-label">アップロード数</div>
               <div class="kpi-value tnum" id="kpiUpload">—</div>
               <div class="kpi-delta">本日累計</div>
@@ -727,24 +735,34 @@
             </div>
           </div>
 
-          <!-- 個人別の指標はマネージャー/作成者のみ閲覧可（一般メンバーには非表示） -->
-          <div class="dash-grid manager-only">
+          <!-- 個人別の指標はleaderのみ閲覧可（一般メンバーには非表示） -->
+          <div class="dash-grid leader-only">
             <div class="panel">
-              <div class="panel-title">担当者別 対応中の件数（車 / バイク内訳）</div>
-              <div class="panel-sub">件数が多い順。基準線＝1人あたりの推奨上限（8件）。上の「すべて／車／バイク」に連動します。</div>
+              <div class="panel-title">担当者別 未対応の件数（車 / バイク内訳）</div>
+              <div class="panel-sub">件数が多い順。基準線＝未対応の抱え上限（5件・設定で変更可）。上限に達した人には新しいtelを振り分けません。上の「すべて／車／バイク」に連動します。</div>
               <div id="workloadBars"></div>
               <div class="legend-row">
                 <span><span class="legend-swatch" style="background:var(--car)"></span>車の案件</span>
                 <span><span class="legend-swatch" style="background:var(--bike)"></span>バイクの案件</span>
-                <span>┃ 推奨上限ライン</span>
+                <span>┃ 抱え上限ライン（5件）</span>
               </div>
             </div>
             <div class="panel">
               <div class="panel-title">担当者ステータス</div>
-              <div class="panel-sub">稼働状況と主担当・兼任区分（振り分け判断の材料）</div>
+              <div class="panel-sub">出勤状況と担当区分（出勤中の人だけが振り分けの対象）</div>
               <div style="overflow-x:auto;">
                 <table class="team-table" id="teamTable">
-                  <thead><tr><th>担当者</th><th>状況</th><th>負荷</th><th>担当区分</th></tr></thead>
+                  <thead><tr><th>担当者</th><th>状況</th><th>未対応</th><th>担当区分</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel" style="grid-column:1/-1;">
+              <div class="panel-title">目標と応援（leaderのみ）</div>
+              <div class="panel-sub">目標件数はleaderだけが登録・閲覧できます（本人にも表示されません）。達成率・達成後フォロー・応援件数は人事評価の材料で、振り分けの点数には一切使いません。</div>
+              <div style="overflow-x:auto;">
+                <table class="team-table" id="targetTable">
+                  <thead><tr><th>担当者</th><th>目標（月）</th><th>対応実績</th><th>達成率</th><th>達成後フォロー</th><th>応援件数</th></tr></thead>
                   <tbody></tbody>
                 </table>
               </div>
@@ -789,85 +807,88 @@
             </div>
           </div>
 
-          <!-- 自動振り分け設定 -->
+          <!-- 自動振り分け設定（ロジックは固定・変更できるのは数値のみ。振り分けロジック.md v1.1準拠） -->
           <div class="settings-panel" id="tab-rules">
             <div class="rules-head">
               <div class="rules-head-title">自動振り分け設定</div>
-              <div class="rules-head-sub">案件は必ず受信（CV）が古いものから順に自動振り分けの対象になります。以下は、その案件を「誰に割り当てるか」を決める重み付けルールです。</div>
+              <div class="rules-head-sub">telが届いたら、サーバーが自動で1人を選んで渡します（人は一切判断しません）。仕組みは固定で、変更できるのは「数値のみ変更可」と付いている数字だけです。</div>
             </div>
             <div class="rules-grid">
               <div class="rules-left">
                 <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">1</div>
-                    <div class="rule-name">受信（CV）が古い案件から順に処理</div>
+                    <div class="rule-name">届いたのが古いtelから順に処理</div>
                     <span class="rule-fixed-badge">常時適用</span>
                   </div>
-                  <div class="rule-desc">複数の未アサイン案件がある場合、受信時刻が最も古いものを次の割り当て対象にします。処理順序の土台となる基本ルールで、オフにはできません。</div>
+                  <div class="rule-desc">複数たまっている場合は、届いたのが古い順に処理します。処理順序の土台となる基本ルールです。</div>
                 </div>
-                <div class="rule-card">
+                <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">2</div>
-                    <div class="rule-name">現在の対応件数が少ない人を優先</div>
-                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                    <div class="rule-name">「出勤中で車種が合う人」にしぼる</div>
+                    <span class="rule-fixed-badge">常時適用</span>
                   </div>
-                  <div class="rule-desc">対応中・確認中の合計件数で比較。同じタイミングの案件で担当者を決める際、特定の人に偏らないようにする基本ルール。</div>
-                  <div class="rule-weight"><input type="range" min="0" max="100" value="40" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">40%</span></div>
+                  <div class="rule-desc">出勤・離席・退勤は本人が画面のボタンで切り替えます（シフト表の取り込みは行いません。終業時刻に全員自動で退勤扱い）。車種の合う人がだれも出勤していないときだけ、お客様を待たせないよう担当区分に関係なく全員を候補にします。</div>
                 </div>
                 <div class="rule-card">
                   <div class="rule-head">
                     <div class="rule-order">3</div>
-                    <div class="rule-name">車・バイクの担当区分が一致する人を優先</div>
-                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                    <div class="rule-name">未対応の抱え上限</div>
+                    <span class="rule-fixed-badge">数値のみ変更可</span>
                   </div>
-                  <div class="rule-desc">案件の車種区分（車／バイク）と、チーム編成で設定した担当区分を照合。「両方対応」の人はどちらの案件でも対象になります。</div>
-                  <div class="rule-weight"><input type="range" min="0" max="100" value="35" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">35%</span></div>
+                  <div class="rule-desc">未対応のtelがこの件数に達している人には、それ以上振り分けません。1件対応するごとに1件補充される形になり、振り分けのペースが本人の対応速度に自動でそろいます。受けられる人がいないときは無理に渡さず、未割り当てのまま待機します。</div>
+                  <div class="rule-num-row">上限 <input type="number" value="5" min="1" max="20"> 件</div>
                 </div>
                 <div class="rule-card">
                   <div class="rule-head">
                     <div class="rule-order">4</div>
-                    <div class="rule-name">最終対応からの経過時間が長い人を優先</div>
-                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                    <div class="rule-name">100点満点で採点し、最高点の1人へ渡す</div>
+                    <span class="rule-fixed-badge">数値のみ変更可</span>
                   </div>
-                  <div class="rule-desc">担当者間の対応履歴の偏りを防ぐための補助ルール。案件の受信順とは別軸で、しばらく新規対応をしていない人を優先します。</div>
-                  <div class="rule-weight"><input type="range" min="0" max="100" value="15" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">15%</span></div>
+                  <div class="score-bar">
+                    <div class="score-seg speed">対応の早さ<br><b>60点</b></div>
+                    <div class="score-seg ready">いますぐ動けるか<br><b>30点</b></div>
+                    <div class="score-seg boost">私いけます！<br><b>+10点</b></div>
+                  </div>
+                  <div class="rule-desc">早さ＝直近のtelを1件100点で採点した平均×0.6（実績が足りない人はチームの中央値で補完・車とバイクは別集計・応援対応は平均に入れない）。動けるか＝未対応 0/1/2/3件以上で 30/20/10/0点。私いけます！＝押してから24時間+10点（期限内対応率が基準未満の間は加点なし）。同点なら直近の割り当てから時間が空いている人へ。本人への通知に理由の説明文は付けません。</div>
+                  <div class="rule-num-row">評価窓：直近 <input type="number" value="20" min="5" max="100"> 件　／　私いけます！の対応率基準 <input type="number" value="80" min="0" max="100"> %</div>
                 </div>
-                <div class="rule-card">
+                <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">5</div>
-                    <div class="rule-name">稼働中（オンライン）の人のみに割り当てる</div>
-                    <label class="switch"><input type="checkbox" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                    <div class="rule-name">期限を過ぎたら自動で振り直し</div>
+                    <span class="rule-fixed-badge">常時適用</span>
                   </div>
-                  <div class="rule-desc">離席・オフラインの担当者には新規割り当てを行わず、復帰時にキューへ反映。</div>
-                  <div class="rule-weight"><input type="range" min="0" max="100" value="10" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="rule-weight-val">10%</span></div>
+                  <div class="rule-desc">残り30分で本人にだけリマインド。期限超過でサーバーが担当を外し、その時点の点数で次の人へ（新しい期限は振り直しから1時間）。外れた本人にも「担当が変わりました」通知が届きます（ミュート不可）。同じtelが2回振り直しされたらleaderに通知。担当の付け替えは常に自動で、人が手で変えることはしません。</div>
                 </div>
-                <div class="rule-card off">
+                <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">6</div>
-                    <div class="rule-name">VIP顧客は指名担当者に固定割り当て</div>
-                    <label class="switch"><input type="checkbox"><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                    <div class="rule-name">営業時間内の退勤は、未対応telを即振り直し</div>
+                    <span class="rule-fixed-badge">常時適用</span>
                   </div>
-                  <div class="rule-desc">顧客タグに「VIP」が付いている場合、他条件より優先して指名担当者へ割り当て。</div>
+                  <div class="rule-desc">退勤ボタンを押すと「◯件が別の担当に振り直されます」と確認したうえで、その場で自動振り直し（本人の記録は「未対応のまま振り直し」＝0点）。離席と終業時刻の自動退勤では振り直しません。</div>
                 </div>
                 <button class="btn primary" style="margin-top:4px;">変更を保存</button>
               </div>
               <div class="rules-right">
                 <div class="panel-title" style="margin-bottom:2px;">シミュレーション：次に来る3件の割り当て予測</div>
-                <div class="panel-sub">左の重み設定を反映した割り当て結果と、その理由。</div>
+                <div class="panel-sub">現在の出勤状況と点数を反映した割り当て結果と、その点数。</div>
                 <div class="sim-card" id="simCard"></div>
                 <div class="audit-note">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-                  割り当て結果は案件詳細に「割り当て理由」として記録され、後から担当者・件数の偏りを検証できます。
+                  割り当て・振り直しの履歴と「誰が・いつお客様にチャットを送ったか」は対応記録として残り、leaderが後から一覧で確認できます。
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 通知設定（通知の履歴は右上の🔔から確認） -->
+          <!-- 通知設定（通知の履歴は左の「通知」タブから確認） -->
           <div class="settings-panel" id="tab-notif">
             <div class="rules-head">
               <div class="rules-head-title">通知設定</div>
-              <div class="rules-head-sub">どの通知を受け取るかだけを設定します。通知の履歴は右上の🔔アイコンから確認できます。</div>
+              <div class="rules-head-sub">どの通知を受け取るかだけを設定します。通知の履歴は左の「通知」タブから確認できます。</div>
             </div>
             <div class="notif-settings" id="notifSettings">
               <div class="notif-settings-body">
@@ -884,7 +905,11 @@
                   <label class="switch"><input type="checkbox" id="notifDigestToggle"><span class="switch-track"></span><span class="switch-thumb"></span></label>
                 </div>
                 <div class="notif-toggle-row locked">
-                  <div><div class="notif-toggle-label">期限超過の通知（常にON・ミュート不可）</div><div class="notif-toggle-desc">対応漏れ防止のため、この通知だけは絞り込みの対象外です</div></div>
+                  <div><div class="notif-toggle-label">期限超過の通知（常にON・ミュート不可）</div><div class="notif-toggle-desc">対応漏れ防止のため、この通知は絞り込みの対象外です</div></div>
+                  <label class="switch"><input type="checkbox" checked disabled><span class="switch-track"></span><span class="switch-thumb"></span></label>
+                </div>
+                <div class="notif-toggle-row locked">
+                  <div><div class="notif-toggle-label">担当変更の通知（常にON・ミュート不可）</div><div class="notif-toggle-desc">振り直しで担当から外れたときの通知です。旧担当と新担当が二重にお客様へ連絡する事故を防ぐため、オフにできません</div></div>
                   <label class="switch"><input type="checkbox" checked disabled><span class="switch-track"></span><span class="switch-thumb"></span></label>
                 </div>
               </div>
@@ -981,22 +1006,26 @@
   }
 
   // ステータスは今後増える予定。現状は「内容確認」「再アップロード」の2種類のみ。
-  // 「対応済み」はステータスとは別軸のフラグ（done）。お客様への連絡または承認・入札開始まで
-  // 完了した状態を指し、現状adminを開かないと分からない「対応したかどうか」をアプリ上で見える化する。
+  // 「対応済み」はステータスとは別軸のフラグ（done）。adminのコメントでお客様にチャットを
+  // 送った（comment.reply_sent）、または承認・入札開始まで完了した状態を指す。Relay側の
+  // ボタンでは操作せず、adminからのWebhookに自動連動する。採点の時計が止まるのもこの瞬間。
   var statusMeta = {
     reviewing:{label:"内容確認", cls:"review"},
     reupload:{label:"再アップロード", cls:"hold"},
-    done:{label:"入札開始済み", cls:"done"},
+    done:{label:"対応済み", cls:"done"},
   };
 
+  // stats: handled=今日の対応件数 / ontime=直近20件の期限内対応率%（実績5件未満はnull＝ゲート判定なし）
+  //        target=月の目標件数（leaderのみ閲覧・本人にも非表示） / monthDone=今月の対応実績
+  //        follow=目標達成後の対応件数（フォロー実績） / support=応援（垣根越え）件数
   var team = [
-    {name:"山田 太郎", stamp:"🔥", status:"online", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:6, avgSpeed:14, dealRate:68}},
-    {name:"鈴木 花子", stamp:"🌸", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:8, avgSpeed:11, dealRate:74}},
-    {name:"伊藤 誠", stamp:"🐻", status:"online", role:"both", updated:"2025/12/02", boost:false, stats:{handled:9, avgSpeed:19, dealRate:61}},
-    {name:"田中 太郎", stamp:"🍀", status:"away", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:3, avgSpeed:22, dealRate:55}},
-    {name:"中村 優子", stamp:"🍊", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:5, avgSpeed:16, dealRate:70}},
-    {name:"高橋 健一", stamp:"⚡", status:"offline", role:"bike", updated:"2026/02/18", boost:false, stats:{handled:0, avgSpeed:0, dealRate:0}},
-    {name:"渡辺 美咲", stamp:"🎧", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:7, avgSpeed:13, dealRate:66}},
+    {name:"山田 太郎", stamp:"🔥", status:"online", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:6, ontime:92, target:60, monthDone:38, follow:0, support:2}},
+    {name:"鈴木 花子", stamp:"🌸", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:8, ontime:96, target:70, monthDone:71, follow:4, support:0}},
+    {name:"伊藤 誠", stamp:"🐻", status:"online", role:"both", updated:"2025/12/02", boost:true, stats:{handled:9, ontime:84, target:65, monthDone:52, follow:0, support:6}},
+    {name:"田中 太郎", stamp:"🍀", status:"away", role:"bike", updated:"2026/01/10", boost:false, stats:{handled:3, ontime:75, target:50, monthDone:24, follow:0, support:0}},
+    {name:"中村 優子", stamp:"🍊", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:5, ontime:88, target:60, monthDone:41, follow:0, support:1}},
+    {name:"高橋 健一", stamp:"⚡", status:"offline", role:"bike", updated:"2026/02/18", boost:false, stats:{handled:0, ontime:null, target:40, monthDone:0, follow:0, support:0}},
+    {name:"渡辺 美咲", stamp:"🎧", status:"online", role:"car", updated:"2026/01/10", boost:false, stats:{handled:7, ontime:90, target:70, monthDone:66, follow:2, support:0}},
   ];
   // マイページのアイコンスタンプ選択肢
   var STAMP_OPTIONS = ["🔥","🌸","🐻","🍀","🍊","⚡","🎧","🐱","🐶","🦊","🐼","🌟","💪","🚀","☕","🎯"];
@@ -1040,13 +1069,14 @@
     });
     return teamItems.concat(userItems).join('');
   }
-  var CAP = 8;
+  // 未対応の抱え上限（maxPendingPerUser・設定で変更可）。上限に達した人には振り分けない。
+  var MAX_PENDING = 5;
   var CURRENT_USER = "山田 太郎";
-  // 表示権限。manager＝全設定を操作可 / member＝通知設定のみ（チーム編成・自動振り分けは非表示）。
+  // 表示権限。leader＝全設定を操作可 / member＝通知設定のみ（チーム編成・自動振り分けは非表示）。
   // メインで使わないメンバーの誤操作・不正・不満を防ぐため。実運用では管理者がユーザーごとに設定する。
-  // モックでは既定を member とし、アプリ作成者だけが URL に ?role=manager を付けて管理者ビューを確認できる。
+  // モックでは既定を member とし、アプリ作成者だけが URL に ?role=leader を付けてleaderビューを確認できる。
   // （切替UIはメンバーに見せない。メンバーが普通に開くと常に member 固定。）
-  var viewerRole = (new URLSearchParams(location.search).get('role') === 'manager') ? 'manager' : 'member';
+  var viewerRole = (new URLSearchParams(location.search).get('role') === 'leader') ? 'leader' : 'member';
   var notifMute = { car:true, bike:true };
   var kpiScope = "all";   // all | car | bike — KPIページの絞り込み
 
@@ -1118,11 +1148,27 @@
   }
 
   // ---------------- 対応済み（done）＝admin操作との自動連動 ----------------
-  // 「対応済み」はRelay上のボタンでは操作しない。admin側で「お客様へのメッセージ送信」または
-  // 「承認して入札を開始」が行われたことをRelayが検知し、自動でステータスを更新する想定。
+  // 「対応済み」はRelay上のボタンでは操作しない。admin側で「お客様へのチャット送信（コメント）」
+  // または「承認して入札を開始」が行われたことをWebhook（comment.reply_sent 等）で検知し、
+  // 自動でステータスを更新する想定。「対応した」＝お客様にチャットを送った時（採点の時計も止まる）。
   // モックアップではその動きを「デモ再生」ボタンでシミュレートする。
   var toastTimer = null;
   function findCase(id){ return cases.find(function(c){ return c.id===id; }); }
+  function pendingCountOf(name){ return cases.filter(function(c){ return c.owner && c.owner.name===name && !c.done; }).length; }
+  // 営業時間内の退勤時の自動振り直し（振り分けロジック第4章）。実際はその時点の点数で次点の
+  // 人へ渡す。モックでは「出勤中・車種が合う・抱え上限未満」の中で未対応が最も少ない人を次点とみなす。
+  function reassignPendingFrom(name){
+    var moved = 0;
+    cases.forEach(function(c){
+      if(!(c.owner && c.owner.name===name && !c.done)) return;
+      var next = team
+        .filter(function(t){ return t.name!==name && t.status==='online' && (t.role===c.vehicle || t.role==='both') && pendingCountOf(t.name) < MAX_PENDING; })
+        .sort(function(a,b){ return pendingCountOf(a.name) - pendingCountOf(b.name); })[0];
+      c.owner = next ? {name:next.name} : null; // 受けられる人がいなければ未割り当てで待機
+      moved++;
+    });
+    return moved;
+  }
   function refreshAllCaseViews(){
     renderMine();
     renderQueue('bike');
@@ -1145,7 +1191,7 @@
       showSyncToast('対応待ちの案件がありません（デモ）');
       return;
     }
-    markDoneFromAdmin(mine[0], '承認して入札を開始');
+    markDoneFromAdmin(mine[0], 'お客様へのチャット送信（コメント）');
   }
   function showSyncToast(text){
     var toastEl = document.getElementById('undoToast');
@@ -1185,7 +1231,7 @@
     if(mine.length===0){
       mineBody.innerHTML = '<tr><td colspan="4"><div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div></td></tr>';
     }
-    document.getElementById('mineSub').textContent = "自分（"+CURRENT_USER+"）の未対応の案件を車・バイクまとめて表示・"+mine.length+"件（受信が古い順）。adminで対応が完了（お客様への連絡・承認/入札開始）すると自動で対応済みになります。";
+    document.getElementById('mineSub').textContent = "自分（"+CURRENT_USER+"）の未対応の案件を車・バイクまとめて表示・"+mine.length+"件（受信が古い順）。adminのコメントでお客様にチャットを送ると、自動で対応済みになります。";
     renderMineProgress();
   }
 
@@ -1199,18 +1245,18 @@
     });
   }
   // KPIファネル（本日のデモ値）。all = car + bike で整合。率は件数から自動計算するため常に一致する。
+  // Relayは写真アップロード完了以降のみ管理するため、CV数は扱わない（case.created廃止）。
   // 実運用では集計APIの結果を差し込む想定（現状はモックアップ用の固定値）。
   var kpiFunnel = {
-    all:  {cv:42, upload:38, bid:30, deal:12},
-    car:  {cv:26, upload:23, bid:18, deal:7},
-    bike: {cv:16, upload:15, bid:12, deal:5},
+    all:  {upload:38, bid:30, deal:12},
+    car:  {upload:23, bid:18, deal:7},
+    bike: {upload:15, bid:12, deal:5},
   };
   function setKpi(id, html){ var el = document.getElementById(id); if(el) el.innerHTML = html; }
   function renderKpiFunnel(){
     var f = kpiFunnel[kpiScope] || kpiFunnel.all;
     var num = function(n,u){ return n+'<span style="font-size:15px;font-weight:600;">'+u+'</span>'; };
     var pct = function(a,b){ return b ? Math.round(a/b*100) : 0; };
-    setKpi('kpiCv',       num(f.cv, '件'));
     setKpi('kpiUpload',   num(f.upload, '件'));
     setKpi('kpiBid',      num(f.bid, '件'));
     setKpi('kpiBidRate',  num(pct(f.bid, f.upload), '%'));
@@ -1224,14 +1270,14 @@
       var shown = kpiScope==='all' ? l.total : (kpiScope==='car'?l.loadCar:l.loadBike);
       return Object.assign({}, l, {shown:shown});
     }).sort(function(a,b){ return b.shown - a.shown; });
-    var maxLoad = Math.max(CAP, relevant.reduce(function(m,l){return Math.max(m,l.shown);},0));
+    var maxLoad = Math.max(MAX_PENDING, relevant.reduce(function(m,l){return Math.max(m,l.shown);},0));
 
     var barsEl = document.getElementById('workloadBars');
     barsEl.innerHTML = "";
     relevant.forEach(function(l){
       var carPct = (l.loadCar/maxLoad)*100, bikePct = (l.loadBike/maxLoad)*100;
       var showCar = kpiScope!=='bike', showBike = kpiScope!=='car';
-      var capPct = (CAP/maxLoad)*100;
+      var capPct = (MAX_PENDING/maxLoad)*100;
       var row = document.createElement('div');
       row.className='bar-row';
       row.innerHTML =
@@ -1247,14 +1293,14 @@
 
     var teamBody = document.querySelector('#teamTable tbody');
     teamBody.innerHTML = "";
-    var statusLabel = {online:"オンライン", away:"離席中", offline:"オフライン"};
+    var statusLabel = {online:"出勤中", away:"離席中", offline:"退勤"};
     loads.forEach(function(l){
       var tr = document.createElement('tr');
-      var pct = Math.min(100,(l.total/CAP)*100);
+      var pct = Math.min(100,(l.total/MAX_PENDING)*100);
       tr.innerHTML =
         '<td>'+l.t.name+'</td>'+
         '<td><span class="status-dot '+l.t.status+'" style="margin-right:5px;"></span>'+statusLabel[l.t.status]+'</td>'+
-        '<td><span class="cap-mini"><span class="cap-mini-fill'+(l.total>CAP?' over':'')+'" style="width:'+pct+'%"></span></span> <span class="tnum">'+l.total+'/'+CAP+'</span></td>'+
+        '<td><span class="cap-mini"><span class="cap-mini-fill'+(l.total>=MAX_PENDING?' over':'')+'" style="width:'+pct+'%"></span></span> <span class="tnum">'+l.total+'/'+MAX_PENDING+'</span></td>'+
         '<td>'+roleMeta[l.t.role]+'</td>';
       teamBody.appendChild(tr);
     });
@@ -1262,6 +1308,19 @@
     var scopedCases = kpiScope==='all' ? cases : cases.filter(function(c){return c.vehicle===kpiScope;});
     document.getElementById('kpiWaiting').innerHTML = scopedCases.filter(function(c){return !c.owner && !c.done;}).length+'<span style="font-size:15px;font-weight:600;">件</span>';
     renderKpiFunnel();
+  }
+
+  // 目標と応援（leaderのみ・振り分けロジック第6章）。振り分けの点数には一切使わない。
+  function renderTargets(){
+    var body = document.querySelector('#targetTable tbody');
+    if(!body) return;
+    body.innerHTML = team.map(function(t){
+      var s = t.stats;
+      var rate = s.target ? Math.round(s.monthDone/s.target*100) : 0;
+      return '<tr><td>'+t.name+'</td><td class="tnum">'+s.target+'件</td><td class="tnum">'+s.monthDone+'件</td>'+
+        '<td class="tnum"'+(rate>=100?' style="color:var(--success);font-weight:700;"':'')+'>'+rate+'%</td>'+
+        '<td class="tnum">'+(s.follow||0)+'件</td><td class="tnum">'+(s.support||0)+'件</td></tr>';
+    }).join('');
   }
 
   // ---------------- チーム編成 ----------------
@@ -1303,11 +1362,11 @@
     setTimeout(function(){ toast.classList.remove('show'); }, 2600);
   });
 
-  // ---------------- シミュレーション ----------------
+  // ---------------- シミュレーション（100点満点の採点結果を表示） ----------------
   var sim = [
-    {caseTitle:"316045 車の査定アップロード確認（09:41受信・最古）", vehicle:"car", reason:"受信が最も古い未アサイン案件。車担当のうち対応件数が最少かつ稼働中の渡辺さんへ", name:"渡辺 美咲"},
-    {caseTitle:"524501 バイクの交渉リマインド（09:47受信）", vehicle:"bike", reason:"次に受信が古い案件。バイク担当の高橋さんはオフラインのため、両方対応の伊藤さんへ", name:"伊藤 誠"},
-    {caseTitle:"524502 バイクの楽サツ変更依頼（09:52受信）", vehicle:"bike", reason:"3番目に受信が古い案件。鈴木さんは車主担当だが両方対応可、件数も平均的なため割り当て", name:"鈴木 花子"},
+    {caseTitle:"316045 車の査定アップロード確認（09:41受信・最古）", vehicle:"car", reason:"出勤中の車担当を採点：渡辺 84点（早さ54＋動ける30）＞ 中村 62点 ＞ 伊藤 58点", name:"渡辺 美咲"},
+    {caseTitle:"524501 バイクの交渉リマインド（09:47受信）", vehicle:"bike", reason:"高橋さんは退勤中・田中さんは離席中のため対象外。伊藤 71点（早さ41＋動ける20＋私いけます10）＞ 山田 64点", name:"伊藤 誠"},
+    {caseTitle:"524502 バイクの楽サツ変更依頼（09:52受信）", vehicle:"bike", reason:"伊藤さんは直前の割り当てで未対応が増え61点に。山田 64点（早さ44＋動ける20）が最高点", name:"山田 太郎"},
   ];
   var simCard = document.getElementById('simCard');
   sim.forEach(function(s, i){
@@ -1322,9 +1381,10 @@
 
   // ---------------- 通知センター（設定内） ----------------
   var notifications = [
+    {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当が変わりました（期限超過のため自動振り直し）。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', text:'<b>515694</b> の対応期限まで残り10分です（本日 12:00）', time:"08:50", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0003", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>山田 太郎</b>さんから <b>515694</b> に対応依頼が届いています', time:"08:20", unread:true},
-    {day:"today", vehicle:"car", cls:"assign", caseId:"#C-0006", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>', text:'<b>315560</b> があなたに自動で割り当てられました（理由：車担当・負荷最小）', time:"06:58", unread:true},
+    {day:"today", vehicle:"car", cls:"assign", caseId:"#C-0006", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>', text:'<b>315560</b> があなたに自動で割り当てられました', time:"06:58", unread:true},
     {day:"today", vehicle:"bike", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg>', text:'バイクの新着案件が2件登録されました', time:"06:40", unread:false},
     {day:"yesterday", vehicle:"car", cls:"new", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg>', text:'車の新着案件が5件登録されました', time:"18:02", unread:false},
   ];
@@ -1542,23 +1602,28 @@
     });
   });
   // 権限に応じて、管理系タブ（チーム編成・自動振り分け設定）の表示可否を切り替える。
-  var MANAGER_TABS = ['teams','rules'];
+  var LEADER_TABS = ['teams','rules'];
   function applyRolePermissions(){
-    var isManager = viewerRole === 'manager';
+    var isLeader = viewerRole === 'leader';
     document.querySelectorAll('#settingsTabs button').forEach(function(b){
-      if(MANAGER_TABS.indexOf(b.dataset.tab) >= 0){ b.style.display = isManager ? '' : 'none'; }
+      if(LEADER_TABS.indexOf(b.dataset.tab) >= 0){ b.style.display = isLeader ? '' : 'none'; }
     });
-    // マネージャー/作成者のみ閲覧可の要素（個人別KPIなど）を一般メンバーには隠す。
-    document.querySelectorAll('.manager-only').forEach(function(el){ el.style.display = isManager ? '' : 'none'; });
-    // 一般メンバーが管理系タブを開いている状態だった場合は、通知設定に寄せる。
-    if(!isManager){
+    // leaderのみ閲覧可の要素（個人別KPI・目標件数など）を一般メンバーには隠す。
+    document.querySelectorAll('.leader-only').forEach(function(el){ el.style.display = isLeader ? '' : 'none'; });
+    // 一般メンバーが管理系タブを開いている状態だった場合は、通知設定タブに寄せる
+    // （画面は切り替えず、設定内のタブ選択だけを直す。起動時はマイ案件のまま）。
+    if(!isLeader){
       var active = document.querySelector('#settingsTabs button.active');
-      if(!active || MANAGER_TABS.indexOf(active.dataset.tab) >= 0){ openSettings('notif'); }
+      if(!active || LEADER_TABS.indexOf(active.dataset.tab) >= 0){
+        document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='notif'); });
+        document.querySelectorAll('.settings-panel').forEach(function(p){ p.classList.remove('active'); });
+        document.getElementById('tab-notif').classList.add('active');
+      }
     }
   }
   function openSettings(tab){
-    tab = tab || (viewerRole==='manager' ? 'teams' : 'notif');
-    if(viewerRole!=='manager' && MANAGER_TABS.indexOf(tab) >= 0){ tab = 'notif'; }
+    tab = tab || (viewerRole==='leader' ? 'teams' : 'notif');
+    if(viewerRole!=='leader' && LEADER_TABS.indexOf(tab) >= 0){ tab = 'notif'; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
     document.getElementById('view-settings').classList.add('active');
     document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
@@ -1628,14 +1693,30 @@
   }
   function renderOnlineToggle(){
     var me = myself();
-    var state = me.status==='offline' ? 'offline' : 'online';
     document.querySelectorAll('#onlineToggle button').forEach(function(btn){
-      btn.classList.toggle('active', btn.dataset.state===state);
+      btn.classList.toggle('active', btn.dataset.state===me.status);
     });
   }
+  // 退勤（営業時間内）＝未対応telを確認ダイアログ付きで即・自動振り直し（振り分けロジック第4章）。
+  // 離席では振り直さない（離席にコストを付けると誰も押さなくなるため）。
   document.querySelectorAll('#onlineToggle button').forEach(function(btn){
     btn.addEventListener('click', function(){
-      myself().status = btn.dataset.state;
+      var me = myself();
+      var next = btn.dataset.state;
+      if(next==='offline' && me.status!=='offline'){
+        var pendingList = cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; });
+        if(pendingList.length){
+          var ok = confirm('未対応の案件が'+pendingList.length+'件あります。\n退勤すると、この'+pendingList.length+'件はすぐに別の担当へ自動で振り直されます（あなたの記録は「未対応のまま振り直し」＝0点）。\n退勤しますか？');
+          if(!ok) return;
+          me.status = 'offline';
+          var moved = reassignPendingFrom(CURRENT_USER);
+          renderOnlineToggle();
+          refreshAllCaseViews();
+          showSyncToast('退勤しました。未対応の'+moved+'件を別の担当へ振り直しました（あなたと新しい担当に通知が届きます）');
+          return;
+        }
+      }
+      me.status = next;
       renderOnlineToggle();
       renderWorkload();
     });
@@ -1644,11 +1725,18 @@
     var me = myself();
     var btn = document.getElementById('boostBtn');
     var note = document.getElementById('boostNote');
+    var s = me.stats || {};
+    // 期限内対応率が基準（80%）未満なら押しても加点なし。実績5件未満（ontime=null）はゲート判定なし。
+    var gated = (s.ontime !== null && s.ontime !== undefined) && s.ontime < 80;
     btn.classList.toggle('active', !!me.boost);
-    btn.innerHTML = me.boost ? '対応いけます！（受付中）' : '自分いけます！';
-    note.textContent = me.boost
-      ? '本日24時に自動でOFFに戻ります。次の自動振り分けで優先されやすくなっています。'
-      : '押すと次の自動振り分けで優先されやすくなります（1日で必ずリセットされます）。';
+    btn.innerHTML = me.boost ? '私いけます！（+10点 受付中）' : '私いけます！';
+    if(me.boost){
+      note.textContent = '押してから24時間、振り分けの点数に+10点が付きます。もう一度押すと取り消せます。';
+    } else if(gated){
+      note.textContent = '直近の期限内対応率が80%を下回っているため、いま押しても加点されません（対応率が戻ると有効になります）。';
+    } else {
+      note.textContent = '押すと24時間、振り分けの点数に+10点（早さ60＋動ける30＋10＝100点満点）。';
+    }
   }
   document.getElementById('boostBtn').addEventListener('click', function(){
     var me = myself();
@@ -1656,11 +1744,12 @@
     renderBoost();
   });
   function renderMypageStats(){
-    var s = myself().stats || {handled:0, avgSpeed:0, dealRate:0};
+    var s = myself().stats || {};
+    var pending = pendingCountOf(CURRENT_USER);
     document.getElementById('mypageStats').innerHTML =
-      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+s.handled+'<span style="font-size:11px;">件</span></div><div class="mypage-stat-label">対応件数</div></div>'+
-      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+s.avgSpeed+'<span style="font-size:11px;">分</span></div><div class="mypage-stat-label">平均対応速度</div></div>'+
-      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+s.dealRate+'<span style="font-size:11px;">%</span></div><div class="mypage-stat-label">成約率</div></div>';
+      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+(s.handled||0)+'<span style="font-size:11px;">件</span></div><div class="mypage-stat-label">今日の対応件数</div></div>'+
+      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+(s.ontime==null?'—':s.ontime+'<span style="font-size:11px;">%</span>')+'</div><div class="mypage-stat-label">期限内対応率</div></div>'+
+      '<div class="mypage-stat"><div class="mypage-stat-val tnum">'+pending+'<span style="font-size:11px;">/'+MAX_PENDING+'件</span></div><div class="mypage-stat-label">未対応（上限'+MAX_PENDING+'）</div></div>';
   }
   function renderMyPage(){
     var me = myself();
@@ -1687,6 +1776,7 @@
   renderQueue('car');
   renderMine();
   renderWorkload();
+  renderTargets();
   renderMineNotifPanel();
   renderMyPage();
   applyRolePermissions();
