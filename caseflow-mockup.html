@@ -93,15 +93,27 @@
   .side-profile .who-meta{ flex:1; }
   .side-profile-chev{ flex:none; color:var(--ink-faint); }
 
-  /* ---------- トップバーの稼働状況ボタン（常設） ---------- */
-  .topbar-status{ margin-left:auto; flex:none; }
-  .topbar-status button{ flex:none; padding:6px 12px; }
+  /* ---------- トップバーの稼働状況ボタン（常設・押しやすいよう大きめに） ---------- */
+  .online-toggle.topbar-status{ margin-left:auto; flex:none; }
+  .online-toggle.topbar-status button{ flex:none; padding:10px 18px; font-size:14px; }
+  /* ●は選択中の状態にだけ表示（どれが今の状態か一目で分かるように） */
+  .online-toggle.topbar-status .status-dot{ display:none; }
+  .online-toggle.topbar-status button.active .status-dot{ display:inline-block; }
+
+  /* ---------- トップバーの「私いけます！」ボタン（稼働状況の右隣） ---------- */
+  .topbar-boost{
+    flex:none; display:inline-flex; align-items:center; gap:6px;
+    height:44px; padding:0 18px; margin-left:10px;
+    border-radius:9px; border:1px solid var(--border-strong); background:var(--surface);
+    font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; white-space:nowrap;
+  }
+  .topbar-boost:hover{ background:var(--paper); }
+  .topbar-boost.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
 
   /* ---------- 設定内マイページ ---------- */
   .mypage-panel{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px 22px 28px; align-items:start; max-width:860px; }
   .mypage-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
   .boost-state{ display:flex; align-items:center; gap:10px; font-size:13px; flex-wrap:wrap; }
-  .boost-row-btn.on{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-ink); }
   .mypage-head{ flex:none; display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); }
   .mypage-head .avatar{ width:36px; height:36px; font-size:17px; }
   .mypage-name{ font-size:14px; font-weight:800; }
@@ -515,6 +527,8 @@
       <button type="button" data-state="away"><span class="status-dot away"></span>離席</button>
       <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
     </div>
+    <!-- 私いけます！＝本人単位の+10点/24時間（案件単位ではないため、案件行ではなくここに置く） -->
+    <button type="button" class="topbar-boost" id="boostTopBtn" title="押してから24時間、振り分けの点数に+10点。担当はサーバーが自動で決めます">🙋 私いけます！</button>
   </header>
 
   <div class="body">
@@ -760,7 +774,7 @@
           <div class="settings-panel active" id="tab-mypage">
             <div class="rules-head">
               <div class="rules-head-title">マイページ</div>
-              <div class="rules-head-sub">アイコンスタンプの変更と、自分の実績の確認ができます。出勤・離席・退勤の切り替えは画面右上のボタン、「私いけます！」は案件一覧の未割り当て案件から押せます。</div>
+              <div class="rules-head-sub">アイコンスタンプの変更と、自分の実績の確認ができます。出勤・離席・退勤の切り替えと「私いけます！」は画面右上のボタンから押せます。</div>
             </div>
             <div class="mypage-panel">
               <div class="mypage-card">
@@ -950,26 +964,16 @@
   var ICON_GOTO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-8 8"/><path d="M3 21l8-8"/></svg>';
   var ICON_CHECK ='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
   // ボタンはホバーなしで常時表示。アイコンだけのボタンは避け、必ず文字ラベルを併記する。
-  // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）。
-  // 未割り当て（自動アサイン待ち）の案件には「私いけます！」ボタンを出す＝手を挙げる入口。
-  // ただし割り当て自体はサーバーの採点で自動的に決まる（本人単位の+10点・案件には固定されない）。
+  // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）ため、行のボタンはこの2つだけ。
   function rowActionsHtml(c){
-    var boostHtml = '';
-    if(!c.owner && !c.done){
-      var on = !!myself().boost;
-      boostHtml = '<button type="button" class="btn sm boost-row-btn'+(on?' on':'')+'" data-case="'+c.id+'">🙋 私いけます！'+(on?'（受付中）':'')+'</button>';
-    }
     return '<div class="row-actions">'+
       '<a class="btn '+(c.done?'':'primary ')+'sm" href="'+c.adminUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">admin</a>'+
       '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>'+
-      boostHtml+
     '</div>';
   }
   function bindRowActions(tr, c){
     var tb = tr.querySelector('.row-thread-btn');
     if(tb) tb.addEventListener('click', function(){ openRail(c.id); });
-    var bb = tr.querySelector('.boost-row-btn');
-    if(bb) bb.addEventListener('click', toggleBoost);
   }
 
   var vehicleMeta = {
@@ -1727,9 +1731,9 @@
       renderWorkload();
     });
   });
-  // 「私いけます！」＝本人単位の+10点/24時間（振り分けロジック第2章）。案件一覧の未割り当て
-  // 案件のボタンから押す。期限内対応率が基準（80%）未満なら押しても加点なし（実績5件未満＝
-  // ontime:null はゲート判定なし）。
+  // 「私いけます！」＝本人単位の+10点/24時間（振り分けロジック第2章）。画面右上の常設ボタン
+  // から押す。期限内対応率が基準（80%）未満なら押しても加点なし（実績5件未満＝ontime:null は
+  // ゲート判定なし）。
   function boostGated(){
     var s = myself().stats || {};
     return (s.ontime !== null && s.ontime !== undefined) && s.ontime < 80;
@@ -1744,22 +1748,25 @@
     } else {
       showSyncToast('「私いけます！」を取り消しました');
     }
-    renderQueue('bike');
-    renderQueue('car');
     renderBoost();
   }
   function renderBoost(){
+    var topBtn = document.getElementById('boostTopBtn');
+    var on = !!myself().boost;
+    topBtn.classList.toggle('on', on);
+    topBtn.innerHTML = on ? '🙋 受付中（+10点）' : '🙋 私いけます！';
     var el = document.getElementById('boostState');
     if(!el) return;
-    if(myself().boost){
+    if(on){
       el.innerHTML = '<span style="color:var(--accent-ink);font-weight:700;">🙋 受付中（+10点・24時間で自動解除）</span>'+
         '<button type="button" class="btn sm" id="boostCancelBtn">取り消す</button>';
       document.getElementById('boostCancelBtn').addEventListener('click', toggleBoost);
     } else {
-      el.innerHTML = '<span style="color:var(--ink-faint);">オフ。案件一覧の未割り当て案件にある「🙋 私いけます！」から押せます（押してから24時間+10点'+
+      el.innerHTML = '<span style="color:var(--ink-faint);">オフ。画面右上の「🙋 私いけます！」ボタンから押せます（押してから24時間+10点'+
         (boostGated() ? '・現在は期限内対応率80%未満のため押しても加点されません' : '')+'）。</span>';
     }
   }
+  document.getElementById('boostTopBtn').addEventListener('click', toggleBoost);
   function renderMypageStats(){
     var s = myself().stats || {};
     var pending = pendingCountOf(CURRENT_USER);
