@@ -1256,8 +1256,8 @@
           '<div class="case-card-line">'+
             '<span>査定依頼ID：<span class="tnum">'+caseNo(c)+'</span></span>'+
             '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
-            '<span class="case-card-owner">担当者：'+ownerHtml(c)+'</span>'+
           '</div>'+
+          '<div class="case-card-line case-card-owner">担当者：'+ownerHtml(c)+'</div>'+
         '</div>'+
         '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>';
       listEl.appendChild(card);
