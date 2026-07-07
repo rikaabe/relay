@@ -1845,8 +1845,8 @@
     });
   });
   // 権限に応じてタブ・要素の表示可否を切り替える。
-  var LEADER_TABS = ['admin','teams'];   // leader以上（管理・チーム編成）
-  var SYSADMIN_TABS = ['rules'];         // システム管理者のみ（自動振り分け設定）
+  var LEADER_TABS = ['admin'];            // leader以上（管理）
+  var SYSADMIN_TABS = ['teams','rules'];  // システム管理者のみ（チーム編成・自動振り分け設定）
   function tabAllowed(tab){
     if(SYSADMIN_TABS.indexOf(tab) >= 0) return viewerRole==='sysadmin';
     if(LEADER_TABS.indexOf(tab) >= 0) return viewerRole==='leader' || viewerRole==='sysadmin';
