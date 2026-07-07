@@ -84,24 +84,24 @@
   .who-name{ font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .who-role{ font-size:11px; color:var(--ink-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-  /* ---------- サイドバー下部プロフィール ---------- */
+  /* ---------- サイドバー下部プロフィール（クリックで設定＞マイページへ） ---------- */
   .side-profile{
     width:100%; display:flex; align-items:center; gap:9px; padding:8px; border:none; background:transparent;
     border-radius:9px; cursor:pointer; text-align:left; color:var(--ink);
   }
   .side-profile:hover{ background:var(--paper); }
   .side-profile .who-meta{ flex:1; }
-  .side-profile-chev{ flex:none; color:var(--ink-faint); transition:transform .15s ease; }
-  .who-anchor.open .side-profile-chev{ transform:rotate(180deg); }
+  .side-profile-chev{ flex:none; color:var(--ink-faint); }
 
-  /* ---------- マイページポップオーバー ---------- */
-  .who-anchor{ position:relative; }
-  .mypage-popover{
-    display:none; flex-direction:column; position:absolute; bottom:calc(100% + 8px); left:0; width:288px; max-height:70vh;
-    background:var(--surface); border:1px solid var(--border-strong); border-radius:12px; box-shadow:var(--shadow-panel);
-    overflow-y:auto; z-index:30;
-  }
-  .mypage-popover.open{ display:flex; flex-direction:column; }
+  /* ---------- トップバーの稼働状況ボタン（常設） ---------- */
+  .topbar-status{ margin-left:auto; flex:none; }
+  .topbar-status button{ flex:none; padding:6px 12px; }
+
+  /* ---------- 設定内マイページ ---------- */
+  .mypage-panel{ display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px 22px 28px; align-items:start; max-width:860px; }
+  .mypage-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  .boost-state{ display:flex; align-items:center; gap:10px; font-size:13px; flex-wrap:wrap; }
+  .boost-row-btn.on{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-ink); }
   .mypage-head{ flex:none; display:flex; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); }
   .mypage-head .avatar{ width:36px; height:36px; font-size:17px; }
   .mypage-name{ font-size:14px; font-weight:800; }
@@ -118,10 +118,6 @@
   .online-toggle button.active[data-state="online"]{ background:var(--success-soft); color:var(--success); }
   .online-toggle button.active[data-state="away"]{ background:var(--warning-soft); color:var(--warning); }
   .online-toggle button.active[data-state="offline"]{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
-  .boost-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:9px; border:1px solid var(--border-strong); background:var(--surface); cursor:pointer; font-size:13px; font-weight:700; color:var(--ink); }
-  .boost-btn:hover{ background:var(--paper); }
-  .boost-btn.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
-  .boost-note{ font-size:11px; color:var(--ink-faint); margin-top:8px; text-align:center; }
   .mypage-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .mypage-stat{ background:var(--paper); border-radius:8px; padding:9px 6px; text-align:center; }
   .mypage-stat-val{ font-size:16px; font-weight:800; }
@@ -513,6 +509,12 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       案件番号・顧客名・キーワードで検索
     </div>
+    <!-- 稼働状況はワンクリックで切り替えられるよう右上に常設（自動振り分けに反映） -->
+    <div class="online-toggle topbar-status" id="onlineToggle" title="稼働状況（自動振り分けに反映）。営業時間内に退勤すると未対応の案件は確認のうえ即・別の担当へ振り直されます">
+      <button type="button" data-state="online"><span class="status-dot online"></span>出勤</button>
+      <button type="button" data-state="away"><span class="status-dot away"></span>離席</button>
+      <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
+    </div>
   </header>
 
   <div class="body">
@@ -545,43 +547,11 @@
         </li>
       </ul>
       <div class="sidebar-foot">
-        <div class="who-anchor" id="whoAnchor">
-          <button type="button" class="side-profile" id="whoTrigger">
-            <div class="avatar stamp" id="whoAvatar">🔥</div>
-            <div class="who-meta"><div class="who-name">山田 太郎</div><div class="who-role" id="whoRoleLabel">バイク主担当</div></div>
-            <svg class="side-profile-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
-          </button>
-          <div class="mypage-popover" id="myPagePopover">
-            <div class="mypage-head">
-              <div class="avatar stamp" id="mypageAvatar">🔥</div>
-              <div>
-                <div class="mypage-name">山田 太郎</div>
-                <div class="mypage-role" id="mypageRoleLabel">バイク主担当</div>
-              </div>
-            </div>
-            <div class="mypage-section">
-              <div class="mypage-section-label">アイコンスタンプ</div>
-              <div class="stamp-grid" id="stampGrid"></div>
-            </div>
-            <div class="mypage-section">
-              <div class="mypage-section-label">稼働状況（自動振り分けに反映）</div>
-              <div class="online-toggle" id="onlineToggle">
-                <button type="button" data-state="online"><span class="status-dot online"></span>出勤</button>
-                <button type="button" data-state="away"><span class="status-dot away"></span>離席</button>
-                <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
-              </div>
-              <div class="boost-note">離席・退勤中は新しい振り分けの対象外。営業時間内に退勤すると、未対応の案件は確認のうえ即・別の担当へ振り直されます。</div>
-            </div>
-            <div class="mypage-section">
-              <button type="button" class="boost-btn" id="boostBtn">私いけます！</button>
-              <div class="boost-note" id="boostNote"></div>
-            </div>
-            <div class="mypage-section">
-              <div class="mypage-section-label">私の実績</div>
-              <div class="mypage-stats" id="mypageStats"></div>
-            </div>
-          </div>
-        </div>
+        <button type="button" class="side-profile" id="whoTrigger" title="マイページ（設定）を開く">
+          <div class="avatar stamp" id="whoAvatar">🔥</div>
+          <div class="who-meta"><div class="who-name">山田 太郎</div><div class="who-role" id="whoRoleLabel">バイク主担当</div></div>
+          <svg class="side-profile-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
       </div>
     </nav>
 
@@ -778,15 +748,49 @@
         </div>
         <div class="settings-tabs">
           <div class="segmented" id="settingsTabs">
-            <button class="active" data-tab="teams">チーム編成</button>
+            <button class="active" data-tab="mypage">マイページ</button>
+            <button data-tab="teams">チーム編成</button>
             <button data-tab="rules">自動振り分け設定</button>
             <button data-tab="notif">通知設定</button>
           </div>
         </div>
 
         <div class="settings-body">
+          <!-- マイページ（全員が見られる。サイドバー下部の名前クリックでも開く） -->
+          <div class="settings-panel active" id="tab-mypage">
+            <div class="rules-head">
+              <div class="rules-head-title">マイページ</div>
+              <div class="rules-head-sub">アイコンスタンプの変更と、自分の実績の確認ができます。出勤・離席・退勤の切り替えは画面右上のボタン、「私いけます！」は案件一覧の未割り当て案件から押せます。</div>
+            </div>
+            <div class="mypage-panel">
+              <div class="mypage-card">
+                <div class="mypage-head">
+                  <div class="avatar stamp" id="mypageAvatar">🔥</div>
+                  <div>
+                    <div class="mypage-name">山田 太郎</div>
+                    <div class="mypage-role" id="mypageRoleLabel">バイク主担当</div>
+                  </div>
+                </div>
+                <div class="mypage-section">
+                  <div class="mypage-section-label">アイコンスタンプ</div>
+                  <div class="stamp-grid" id="stampGrid"></div>
+                </div>
+              </div>
+              <div class="mypage-card">
+                <div class="mypage-section">
+                  <div class="mypage-section-label">私の実績</div>
+                  <div class="mypage-stats" id="mypageStats"></div>
+                </div>
+                <div class="mypage-section">
+                  <div class="mypage-section-label">私いけます！の状態</div>
+                  <div class="boost-state" id="boostState"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- チーム編成 -->
-          <div class="settings-panel active" id="tab-teams">
+          <div class="settings-panel" id="tab-teams">
             <div class="roster-head">
               <div style="flex:1;">
                 <div class="roster-head-title">チーム編成</div>
@@ -946,16 +950,26 @@
   var ICON_GOTO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-8 8"/><path d="M3 21l8-8"/></svg>';
   var ICON_CHECK ='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
   // ボタンはホバーなしで常時表示。アイコンだけのボタンは避け、必ず文字ラベルを併記する。
-  // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）ため、行のボタンはこの2つだけ。
+  // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）。
+  // 未割り当て（自動アサイン待ち）の案件には「私いけます！」ボタンを出す＝手を挙げる入口。
+  // ただし割り当て自体はサーバーの採点で自動的に決まる（本人単位の+10点・案件には固定されない）。
   function rowActionsHtml(c){
+    var boostHtml = '';
+    if(!c.owner && !c.done){
+      var on = !!myself().boost;
+      boostHtml = '<button type="button" class="btn sm boost-row-btn'+(on?' on':'')+'" data-case="'+c.id+'">🙋 私いけます！'+(on?'（受付中）':'')+'</button>';
+    }
     return '<div class="row-actions">'+
       '<a class="btn '+(c.done?'':'primary ')+'sm" href="'+c.adminUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">admin</a>'+
       '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>'+
+      boostHtml+
     '</div>';
   }
   function bindRowActions(tr, c){
     var tb = tr.querySelector('.row-thread-btn');
     if(tb) tb.addEventListener('click', function(){ openRail(c.id); });
+    var bb = tr.querySelector('.boost-row-btn');
+    if(bb) bb.addEventListener('click', toggleBoost);
   }
 
   var vehicleMeta = {
@@ -1610,20 +1624,20 @@
     });
     // leaderのみ閲覧可の要素（個人別KPI・目標件数など）を一般メンバーには隠す。
     document.querySelectorAll('.leader-only').forEach(function(el){ el.style.display = isLeader ? '' : 'none'; });
-    // 一般メンバーが管理系タブを開いている状態だった場合は、通知設定タブに寄せる
+    // 一般メンバーが管理系タブを開いている状態だった場合は、マイページタブに寄せる
     // （画面は切り替えず、設定内のタブ選択だけを直す。起動時はマイ案件のまま）。
     if(!isLeader){
       var active = document.querySelector('#settingsTabs button.active');
       if(!active || LEADER_TABS.indexOf(active.dataset.tab) >= 0){
-        document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='notif'); });
+        document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab==='mypage'); });
         document.querySelectorAll('.settings-panel').forEach(function(p){ p.classList.remove('active'); });
-        document.getElementById('tab-notif').classList.add('active');
+        document.getElementById('tab-mypage').classList.add('active');
       }
     }
   }
   function openSettings(tab){
-    tab = tab || (viewerRole==='leader' ? 'teams' : 'notif');
-    if(viewerRole!=='leader' && LEADER_TABS.indexOf(tab) >= 0){ tab = 'notif'; }
+    tab = tab || 'mypage';
+    if(viewerRole!=='leader' && LEADER_TABS.indexOf(tab) >= 0){ tab = 'mypage'; }
     document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
     document.getElementById('view-settings').classList.add('active');
     document.querySelectorAll('#settingsTabs button').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
@@ -1642,7 +1656,6 @@
   }
   document.querySelectorAll('.nav-item[data-view]').forEach(function(item){
     item.addEventListener('click', function(){
-      closeAllPopovers();
       document.querySelectorAll('.nav-item[data-view]').forEach(function(n){n.classList.remove('active');});
       item.classList.add('active');
       document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
@@ -1651,19 +1664,12 @@
     });
   });
 
-  function closeMyPagePopover(){
-    document.getElementById('myPagePopover').classList.remove('open');
-    document.getElementById('whoAnchor').classList.remove('open');
-  }
-  function closeAllPopovers(){ closeMyPagePopover(); }
-  document.addEventListener('click', closeAllPopovers);
   document.getElementById('notifSettingsLink').addEventListener('click', function(){
-    closeAllPopovers();
     document.querySelectorAll('.nav-item[data-view]').forEach(function(n){ n.classList.toggle('active', n.dataset.view==='settings'); });
     openSettings('notif');
   });
 
-  // ---------------- マイページ（サイドバー下部の名前・アイコンをクリック） ----------------
+  // ---------------- マイページ（設定内のタブ。サイドバー下部の名前クリックでも開く） ----------------
   function myself(){ return team.find(function(t){ return t.name===CURRENT_USER; }); }
   function refreshSelfUI(){
     var me = myself();
@@ -1721,28 +1727,39 @@
       renderWorkload();
     });
   });
-  function renderBoost(){
-    var me = myself();
-    var btn = document.getElementById('boostBtn');
-    var note = document.getElementById('boostNote');
-    var s = me.stats || {};
-    // 期限内対応率が基準（80%）未満なら押しても加点なし。実績5件未満（ontime=null）はゲート判定なし。
-    var gated = (s.ontime !== null && s.ontime !== undefined) && s.ontime < 80;
-    btn.classList.toggle('active', !!me.boost);
-    btn.innerHTML = me.boost ? '私いけます！（+10点 受付中）' : '私いけます！';
-    if(me.boost){
-      note.textContent = '押してから24時間、振り分けの点数に+10点が付きます。もう一度押すと取り消せます。';
-    } else if(gated){
-      note.textContent = '直近の期限内対応率が80%を下回っているため、いま押しても加点されません（対応率が戻ると有効になります）。';
-    } else {
-      note.textContent = '押すと24時間、振り分けの点数に+10点（早さ60＋動ける30＋10＝100点満点）。';
-    }
+  // 「私いけます！」＝本人単位の+10点/24時間（振り分けロジック第2章）。案件一覧の未割り当て
+  // 案件のボタンから押す。期限内対応率が基準（80%）未満なら押しても加点なし（実績5件未満＝
+  // ontime:null はゲート判定なし）。
+  function boostGated(){
+    var s = myself().stats || {};
+    return (s.ontime !== null && s.ontime !== undefined) && s.ontime < 80;
   }
-  document.getElementById('boostBtn').addEventListener('click', function(){
+  function toggleBoost(){
     var me = myself();
     me.boost = !me.boost;
+    if(me.boost){
+      showSyncToast(boostGated()
+        ? '「私いけます！」を受け付けました。ただし直近の期限内対応率が80%未満のため、対応率が戻るまで加点されません'
+        : '「私いけます！」を受け付けました（24時間+10点）。次の自動振り分けから優先されやすくなります。担当はサーバーが自動で決めます');
+    } else {
+      showSyncToast('「私いけます！」を取り消しました');
+    }
+    renderQueue('bike');
+    renderQueue('car');
     renderBoost();
-  });
+  }
+  function renderBoost(){
+    var el = document.getElementById('boostState');
+    if(!el) return;
+    if(myself().boost){
+      el.innerHTML = '<span style="color:var(--accent-ink);font-weight:700;">🙋 受付中（+10点・24時間で自動解除）</span>'+
+        '<button type="button" class="btn sm" id="boostCancelBtn">取り消す</button>';
+      document.getElementById('boostCancelBtn').addEventListener('click', toggleBoost);
+    } else {
+      el.innerHTML = '<span style="color:var(--ink-faint);">オフ。案件一覧の未割り当て案件にある「🙋 私いけます！」から押せます（押してから24時間+10点'+
+        (boostGated() ? '・現在は期限内対応率80%未満のため押しても加点されません' : '')+'）。</span>';
+    }
+  }
   function renderMypageStats(){
     var s = myself().stats || {};
     var pending = pendingCountOf(CURRENT_USER);
@@ -1761,12 +1778,11 @@
     renderBoost();
     renderMypageStats();
   }
-  document.getElementById('whoTrigger').addEventListener('click', function(e){
-    e.stopPropagation();
-    document.getElementById('myPagePopover').classList.toggle('open');
-    document.getElementById('whoAnchor').classList.toggle('open');
+  // サイドバー下部の名前・アイコン → 設定＞マイページへ直行
+  document.getElementById('whoTrigger').addEventListener('click', function(){
+    document.querySelectorAll('.nav-item[data-view]').forEach(function(n){ n.classList.toggle('active', n.dataset.view==='settings'); });
+    openSettings('mypage');
   });
-  document.getElementById('myPagePopover').addEventListener('click', function(e){ e.stopPropagation(); });
 
   document.getElementById('demoAdminBtn').addEventListener('click', simulateAdminDone);
 
