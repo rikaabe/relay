@@ -829,7 +829,7 @@
           <div class="settings-panel" id="tab-admin">
             <div class="rules-head">
               <div class="rules-head-title">管理</div>
-              <div class="rules-head-sub">leader以上だけが見られる画面です。今日の運用状況をひと目で確認し、対応記録を閲覧できます（メンバーの権限の変更はシステム管理者のみ）。</div>
+              <div class="rules-head-sub">leader以上だけが見られる画面です。今日の運用状況をひと目で確認し、対応記録を閲覧できます。メンバーの権限は「チーム編成」タブで変更できます（システム管理者のみ）。</div>
             </div>
             <div class="admin-body">
               <!-- 本日の運用サマリー（朝夕にここだけ見れば運用の異常に気づける） -->
@@ -891,23 +891,6 @@
                 </div>
               </div>
 
-              <!-- メンバーの権限（member⇔leader）。変更できるのはシステム管理者のみ -->
-              <div class="panel sysadmin-only">
-                <div class="panel-head-row" style="align-items:center;">
-                  <div>
-                    <div class="panel-title">メンバーの権限（システム管理者のみ）</div>
-                    <div class="panel-sub">leader＝管理（この画面）とチーム編成を操作できます。member＝マイページと通知設定のみ。対応をするリーダーは自分も採点される側のため、権限の変更と自動振り分け設定はお客様対応をしないシステム管理者に限定しています。システム管理者の追加・変更は画面からはできません（サーバー側で設定）。</div>
-                  </div>
-                  <span class="save-toast" id="permToast"></span>
-                  <button class="btn primary" id="savePermBtn">変更を保存</button>
-                </div>
-                <div style="overflow-x:auto;">
-                  <table class="team-table" id="permTable">
-                    <thead><tr><th>担当者</th><th>担当区分</th><th>現在の権限</th><th>変更後の権限</th></tr></thead>
-                    <tbody></tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -916,7 +899,7 @@
             <div class="roster-head">
               <div style="flex:1;">
                 <div class="roster-head-title">チーム編成</div>
-                <div class="roster-head-sub">半年ごとの定期異動に加え、随時の変更にも対応。担当区分を変えると自動振り分けの対象プールに即反映されます。</div>
+                <div class="roster-head-sub">半年ごとの定期異動に加え、随時の変更にも対応。担当区分を変えると自動振り分けの対象プールに即反映されます。権限（member/leader）の列はシステム管理者にだけ表示されます。</div>
               </div>
               <span class="save-toast" id="saveToast"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>保存しました</span>
               <button class="btn primary" id="saveRosterBtn">変更を保存</button>
@@ -927,7 +910,7 @@
             </div>
             <div class="table-scroll" style="padding-top:14px;">
               <table class="roster-table" id="rosterTable">
-                <thead><tr><th>担当者</th><th>現在の担当区分</th><th>変更後の担当区分</th><th>最終更新</th></tr></thead>
+                <thead><tr><th>担当者</th><th>現在の担当区分</th><th>変更後の担当区分</th><th class="sysadmin-only">現在の権限</th><th class="sysadmin-only">変更後の権限</th><th>最終更新</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1607,82 +1590,65 @@
       card('出勤中', online, '/'+team.length+'人', '離席'+away+'人・退勤'+(team.length-online-away)+'人', null);
   }
 
-  // メンバーの権限（member⇔leader）。変更できるのはシステム管理者のみ。システム管理者自身は
-  // 対応メンバーではないためこの一覧には載らず、権限もサーバー側で固定（画面から自己昇格できない）。
+  // ---------------- チーム編成（担当区分＋権限をまとめて編集・保存） ----------------
+  // 権限（member⇔leader）の列はシステム管理者にだけ表示。システム管理者自身は対応メンバーでは
+  // ないためこの一覧には載らず、権限もサーバー側で固定（画面から自己昇格できない）。
   var permMeta = { member:"member（一般）", leader:"leader（リーダー）" };
-  var pendingPerm = {};
-  function renderPermTable(){
-    var body = document.querySelector('#permTable tbody');
-    if(!body) return;
-    body.innerHTML = "";
-    team.forEach(function(t, i){
-      var options = ['member','leader'].map(function(p){
-        return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
-      }).join('');
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>'+personChip(t.name)+'</td>'+
-        '<td>'+roleMeta[t.role]+'</td>'+
-        '<td>'+permMeta[t.perm]+'</td>'+
-        '<td><select class="role-select" data-idx="'+i+'">'+options+'</select></td>';
-      body.appendChild(tr);
-    });
-    body.querySelectorAll('.role-select').forEach(function(sel){
-      sel.addEventListener('change', function(){
-        var idx = +sel.dataset.idx;
-        pendingPerm[idx] = sel.value;
-        sel.classList.toggle('dirty', sel.value !== team[idx].perm);
-      });
-    });
-  }
-  document.getElementById('savePermBtn').addEventListener('click', function(){
-    var changed = 0;
-    Object.keys(pendingPerm).forEach(function(idx){
-      if(team[idx].perm !== pendingPerm[idx]){ team[idx].perm = pendingPerm[idx]; changed++; }
-    });
-    pendingPerm = {};
-    renderPermTable();
-    var toast = document.getElementById('permToast');
-    toast.textContent = changed>0 ? "✓ "+changed+"名の権限を変更しました" : "✓ 変更はありません";
-    toast.classList.add('show');
-    setTimeout(function(){ toast.classList.remove('show'); }, 2600);
-  });
-
-  // ---------------- チーム編成 ----------------
   var pendingRoster = {};
+  var pendingPerm = {};
   function renderRoster(){
     var body = document.querySelector('#rosterTable tbody');
+    var isSysadmin = viewerRole === 'sysadmin';
     body.innerHTML = "";
     team.forEach(function(t, i){
       var tr = document.createElement('tr');
-      var options = ['bike','car'].map(function(r){
+      var roleOptions = ['bike','car'].map(function(r){
         return '<option value="'+r+'"'+(t.role===r?' selected':'')+'>'+roleMeta[r]+'</option>';
+      }).join('');
+      var permOptions = ['member','leader'].map(function(p){
+        return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
       }).join('');
       tr.innerHTML =
         '<td>'+personChip(t.name)+'</td>'+
         '<td>'+roleMeta[t.role]+'</td>'+
-        '<td><select class="role-select" data-idx="'+i+'">'+options+'</select></td>'+
+        '<td><select class="role-select" data-kind="role" data-idx="'+i+'">'+roleOptions+'</select></td>'+
+        (isSysadmin
+          ? '<td>'+permMeta[t.perm]+'</td>'+
+            '<td><select class="role-select" data-kind="perm" data-idx="'+i+'">'+permOptions+'</select></td>'
+          : '')+
         '<td class="roster-updated tnum">'+t.updated+'</td>';
       body.appendChild(tr);
     });
     body.querySelectorAll('.role-select').forEach(function(sel){
       sel.addEventListener('change', function(){
         var idx = +sel.dataset.idx;
-        pendingRoster[idx] = sel.value;
-        sel.classList.toggle('dirty', sel.value !== team[idx].role);
+        if(sel.dataset.kind==='perm'){
+          pendingPerm[idx] = sel.value;
+          sel.classList.toggle('dirty', sel.value !== team[idx].perm);
+        } else {
+          pendingRoster[idx] = sel.value;
+          sel.classList.toggle('dirty', sel.value !== team[idx].role);
+        }
       });
     });
   }
   document.getElementById('saveRosterBtn').addEventListener('click', function(){
-    var changed = 0;
+    var changedRole = 0, changedPerm = 0;
     Object.keys(pendingRoster).forEach(function(idx){
-      if(team[idx].role !== pendingRoster[idx]){ team[idx].role = pendingRoster[idx]; team[idx].updated = "たった今"; changed++; }
+      if(team[idx].role !== pendingRoster[idx]){ team[idx].role = pendingRoster[idx]; team[idx].updated = "たった今"; changedRole++; }
+    });
+    Object.keys(pendingPerm).forEach(function(idx){
+      if(team[idx].perm !== pendingPerm[idx]){ team[idx].perm = pendingPerm[idx]; team[idx].updated = "たった今"; changedPerm++; }
     });
     pendingRoster = {};
+    pendingPerm = {};
     renderRoster();
     renderWorkload();
+    var parts = [];
+    if(changedRole) parts.push('担当区分'+changedRole+'名');
+    if(changedPerm) parts.push('権限'+changedPerm+'名');
     var toast = document.getElementById('saveToast');
-    toast.textContent = changed>0 ? "✓ "+changed+"名の変更を保存しました" : "✓ 変更はありません";
+    toast.textContent = parts.length ? "✓ "+parts.join('・')+"の変更を保存しました" : "✓ 変更はありません";
     toast.classList.add('show');
     setTimeout(function(){ toast.classList.remove('show'); }, 2600);
   });
@@ -2123,7 +2089,6 @@
   renderWorkload();
   renderTargets();
   renderAuditLog();
-  renderPermTable();
   renderMineNotifPanel();
   renderMyPage();
   applyRolePermissions();
