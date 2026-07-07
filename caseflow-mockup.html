@@ -619,7 +619,7 @@
       <div class="sidebar-foot">
         <button type="button" class="side-profile" id="whoTrigger" title="マイページ（設定）を開く">
           <div class="avatar stamp" id="whoAvatar">🔥</div>
-          <div class="who-meta"><div class="who-name">山田 太郎</div><div class="who-role" id="whoRoleLabel">バイク主担当</div></div>
+          <div class="who-meta"><div class="who-name">山田 太郎</div><div class="who-role" id="whoRoleLabel">バイク担当</div></div>
           <svg class="side-profile-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
@@ -814,7 +814,7 @@
                   <div class="avatar stamp" id="mypageAvatar">🔥</div>
                   <div>
                     <div class="mypage-name">山田 太郎</div>
-                    <div class="mypage-role" id="mypageRoleLabel">バイク主担当</div>
+                    <div class="mypage-role" id="mypageRoleLabel">バイク担当</div>
                   </div>
                 </div>
                 <div class="mypage-section">
@@ -894,18 +894,17 @@
             <div class="roster-head">
               <div style="flex:1;">
                 <div class="roster-head-title">チーム編成</div>
-                <div class="roster-head-sub">半年ごとの定期異動に加え、随時の変更にも対応。担当区分を変えると自動振り分けの対象プールに即反映されます。権限（member/leader）の列はシステム管理者にだけ表示されます。</div>
+                <div class="roster-head-sub">半年ごとの定期異動に加え、随時の変更にも対応。担当区分を変えると自動振り分けの対象プールに即反映されます。権限の列はシステム管理者にだけ表示されます。</div>
               </div>
               <span class="save-toast" id="saveToast"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>保存しました</span>
-              <button class="btn primary" id="saveRosterBtn">変更を保存</button>
             </div>
             <div class="team-edit-note">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
-              担当区分は「バイク」「車」のどちらかをドロップダウンから即座に変更できます。変更すると自動振り分けの対象プールに即反映されます（応援は担当区分を変えずに行えます）。
+              変更したいメンバーの「編集」ボタンを押すと、その行の担当区分（バイク／車）と権限を変更できます。保存すると自動振り分けの対象プールに即反映されます（応援は担当区分を変えずに行えます）。
             </div>
             <div class="table-scroll" style="padding-top:14px;">
               <table class="roster-table" id="rosterTable">
-                <thead><tr><th>担当者</th><th>現在の担当区分</th><th>変更後の担当区分</th><th class="sysadmin-only">現在の権限</th><th class="sysadmin-only">変更後の権限</th><th>最終更新</th></tr></thead>
+                <thead><tr><th>担当者</th><th>担当区分</th><th class="sysadmin-only">権限</th><th>最終更新</th><th>操作</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1136,7 +1135,7 @@
   function stampFor(name){ return STAMP_BY_NAME[name] || "👤"; }
   function personChip(name){ return '<span class="cell-person"><span class="avatar stamp">'+stampFor(name)+'</span>'+name+'</span>'; }
   // 担当区分は車・バイクの二択（「両方対応」は廃止）。応援は担当区分を変えずに行う。
-  var roleMeta = { car:"車 主担当", bike:"バイク 主担当" };
+  var roleMeta = { car:"車", bike:"バイク" };
 
   // ---------------- @メンション（個人・チーム両方に対応） ----------------
   // 全員がバイク・車いずれかのチームに所属しているため、個人のみ／個人＋チーム／チームのみ、
@@ -1566,68 +1565,70 @@
       card('出勤中', online, '/'+team.length+'人', '離席'+away+'人・退勤'+(team.length-online-away)+'人', null);
   }
 
-  // ---------------- チーム編成（担当区分＋権限をまとめて編集・保存） ----------------
-  // 権限（member⇔leader）の列はシステム管理者にだけ表示。システム管理者自身は対応メンバーでは
-  // ないためこの一覧には載らず、権限もサーバー側で固定（画面から自己昇格できない）。
-  var permMeta = { member:"member（一般）", leader:"leader（リーダー）" };
-  var pendingRoster = {};
-  var pendingPerm = {};
+  // ---------------- チーム編成（行ごとに「編集」→ 担当区分・権限を変更して保存） ----------------
+  // 権限の列はシステム管理者にだけ表示。編集は1行ずつ（編集ボタン→プルダウン→保存/キャンセル）。
+  var permMeta = { member:"member（一般）", leader:"leader（リーダー）", sysadmin:"sysadmin（システム管理者）" };
+  var editingRosterIdx = null;
   function renderRoster(){
     var body = document.querySelector('#rosterTable tbody');
     var isSysadmin = viewerRole === 'sysadmin';
     body.innerHTML = "";
     team.forEach(function(t, i){
       var tr = document.createElement('tr');
-      var roleOptions = ['bike','car'].map(function(r){
-        return '<option value="'+r+'"'+(t.role===r?' selected':'')+'>'+roleMeta[r]+'</option>';
-      }).join('');
-      var permOptions = ['member','leader'].map(function(p){
-        return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
-      }).join('');
-      tr.innerHTML =
-        '<td>'+personChip(t.name)+'</td>'+
-        '<td>'+roleMeta[t.role]+'</td>'+
-        '<td><select class="role-select" data-kind="role" data-idx="'+i+'">'+roleOptions+'</select></td>'+
-        (isSysadmin
-          ? '<td>'+permMeta[t.perm]+'</td>'+
-            '<td><select class="role-select" data-kind="perm" data-idx="'+i+'">'+permOptions+'</select></td>'
-          : '')+
-        '<td class="roster-updated tnum">'+t.updated+'</td>';
+      if(editingRosterIdx === i){
+        var roleOptions = ['bike','car'].map(function(r){
+          return '<option value="'+r+'"'+(t.role===r?' selected':'')+'>'+roleMeta[r]+'</option>';
+        }).join('');
+        var permOptions = ['member','leader','sysadmin'].map(function(p){
+          return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
+        }).join('');
+        tr.innerHTML =
+          '<td>'+personChip(t.name)+'</td>'+
+          '<td><select class="role-select" data-kind="role">'+roleOptions+'</select></td>'+
+          (isSysadmin ? '<td><select class="role-select" data-kind="perm">'+permOptions+'</select></td>' : '')+
+          '<td class="roster-updated tnum">'+t.updated+'</td>'+
+          '<td class="roster-actions"><button class="btn primary sm" data-act="save">保存</button> <button class="btn sm" data-act="cancel">キャンセル</button></td>';
+      } else {
+        tr.innerHTML =
+          '<td>'+personChip(t.name)+'</td>'+
+          '<td>'+roleMeta[t.role]+'</td>'+
+          (isSysadmin ? '<td>'+permMeta[t.perm]+'</td>' : '')+
+          '<td class="roster-updated tnum">'+t.updated+'</td>'+
+          '<td class="roster-actions"><button class="btn sm" data-act="edit"'+(editingRosterIdx!==null?' disabled':'')+'>編集</button></td>';
+      }
+      tr.querySelectorAll('.role-select').forEach(function(sel){
+        sel.addEventListener('change', function(){
+          var original = sel.dataset.kind==='perm' ? t.perm : t.role;
+          sel.classList.toggle('dirty', sel.value !== original);
+        });
+      });
+      tr.querySelectorAll('button[data-act]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var act = btn.dataset.act;
+          if(act === 'edit'){ editingRosterIdx = i; renderRoster(); }
+          else if(act === 'cancel'){ editingRosterIdx = null; renderRoster(); }
+          else if(act === 'save'){ saveRosterRow(i, tr); }
+        });
+      });
       body.appendChild(tr);
     });
-    body.querySelectorAll('.role-select').forEach(function(sel){
-      sel.addEventListener('change', function(){
-        var idx = +sel.dataset.idx;
-        if(sel.dataset.kind==='perm'){
-          pendingPerm[idx] = sel.value;
-          sel.classList.toggle('dirty', sel.value !== team[idx].perm);
-        } else {
-          pendingRoster[idx] = sel.value;
-          sel.classList.toggle('dirty', sel.value !== team[idx].role);
-        }
-      });
-    });
   }
-  document.getElementById('saveRosterBtn').addEventListener('click', function(){
-    var changedRole = 0, changedPerm = 0;
-    Object.keys(pendingRoster).forEach(function(idx){
-      if(team[idx].role !== pendingRoster[idx]){ team[idx].role = pendingRoster[idx]; team[idx].updated = "たった今"; changedRole++; }
-    });
-    Object.keys(pendingPerm).forEach(function(idx){
-      if(team[idx].perm !== pendingPerm[idx]){ team[idx].perm = pendingPerm[idx]; team[idx].updated = "たった今"; changedPerm++; }
-    });
-    pendingRoster = {};
-    pendingPerm = {};
+  function saveRosterRow(i, tr){
+    var t = team[i];
+    var roleSel = tr.querySelector('select[data-kind="role"]');
+    var permSel = tr.querySelector('select[data-kind="perm"]');
+    var parts = [];
+    if(roleSel && roleSel.value !== t.role){ t.role = roleSel.value; parts.push('担当区分'); }
+    if(permSel && permSel.value !== t.perm){ t.perm = permSel.value; parts.push('権限'); }
+    if(parts.length) t.updated = "たった今";
+    editingRosterIdx = null;
     renderRoster();
     renderWorkload();
-    var parts = [];
-    if(changedRole) parts.push('担当区分'+changedRole+'名');
-    if(changedPerm) parts.push('権限'+changedPerm+'名');
     var toast = document.getElementById('saveToast');
-    toast.textContent = parts.length ? "✓ "+parts.join('・')+"の変更を保存しました" : "✓ 変更はありません";
+    toast.textContent = parts.length ? "✓ "+t.name+"さんの"+parts.join('・')+"を変更しました" : "✓ 変更はありません";
     toast.classList.add('show');
     setTimeout(function(){ toast.classList.remove('show'); }, 2600);
-  });
+  }
 
   // ---------------- シミュレーション（100点満点の採点結果を表示） ----------------
   var sim = [
@@ -2041,8 +2042,8 @@
   }
   function renderMyPage(){
     var me = myself();
-    document.getElementById('whoRoleLabel').textContent = roleMeta[me.role];
-    document.getElementById('mypageRoleLabel').textContent = roleMeta[me.role];
+    document.getElementById('whoRoleLabel').textContent = roleMeta[me.role]+'担当';
+    document.getElementById('mypageRoleLabel').textContent = roleMeta[me.role]+'担当';
     refreshSelfUI();
     renderStampGrid();
     renderOnlineToggle();
