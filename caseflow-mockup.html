@@ -238,6 +238,7 @@
   .segmented button[data-scope="bike"].active{ color:var(--bike); }
 
   .btn{
+    -webkit-appearance:none; appearance:none;
     display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; padding:7px 13px;
     border-radius:8px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink); cursor:pointer;
     white-space:nowrap;
@@ -709,7 +710,10 @@
   .rules-head{ padding:18px 22px 0; }
   .rules-head-title{ font-size:14px; font-weight:800; }
   .rules-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; margin-bottom:4px; }
+  .rules-edit-note{ margin:10px 22px 0; font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-soft); border:1px solid var(--accent); border-radius:var(--radius-m); padding:8px 12px; }
   .rules-grid{ padding:14px 22px 28px; }
+  .rules-grid input[type=number]:disabled{ opacity:.55; cursor:not-allowed; background:var(--paper); }
+  .score-input:disabled{ background:rgba(255,255,255,.08); }
   .rule-card{ border:1px solid var(--border); border-radius:var(--radius-m); padding:14px 16px; margin-bottom:12px; background:var(--surface); }
   .rule-card.off{ opacity:.5; }
   .rule-card.fixed-rule{ background:var(--accent-soft); border-color:var(--accent); }
@@ -1271,10 +1275,15 @@
 
           <!-- 自動振り分け設定（ロジックは固定・変更できるのは数値のみ。振り分けロジック.md v1.1準拠） -->
           <div class="settings-panel" id="tab-rules">
-            <div class="rules-head">
+            <div class="rules-head" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
               <div class="rules-head-title">自動振り分け設定（システム管理者のみ）</div>
+              <button type="button" class="btn sm" id="rulesEditBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+                編集
+              </button>
             </div>
-            <div class="rules-grid">
+            <div class="rules-edit-note" id="rulesEditNote" hidden>編集中：数値を変更できます。誤操作防止のため、他の項目は編集を終えたらロックしてください</div>
+            <div class="rules-grid" id="rulesGrid">
                 <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">1</div>
@@ -1329,7 +1338,7 @@
                     <span class="rule-fixed-badge">常時適用</span>
                   </div>
                 </div>
-                <button class="btn primary" style="margin-top:4px;">変更を保存</button>
+                <button class="btn primary" id="rulesSaveBtn" style="margin-top:4px;" disabled>変更を保存</button>
             </div>
           </div>
         </div>
@@ -2397,6 +2406,28 @@
   document.querySelectorAll('#tab-rules input[type=number]').forEach(function(input){
     input.addEventListener('input', openSimModal);
   });
+
+  // 誤操作防止：「編集」を押すまで自動振り分け設定の数値は変更できない
+  (function(){
+    var editBtn = document.getElementById('rulesEditBtn');
+    var saveBtn = document.getElementById('rulesSaveBtn');
+    var editNote = document.getElementById('rulesEditNote');
+    var ruleInputs = document.querySelectorAll('#rulesGrid input[type=number]');
+    function setLocked(locked){
+      ruleInputs.forEach(function(input){ input.disabled = locked; });
+      editBtn.style.display = locked ? '' : 'none';
+      saveBtn.disabled = locked;
+      editNote.hidden = locked;
+    }
+    setLocked(true);
+    editBtn.addEventListener('click', function(){ setLocked(false); });
+    saveBtn.addEventListener('click', function(){
+      setLocked(true);
+      var original = saveBtn.textContent;
+      saveBtn.textContent = '✓ 保存しました';
+      setTimeout(function(){ saveBtn.textContent = original; }, 2200);
+    });
+  })();
 
   // ---------------- 自動振り分け設定：点数配分（コメント/tel/動けるか/私いけます！） ----------------
   (function(){
