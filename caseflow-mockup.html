@@ -735,6 +735,11 @@
   .score-seg.speed{ flex:6; background:var(--accent); border-radius:6px 0 0 6px; }
   .score-seg.ready{ flex:3; background:#7C8CF0; }
   .score-seg.boost{ flex:2; background:var(--surface); color:var(--accent-ink); border:2px dashed var(--accent); border-radius:0 6px 6px 0; }
+  .score-input{ width:32px; font-family:inherit; font-size:11.5px; font-weight:700; text-align:center; border:1px solid rgba(255,255,255,.55); border-radius:5px; background:rgba(255,255,255,.16); color:#fff; padding:1px 2px; }
+  .score-seg.boost .score-input{ border-color:var(--accent); background:var(--surface); color:var(--accent-ink); }
+  .score-total-row{ margin-top:8px; font-size:12px; font-weight:700; }
+  .score-total-row.warn{ color:var(--critical); }
+  .score-total-row.ok{ color:var(--ink-faint); }
   .rule-num-row{ display:flex; align-items:center; gap:6px; margin-top:10px; font-size:12.5px; font-weight:600; flex-wrap:wrap; }
   .rule-num-row input[type=number]{ width:60px; font-family:inherit; font-size:13px; font-weight:700; padding:5px 7px; border:1px solid var(--border-strong); border-radius:7px; text-align:right; background:var(--surface); }
 
@@ -1294,11 +1299,14 @@
                     <div class="rule-name">100点満点で採点し、最高点の1人へ渡す</div>
                     <span class="rule-fixed-badge">数値のみ変更可</span>
                   </div>
-                  <div class="score-bar">
-                    <div class="score-seg speed">対応の早さ<br><b>60点</b><br><span style="font-size:9.5px;font-weight:500;opacity:.85;">（コメント40+tel20）</span></div>
-                    <div class="score-seg ready">いますぐ動けるか<br><b>30点</b></div>
-                    <div class="score-seg boost">私いけます！<br><b>+10点</b></div>
+                  <div class="score-bar" id="scoreBar">
+                    <div class="score-seg speed" id="segSpeed">対応の早さ<br><b><span id="speedTotal">60</span>点</b><br>
+                      <span style="font-size:9.5px;font-weight:500;opacity:.85;">コメント<input type="number" class="score-input" id="scoreComment" value="40" min="0" max="100">+tel<input type="number" class="score-input" id="scoreTel" value="20" min="0" max="100"></span>
+                    </div>
+                    <div class="score-seg ready" id="segReady">いますぐ動けるか<br><b><input type="number" class="score-input" id="scoreReady" value="30" min="0" max="100">点</b></div>
+                    <div class="score-seg boost" id="segBoost">私いけます！<br><b>+<input type="number" class="score-input" id="scoreBoost" value="10" min="0" max="100">点</b></div>
                   </div>
+                  <div class="score-total-row ok" id="scoreTotalRow">合計 <span id="scoreTotalVal">100</span>点／100点</div>
                   <div class="rule-num-row">コメント評価窓：直近 <input type="number" value="10" min="3" max="30"> 出勤日分（12:00〜17:00の勤務を含む日のみ）</div>
                   <div class="rule-num-row">tel評価窓：直近 <input type="number" value="20" min="5" max="100"> 件</div>
                   <div class="rule-num-row">私いけます！の対応率基準 <input type="number" value="80" min="0" max="100"> %</div>
@@ -2370,6 +2378,39 @@
       '<div class="sim-assignee"><span class="avatar stamp" style="width:22px;height:22px;">'+stampFor(s.name)+'</span>'+s.name+'</div>';
     simCard.appendChild(el);
   });
+
+  // ---------------- 自動振り分け設定：点数配分（コメント/tel/動けるか/私いけます！） ----------------
+  (function(){
+    var commentInput = document.getElementById('scoreComment');
+    var telInput = document.getElementById('scoreTel');
+    var readyInput = document.getElementById('scoreReady');
+    var boostInput = document.getElementById('scoreBoost');
+    var speedTotalEl = document.getElementById('speedTotal');
+    var totalRow = document.getElementById('scoreTotalRow');
+    var totalVal = document.getElementById('scoreTotalVal');
+    var segSpeed = document.getElementById('segSpeed');
+    var segReady = document.getElementById('segReady');
+    var segBoost = document.getElementById('segBoost');
+    function num(input){ var v = parseInt(input.value, 10); return isNaN(v) ? 0 : v; }
+    function recalc(){
+      var commentPt = num(commentInput), telPt = num(telInput), readyPt = num(readyInput), boostPt = num(boostInput);
+      var speedPt = commentPt + telPt;
+      var total = speedPt + readyPt + boostPt;
+      speedTotalEl.textContent = speedPt;
+      segSpeed.style.flex = Math.max(speedPt, 1);
+      segReady.style.flex = Math.max(readyPt, 1);
+      segBoost.style.flex = Math.max(boostPt, 1);
+      totalVal.textContent = total;
+      var isOk = total === 100;
+      totalRow.classList.toggle('ok', isOk);
+      totalRow.classList.toggle('warn', !isOk);
+      totalRow.lastChild.textContent = '点／100点' + (isOk ? '' : '（合計が100点になるよう調整してください）');
+    }
+    [commentInput, telInput, readyInput, boostInput].forEach(function(input){
+      input.addEventListener('input', recalc);
+    });
+    recalc();
+  })();
 
   // ---------------- 通知センター（設定内） ----------------
   // 通知タブに出すのは次の3種類のみ（すべて本人宛のため通知設定のミュート対象外＝lockedType）。
