@@ -271,7 +271,6 @@
     border:1px solid var(--border); border-radius:7px; color:var(--ink-faint); font-size:12.5px; width:200px;
   }
 
-  table.cases tbody tr.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
   @keyframes rowFlash{ 0%{ background:var(--accent-soft); } 100%{ background:transparent; } }
 
   /* ---------- スレッド（メッセージ表示・rail・preview で共通利用） ---------- */
@@ -339,17 +338,7 @@
   .mention-item-name{ font-size:12.5px; font-weight:700; }
   .mention-item-sub{ margin-left:auto; font-size:11px; color:var(--ink-faint); flex:none; }
 
-  /* ---------- Table (マイ案件) ---------- */
   .table-scroll{ flex:1; overflow:auto; padding:0 22px 22px; }
-  table.cases{ width:100%; border-collapse:separate; border-spacing:0; font-size:14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
-  table.cases th{
-    text-align:left; font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em;
-    padding:10px 14px; border-bottom:1px solid var(--border); background:var(--paper); position:sticky; top:0;
-  }
-  table.cases td{ padding:14px; border-bottom:1px solid var(--border); vertical-align:middle; }
-  table.cases tbody tr:last-child td{ border-bottom:none; }
-  table.cases tbody tr{ position:relative; }
-  table.cases tbody tr:hover{ background:var(--paper); }
 
   /* ---------- 案件一覧のカード表示（Slack通知風） ---------- */
   /* 背景は常に白。種別は左の縦ラインで見分ける（アップロード完了=黄 / 再アップロード完了=緑） */
@@ -375,13 +364,9 @@
   .case-card-owner .cell-person .avatar{ width:18px; height:18px; font-size:11px; }
   .case-card .row-thread-btn{ flex:none; }
   .case-card.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
-  .cell-id{ font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
   .cell-person{ display:flex; align-items:center; gap:7px; }
   .cell-person .avatar{ width:22px; height:22px; font-size:10px; }
   .avatar.stamp{ font-size:14px; background:var(--paper); }
-  table.cases th.cell-actions, table.cases td.cell-actions{ width:230px; text-align:left; }
-  .row-actions{ display:flex; align-items:center; gap:6px; }
-  .row-actions .btn{ flex:none; }
 
   /* ---------- Settings overlay ---------- */
   #view-settings{ background:var(--surface); }
@@ -770,7 +755,6 @@
   .elapsed-swatch{ width:14px; height:14px; border-radius:4px; background:var(--warning-soft); border:1px solid var(--warning); flex:none; }
   /* 受信からの経過時間（30分区切り）。2時間超は経過ラベルの文字だけを強調（行の背景は常に白） */
   .elapsed-tag{ display:block; margin-top:3px; font-size:11px; color:var(--ink-faint); white-space:nowrap; }
-  table.cases tbody tr.elapsed-over .elapsed-tag{ color:var(--warning); font-weight:700; }
 
   /* ---------- マイ案件の進捗カード ---------- */
   .progress-card{
@@ -915,10 +899,7 @@
           <div class="progress-pct" id="mineProgressPct">33%</div>
         </div>
         <div class="table-scroll" style="padding-top:16px;">
-          <table class="cases">
-            <thead><tr><th>区分</th><th>案件番号</th><th>ステータス</th><th class="cell-actions">操作</th></tr></thead>
-            <tbody id="mineBody"></tbody>
-          </table>
+          <div class="case-cards" id="mineList"></div>
         </div>
       </section>
 
@@ -1311,14 +1292,6 @@
   var ICON_EXT = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg>';
   var ICON_GOTO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-8 8"/><path d="M3 21l8-8"/></svg>';
   var ICON_CHECK ='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
-  // ボタンはホバーなしで常時表示。アイコンだけのボタンは避け、必ず文字ラベルを併記する。
-  // 「対応済み」はRelay側で操作しない（admin側の操作に自動連動）ため、行のボタンはこの2つだけ。
-  function rowActionsHtml(c){
-    return '<div class="row-actions">'+
-      '<a class="btn '+(c.done?'':'primary ')+'sm" href="'+c.adminUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">admin</a>'+
-      '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>'+
-    '</div>';
-  }
   function bindRowActions(tr, c){
     var tb = tr.querySelector('.row-thread-btn');
     if(tb) tb.addEventListener('click', function(){ openRail(c.id); });
@@ -1598,24 +1571,33 @@
     document.getElementById('mineProgressPct').textContent = pct+'%';
   }
   function renderMine(){
-    var mineBody = document.getElementById('mineBody');
-    mineBody.innerHTML = "";
+    var listEl = document.getElementById('mineList');
+    listEl.innerHTML = "";
     var mine = sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }));
     mine.forEach(function(c){
-      var over = c.elapsedMin > 120;
-      var tr = document.createElement('tr');
-      tr.className = over ? 'elapsed-over' : '';
-      tr.title = over ? '受信から'+Math.round(c.elapsedMin/60*10)/10+'時間経過（2時間超）' : '';
-      tr.innerHTML =
-        '<td>'+vtag(c.vehicle)+'</td>'+
-        '<td class="cell-id tnum">'+caseNo(c)+'<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span></td>'+
-        '<td>'+chip(c.status)+'</td>'+
-        '<td class="cell-actions">'+rowActionsHtml(c)+'</td>';
-      mineBody.appendChild(tr);
-      bindRowActions(tr, c);
+      var card = document.createElement('div');
+      var km = kindRowMeta(c.kind);
+      card.className = 'case-card ' + km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
+      card.dataset.id = c.id;
+      card.innerHTML =
+        '<div class="case-card-main">'+
+          '<div class="case-card-head">'+
+            vtag(c.vehicle)+
+            '<span class="case-card-kind">'+km.label+'</span>'+
+            '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
+          '</div>'+
+          '<div class="case-card-line">'+
+            '<span>査定依頼ID：<span class="tnum">'+caseNo(c)+'</span></span>'+
+            '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
+          '</div>'+
+          '<div class="case-card-line case-card-owner">担当者：'+ownerHtml(c)+'</div>'+
+        '</div>'+
+        '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>';
+      listEl.appendChild(card);
+      bindRowActions(card, c);
     });
     if(mine.length===0){
-      mineBody.innerHTML = '<tr><td colspan="4"><div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div></td></tr>';
+      listEl.innerHTML = '<div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div>';
     }
     renderMineProgress();
   }
