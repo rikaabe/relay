@@ -709,7 +709,7 @@
   .rules-head{ padding:18px 22px 0; }
   .rules-head-title{ font-size:14px; font-weight:800; }
   .rules-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; margin-bottom:4px; }
-  .rules-grid{ padding:14px 22px 28px; display:grid; grid-template-columns:1.15fr 1fr; gap:20px; align-items:start; }
+  .rules-grid{ padding:14px 22px 28px; }
   .rule-card{ border:1px solid var(--border); border-radius:var(--radius-m); padding:14px 16px; margin-bottom:12px; background:var(--surface); }
   .rule-card.off{ opacity:.5; }
   .rule-card.fixed-rule{ background:var(--accent-soft); border-color:var(--accent); }
@@ -735,7 +735,8 @@
   .score-seg.speed{ flex:6; background:var(--accent); border-radius:6px 0 0 6px; }
   .score-seg.ready{ flex:3; background:#7C8CF0; }
   .score-seg.boost{ flex:2; background:var(--surface); color:var(--accent-ink); border:2px dashed var(--accent); border-radius:0 6px 6px 0; }
-  .score-input{ width:32px; font-family:inherit; font-size:11.5px; font-weight:700; text-align:center; border:1px solid rgba(255,255,255,.55); border-radius:5px; background:rgba(255,255,255,.16); color:#fff; padding:1px 2px; }
+  .score-input{ width:44px; font-family:inherit; font-size:12px; font-weight:700; text-align:center; border:1px solid rgba(255,255,255,.55); border-radius:5px; background:rgba(255,255,255,.16); color:#fff; padding:2px 3px; -moz-appearance:textfield; }
+  .score-input::-webkit-outer-spin-button, .score-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
   .score-seg.boost .score-input{ border-color:var(--accent); background:var(--surface); color:var(--accent-ink); }
   .score-total-row{ margin-top:8px; font-size:12px; font-weight:700; }
   .score-total-row.warn{ color:var(--critical); }
@@ -743,6 +744,10 @@
   .rule-num-row{ display:flex; align-items:center; gap:6px; margin-top:10px; font-size:12.5px; font-weight:600; flex-wrap:wrap; }
   .rule-num-row input[type=number]{ width:60px; font-family:inherit; font-size:13px; font-weight:700; padding:5px 7px; border:1px solid var(--border-strong); border-radius:7px; text-align:right; background:var(--surface); }
 
+  .sim-modal{ width:min(560px, calc(100vw - 48px)); text-align:left; padding:24px 26px; }
+  .sim-modal .modal-title{ text-align:left; }
+  .sim-modal .sim-card{ margin-top:14px; border:none; padding:0; }
+  .sim-modal .btn{ width:100%; height:40px; justify-content:center; margin-top:18px; }
   .sim-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:16px 18px; }
   .sim-item{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
   .sim-item:last-child{ border-bottom:none; }
@@ -1270,7 +1275,6 @@
               <div class="rules-head-title">自動振り分け設定（システム管理者のみ）</div>
             </div>
             <div class="rules-grid">
-              <div class="rules-left">
                 <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">1</div>
@@ -1326,11 +1330,6 @@
                   </div>
                 </div>
                 <button class="btn primary" style="margin-top:4px;">変更を保存</button>
-              </div>
-              <div class="rules-right">
-                <div class="panel-title" style="margin-bottom:2px;">シミュレーション：次に来る3件の割り当て予測</div>
-                <div class="sim-card" id="simCard"></div>
-              </div>
             </div>
           </div>
         </div>
@@ -1363,6 +1362,15 @@
       <button type="button" class="btn primary" id="clockoutStayBtn">未対応案件を対応してから退勤する</button>
       <button type="button" class="btn" id="clockoutHandoffBtn">未対応案件は別の人に渡す</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== 自動振り分け設定：シミュレーションポップアップ（数値を変更した時だけ表示） ===== -->
+<div class="modal-backdrop" id="simModal" hidden>
+  <div class="modal sim-modal" role="dialog" aria-modal="true" aria-labelledby="simModalTitle">
+    <div class="modal-title" id="simModalTitle">シミュレーション：次に来る3件の割り当て予測</div>
+    <div class="sim-card" id="simCard"></div>
+    <button type="button" class="btn" id="simModalClose">閉じる</button>
   </div>
 </div>
 
@@ -2377,6 +2385,17 @@
       '<div class="sim-main"><div class="sim-case">'+vtag(s.vehicle)+s.caseTitle+'</div><div class="sim-reason">'+s.reason+'</div></div>'+
       '<div class="sim-assignee"><span class="avatar stamp" style="width:22px;height:22px;">'+stampFor(s.name)+'</span>'+s.name+'</div>';
     simCard.appendChild(el);
+  });
+
+  // シミュレーションは常時表示せず、自動振り分け設定の数値を変更した時だけポップアップで見せる
+  var simModal = document.getElementById('simModal');
+  function openSimModal(){ simModal.hidden = false; }
+  function closeSimModal(){ simModal.hidden = true; }
+  document.getElementById('simModalClose').addEventListener('click', closeSimModal);
+  simModal.addEventListener('click', function(e){ if(e.target === simModal) closeSimModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !simModal.hidden) closeSimModal(); });
+  document.querySelectorAll('#tab-rules input[type=number]').forEach(function(input){
+    input.addEventListener('input', openSimModal);
   });
 
   // ---------------- 自動振り分け設定：点数配分（コメント/tel/動けるか/私いけます！） ----------------
