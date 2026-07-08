@@ -106,7 +106,7 @@
 
   /* ---------- トップバーの稼働状況ボタン（常設・高さは検索窓と同じ34px） ---------- */
   .online-toggle.topbar-status{ margin-left:auto; flex:none; height:34px; }
-  .online-toggle.topbar-status button{ flex:none; padding:0 16px; font-size:13.5px; }
+  .online-toggle.topbar-status button{ flex:none; padding:0 16px; min-width:120px; font-size:13.5px; } /* 押しやすいよう従来の約2倍幅 */
   /* ●は選択中の状態にだけ表示（どれが今の状態か一目で分かるように） */
   .online-toggle.topbar-status .status-dot{ display:none; }
   .online-toggle.topbar-status button.active .status-dot{ display:inline-block; }
@@ -630,6 +630,8 @@
     .kpi-row{ grid-template-columns:repeat(2,1fr); }
     .dash-grid, .split-grid{ grid-template-columns:1fr; }
     .stat.hero .stat-value{ font-size:46px; }
+    /* 幅が足りない画面では出勤トグルを通常幅に戻し、トップバーのはみ出しを防ぐ */
+    .online-toggle.topbar-status button{ min-width:0; }
   }
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:18px 20px; }
   .panel-title{ font-size:14px; font-weight:800; }
