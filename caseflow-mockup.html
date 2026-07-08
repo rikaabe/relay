@@ -113,8 +113,9 @@
 
   /* ---------- トップバーの「私いけます！」ボタン（稼働状況の右隣・高さは検索窓と同じ） ---------- */
   .topbar-boost{
-    flex:none; display:inline-flex; align-items:center; gap:6px;
+    flex:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;
     height:34px; padding:0 16px; margin-left:10px;
+    min-width:190px; /* 受付済み表示（長い方のラベル）に合わせて固定し、押してもサイズが変わらないようにする */
     border-radius:8px; border:1px solid var(--border-strong); background:var(--surface);
     font-size:13.5px; font-weight:700; color:var(--ink); cursor:pointer; white-space:nowrap;
   }
@@ -803,7 +804,7 @@
       <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
     </div>
     <!-- 私いけます！＝本人単位の+10点/24時間（案件単位ではないため、案件行ではなくここに置く） -->
-    <button type="button" class="topbar-boost" id="boostTopBtn" title="押してから24時間、振り分けの点数に+10点。担当はサーバーが自動で決めます">私いけます！</button>
+    <button type="button" class="topbar-boost" id="boostTopBtn" title="押してから24時間、自動振り分けで優先されやすくなります。担当はサーバーが自動で決めます">私いけます！</button>
   </header>
 
   <div class="body">
@@ -2783,32 +2784,25 @@
     var s = myself().stats || {};
     return (s.ontime !== null && s.ontime !== undefined) && s.ontime < 80;
   }
+  // 押しても配点や注意書きのトーストは出さない。ボタンの表示が「受付済み」に変わるだけ。
   function toggleBoost(){
-    var me = myself();
-    me.boost = !me.boost;
-    if(me.boost){
-      showSyncToast(boostGated()
-        ? '「私いけます！」を受け付けました。ただし直近の期限内対応率が80%未満のため、対応率が戻るまで加点されません'
-        : '「私いけます！」を受け付けました（24時間+10点）。次の自動振り分けから優先されやすくなります。担当はサーバーが自動で決めます');
-    } else {
-      showSyncToast('「私いけます！」を取り消しました');
-    }
+    myself().boost = !myself().boost;
     renderBoost();
   }
   function renderBoost(){
     var topBtn = document.getElementById('boostTopBtn');
     var on = !!myself().boost;
     topBtn.classList.toggle('on', on);
-    topBtn.innerHTML = on ? '受付中（+10点）' : '私いけます！';
+    topBtn.innerHTML = on ? '✓ 私いけます！受付済み' : '私いけます！';
     var el = document.getElementById('boostState');
     if(!el) return;
     if(on){
-      el.innerHTML = '<span style="color:var(--accent-ink);font-weight:700;">受付中（+10点・24時間で自動解除）</span>'+
+      el.innerHTML = '<span style="color:var(--accent-ink);font-weight:700;">受付済み（24時間で自動解除）</span>'+
         '<button type="button" class="btn sm" id="boostCancelBtn">取り消す</button>';
       document.getElementById('boostCancelBtn').addEventListener('click', toggleBoost);
     } else {
       el.innerHTML = '<span style="color:var(--ink-faint);">オフ'+
-        (boostGated() ? '（現在は期限内対応率80%未満のため押しても加点されません）' : '')+'</span>';
+        (boostGated() ? '（現在は期限内対応率が基準を下回っているため、受け付けても優先されません）' : '')+'</span>';
     }
   }
   document.getElementById('boostTopBtn').addEventListener('click', toggleBoost);
