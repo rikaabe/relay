@@ -123,19 +123,30 @@
   .topbar-boost.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
 
   /* ---------- 設定内マイページ ---------- */
-  .mypage-panel{ display:flex; flex-direction:column; gap:16px; padding:16px 22px 28px; max-width:980px; }
+  .mypage-panel{ display:flex; flex-direction:column; gap:16px; padding:16px 22px 28px; } /* 達成状況が主役のため全幅表示 */
   .mypage-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
   .mypage-profile{ overflow:visible; } /* スタンプ変更ポップオーバーをカードの外にはみ出させる */
-  .boost-state{ display:flex; align-items:center; gap:10px; font-size:13px; flex-wrap:wrap; }
-  .mypage-head{ flex:none; display:flex; align-items:center; gap:10px; padding:14px; position:relative; }
-  .mypage-head .avatar{ width:36px; height:36px; font-size:17px; }
+  /* プロフィールは達成状況の下の控えめな1行（従来の約2/3の高さ） */
+  .mypage-head{ flex:none; display:flex; align-items:center; gap:14px; padding:7px 14px; position:relative; }
+  .mypage-head .avatar{ width:28px; height:28px; font-size:14px; }
   .mypage-name{ font-size:14px; font-weight:800; display:flex; align-items:center; gap:8px; }
-  .mypage-role{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+  .mypage-role{ font-size:11.5px; color:var(--ink-faint); }
+  .name-edit-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:6px; border:1px solid transparent;
+    background:transparent; color:var(--ink-faint); cursor:pointer; padding:0;
+  }
+  .name-edit-btn:hover{ background:var(--paper); color:var(--ink); border-color:var(--border); }
+  .name-input{
+    width:130px; height:26px; padding:0 8px; font-size:14px; font-weight:800;
+    border:1px solid var(--accent); border-radius:6px; background:var(--surface);
+  }
+  .name-input:focus{ outline:none; }
   /* スタンプ変更：アイコン自体がボタン。タップでポップオーバーを開く */
   .stamp-edit-btn{ border:1px solid var(--border); cursor:pointer; }
   .stamp-edit-btn:hover{ border-color:var(--accent); background:var(--accent-soft); }
   .stamp-popover{
-    position:absolute; left:14px; top:56px; z-index:30; width:280px;
+    position:absolute; left:14px; top:44px; z-index:30; width:280px;
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
     box-shadow:0 8px 24px rgba(26,31,43,.14); padding:14px;
   }
@@ -1121,26 +1132,7 @@
               <div class="rules-head-title">マイページ</div>
             </div>
             <div class="mypage-panel">
-              <!-- プロフィール：名前→スタンプの順。スタンプはタップでポップオーバーから変更 -->
-              <div class="mypage-card mypage-profile">
-                <div class="mypage-head">
-                  <div>
-                    <div class="mypage-name">山田 太郎
-                      <button type="button" class="avatar stamp stamp-edit-btn" id="mypageAvatar" title="タップしてスタンプを変更">🔥</button>
-                    </div>
-                    <div class="mypage-role" id="mypageRoleLabel">バイク担当</div>
-                  </div>
-                  <div class="stamp-popover" id="stampPopover" hidden>
-                    <div class="mypage-section-label">スタンプを変更</div>
-                    <input type="text" class="stamp-input" id="stampInput" placeholder="ここに絵文字を入力" autocomplete="off">
-                    <div class="stamp-hint">^ ⌘ スペースでMacの絵文字一覧が開き、すべての絵文字から選べます</div>
-                    <div class="mypage-section-label" style="margin-top:12px;">よく使うスタンプ</div>
-                    <div class="stamp-grid" id="stampGrid"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 私の達成状況：KPIタブの「自分だけの数字」バージョン -->
+              <!-- 私の達成状況：KPIタブの「自分だけの数字」バージョン（マイページの主役・全幅表示） -->
               <div class="my-kpi-head">
                 <div class="mypage-section-label" style="margin-bottom:0;">私の達成状況</div>
                 <div class="filter-group">
@@ -1191,14 +1183,25 @@
                 </div>
               </div>
 
-              <div class="mypage-card">
-                <div class="mypage-section">
-                  <div class="mypage-section-label">いまの未対応（抱え上限まで）</div>
-                  <div id="myPendingLine">—</div>
-                </div>
-                <div class="mypage-section">
-                  <div class="mypage-section-label">私いけます！の状態</div>
-                  <div class="boost-state" id="boostState"></div>
+              <!-- プロフィール：達成状況の下に控えめに配置。名前→スタンプの順。
+                   名前は鉛筆ボタンでインライン編集、スタンプはアイコンタップでポップオーバーから変更 -->
+              <div class="mypage-card mypage-profile">
+                <div class="mypage-head">
+                  <div class="mypage-name">
+                    <span id="mypageNameText">山田 太郎</span>
+                    <button type="button" class="avatar stamp stamp-edit-btn" id="mypageAvatar" title="タップしてスタンプを変更">🔥</button>
+                    <button type="button" class="name-edit-btn" id="nameEditBtn" title="名前を編集">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+                    </button>
+                  </div>
+                  <div class="mypage-role" id="mypageRoleLabel">バイク担当</div>
+                  <div class="stamp-popover" id="stampPopover" hidden>
+                    <div class="mypage-section-label">スタンプを変更</div>
+                    <input type="text" class="stamp-input" id="stampInput" placeholder="ここに絵文字を入力" autocomplete="off">
+                    <div class="stamp-hint">^ ⌘ スペースでMacの絵文字一覧が開き、すべての絵文字から選べます</div>
+                    <div class="mypage-section-label" style="margin-top:12px;">よく使うスタンプ</div>
+                    <div class="stamp-grid" id="stampGrid"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2776,6 +2779,54 @@
   document.addEventListener('click', function(e){
     if(!stampPopover.hidden && !stampPopover.contains(e.target)) toggleStampPopover(false);
   });
+  // ---------------- 名前のインライン編集 ----------------
+  // 鉛筆ボタンで名前を入力欄に切り替え、Enterまたはフォーカスを外すと確定（Escで取り消し）。
+  // 名前はデータ全体のキーになっているため、担当案件・スレッド・メンション候補もまとめて更新する。
+  function renameCurrentUser(newName){
+    newName = newName.trim();
+    if(!newName || newName === CURRENT_USER) return;
+    var old = CURRENT_USER;
+    var me = myself();
+    me.name = newName;
+    STAMP_BY_NAME[newName] = me.stamp;
+    delete STAMP_BY_NAME[old];
+    cases.forEach(function(c){ if(c.owner && c.owner.name === old) c.owner.name = newName; });
+    threadsData.forEach(function(t){ t.messages.forEach(function(m){ if(m.name === old) m.name = newName; }); });
+    var mi = MENTION_NAMES.indexOf(old);
+    if(mi >= 0) MENTION_NAMES[mi] = newName;
+    CURRENT_USER = newName;
+    document.querySelector('.who-name').textContent = newName;
+    refreshAllCaseViews();
+    renderRoster();
+    if(document.getElementById('threadRail').classList.contains('open')) renderRail();
+  }
+  document.getElementById('nameEditBtn').addEventListener('click', function(){
+    var span = document.getElementById('mypageNameText');
+    if(span.querySelector('input')) return; // 編集中は何もしない
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'name-input';
+    input.value = CURRENT_USER;
+    input.maxLength = 20;
+    span.textContent = '';
+    span.appendChild(input);
+    input.focus();
+    input.select();
+    var committed = false;
+    function finishEdit(apply){
+      if(committed) return; // Enter確定後のblurなど二重確定を防ぐ
+      committed = true;
+      var v = input.value;
+      span.textContent = '';
+      if(apply) renameCurrentUser(v);
+      span.textContent = CURRENT_USER;
+    }
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter') finishEdit(true);
+      if(e.key === 'Escape') finishEdit(false);
+    });
+    input.addEventListener('blur', function(){ finishEdit(true); });
+  });
   function renderOnlineToggle(){
     var me = myself();
     document.querySelectorAll('#onlineToggle button').forEach(function(btn){
@@ -2871,11 +2922,6 @@
     renderSpark('mySparkFirst',   myTrend7.map(function(d){ return d.first; }));
     renderSpark('mySparkOntime',  myTrend7.map(function(d){ return d.ontime; }));
     renderSpark('mySparkRate',    myTrend7.map(function(d){ return d.rate; }));
-
-    var pending = pendingCountOf(CURRENT_USER);
-    document.getElementById('myPendingLine').innerHTML =
-      '<b class="tnum" style="font-size:16px;">'+pending+'</b> / '+MAX_PENDING+'件'+
-      (pending >= MAX_PENDING ? '<span style="color:var(--warning);font-weight:700;margin-left:8px;">上限に達しています（新しい振り分けは止まります）</span>' : '');
   }
   document.querySelectorAll('#myKpiPeriodSeg button').forEach(function(btn){
     btn.addEventListener('click', function(){
