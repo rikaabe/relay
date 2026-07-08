@@ -751,13 +751,7 @@
   .notif-head{ padding:18px 22px 0; }
   .notif-head-title{ font-size:14px; font-weight:800; }
   .notif-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
-  .notif-settings{ margin:14px 22px 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
   .mine-notif-card{ flex:none; margin:16px 22px 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
-  .notif-settings-body{ padding:14px 16px; }
-  .notif-toggle-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
-  .notif-toggle-row:last-child{ border-bottom:none; }
-  .notif-toggle-label{ font-size:13px; font-weight:600; flex:1; display:flex; align-items:center; gap:6px; }
-  .notif-toggle-desc{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
 
   .notif-scroll{ padding:6px 0 20px; }
   .notif-daylabel{ font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:14px 22px 8px; }
@@ -957,12 +951,6 @@
           <div>
             <div class="view-title">通知</div>
           </div>
-          <div class="view-head-actions">
-            <button type="button" class="btn ghost sm" id="notifSettingsLink">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-              通知設定
-            </button>
-          </div>
         </div>
         <div class="table-scroll" style="padding-top:16px;">
           <div class="mine-notif-card" id="mineNotifCard">
@@ -1118,7 +1106,6 @@
         <div class="settings-tabs">
           <div class="segmented" id="settingsTabs">
             <button class="active" data-tab="mypage">マイページ</button>
-            <button data-tab="notif">通知設定</button>
             <button data-tab="admin">管理</button>
             <button data-tab="teams">チーム編成</button>
             <button data-tab="rules">自動振り分け設定</button>
@@ -1308,11 +1295,13 @@
                     <span class="rule-fixed-badge">数値のみ変更可</span>
                   </div>
                   <div class="score-bar">
-                    <div class="score-seg speed">対応の早さ<br><b>60点</b></div>
+                    <div class="score-seg speed">対応の早さ<br><b>60点</b><br><span style="font-size:9.5px;font-weight:500;opacity:.85;">（コメント40+tel20）</span></div>
                     <div class="score-seg ready">いますぐ動けるか<br><b>30点</b></div>
                     <div class="score-seg boost">私いけます！<br><b>+10点</b></div>
                   </div>
-                  <div class="rule-num-row">評価窓：直近 <input type="number" value="20" min="5" max="100"> 件　／　私いけます！の対応率基準 <input type="number" value="80" min="0" max="100"> %</div>
+                  <div class="rule-num-row">コメント評価窓：直近 <input type="number" value="10" min="3" max="30"> 出勤日分（12:00〜17:00の勤務を含む日のみ）</div>
+                  <div class="rule-num-row">tel評価窓：直近 <input type="number" value="20" min="5" max="100"> 件</div>
+                  <div class="rule-num-row">私いけます！の対応率基準 <input type="number" value="80" min="0" max="100"> %</div>
                 </div>
                 <div class="rule-card fixed-rule">
                   <div class="rule-head">
@@ -1333,29 +1322,6 @@
               <div class="rules-right">
                 <div class="panel-title" style="margin-bottom:2px;">シミュレーション：次に来る3件の割り当て予測</div>
                 <div class="sim-card" id="simCard"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 通知設定（通知の履歴は左の「通知」タブから確認） -->
-          <div class="settings-panel" id="tab-notif">
-            <div class="rules-head">
-              <div class="rules-head-title">通知設定</div>
-            </div>
-            <div class="notif-settings" id="notifSettings">
-              <div class="notif-settings-body">
-                <div class="notif-toggle-row">
-                  <div><div class="notif-toggle-label"><span class="vtag car icononly"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span> 車の案件を通知する</div></div>
-                  <label class="switch"><input type="checkbox" id="notifCarToggle" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
-                </div>
-                <div class="notif-toggle-row">
-                  <div><div class="notif-toggle-label"><span class="vtag bike icononly"><svg width="12" height="12" viewBox="0 0 512 512" fill="currentColor"><path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/><path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/><path d="M94.01,293.167c-15.024,0-27.204,12.172-27.204,27.196c0,15.032,12.18,27.22,27.204,27.22c15.025,0,27.22-12.188,27.22-27.22C121.23,305.339,109.035,293.167,94.01,293.167z"/><path d="M439.074,207.55v-65.855c-27.854,0-45.583,18.997-45.583,18.997v27.854C393.491,188.546,411.22,207.55,439.074,207.55z"/><rect x="450.868" y="141.68" width="13.525" height="65.847"/><path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/><path d="M343.302,232.111v-1.352H167.03c26.029,21.161,42.708,53.435,42.708,89.636c0,3.246,1.112,9.761,10.433,9.761h69.928c8.888,0,12.118-6.515,12.118-9.761C302.217,284.998,318.199,253.272,343.302,232.111z"/></svg></span> バイクの案件を通知する</div></div>
-                  <label class="switch"><input type="checkbox" id="notifBikeToggle" checked><span class="switch-track"></span><span class="switch-thumb"></span></label>
-                </div>
-                <div class="notif-toggle-row">
-                  <div><div class="notif-toggle-label">緊急以外は1時間ごとにまとめて通知（ダイジェスト）</div></div>
-                  <label class="switch"><input type="checkbox" id="notifDigestToggle"><span class="switch-track"></span><span class="switch-thumb"></span></label>
-                </div>
               </div>
             </div>
           </div>
@@ -1521,7 +1487,7 @@
   // 未対応の抱え上限（maxPendingPerUser・設定で変更可）。上限に達した人には振り分けない。
   var MAX_PENDING = 5;
   var CURRENT_USER = "山田 太郎";
-  // 表示権限は3段階。member＝マイページ・通知設定のみ / leader＝＋管理・チーム編成 /
+  // 表示権限は3段階。member＝マイページのみ / leader＝＋管理・チーム編成 /
   // sysadmin（システム管理者）＝＋自動振り分け設定・メンバーの権限管理。
   // お客様対応をするリーダーは自分も採点される側のため、採点ルールの数値変更と権限の付け替えは
   // 利益相反を避けて「お客様対応をしない運用管理者（システム管理者）」に限定する。
@@ -1529,7 +1495,6 @@
   // （切替UIはメンバーに見せない。メンバーが普通に開くと常に member 固定。）
   var roleParam = new URLSearchParams(location.search).get('role');
   var viewerRole = (roleParam==='sysadmin' || roleParam==='leader') ? roleParam : 'member';
-  var notifMute = { car:true, bike:true };
   var kpiScope = "all";   // all | car | bike — KPIページの絞り込み
 
   function chip(status){
@@ -2419,13 +2384,7 @@
     {day:"yesterday", vehicle:"bike", cls:"mention", caseId:"#B-0005", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>伊藤 誠</b>さんがスレッドで <b>バイクチーム</b> をメンションしました（<b>523371</b>）', time:"17:40", unread:false, lockedType:true},
   ];
   function visibleNotifications(){
-    return notifications.filter(function(n){
-      if(!n.lockedType){
-        if(n.vehicle==='car' && !notifMute.car) return false;
-        if(n.vehicle==='bike' && !notifMute.bike) return false;
-      }
-      return true;
-    });
+    return notifications;
   }
   // 通知は左の「通知」タブに一本化。スレッドボタンでサイドバーを開いて返信する。
   function notifRowHtml(n, mode){
@@ -2470,9 +2429,6 @@
     list.innerHTML = html;
     bindNotifRowActions(list);
   }
-  document.getElementById('notifCarToggle').addEventListener('change', function(e){ notifMute.car = e.target.checked; renderMineNotifPanel(); });
-  document.getElementById('notifBikeToggle').addEventListener('change', function(e){ notifMute.bike = e.target.checked; renderMineNotifPanel(); });
-
   // ---------------- スレッドサイドバー ----------------
   var railView = 'list';   // list | detail
   var railCaseId = null;
@@ -2706,11 +2662,6 @@
         updateNavBadges();
       }
     });
-  });
-
-  document.getElementById('notifSettingsLink').addEventListener('click', function(){
-    document.querySelectorAll('.nav-item[data-view]').forEach(function(n){ n.classList.toggle('active', n.dataset.view==='settings'); });
-    openSettings('notif');
   });
 
   // ---------------- マイページ（設定内のタブ。サイドバー下部の名前クリックでも開く） ----------------
