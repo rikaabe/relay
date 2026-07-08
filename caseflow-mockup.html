@@ -341,10 +341,10 @@
   .table-scroll{ flex:1; overflow:auto; padding:0 22px 22px; }
 
   /* ---------- 案件一覧のカード表示（Slack通知風） ---------- */
-  /* 背景は常に白。種別は左の縦ラインで見分ける（アップロード完了=黄 / 再アップロード完了=緑） */
+  /* 枠・背景なし。1件ごとの見分けは左の縦ラインで行う（アップロード完了=黄 / 再アップロード完了=緑） */
   .case-cards{ display:flex; flex-direction:column; gap:6px; }
   .case-card{
-    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+    border-radius:var(--radius-m);
     padding:7px 12px 7px 22px; position:relative;
     display:flex; align-items:center; gap:12px;
   }
@@ -362,7 +362,8 @@
   .case-card-url:hover{ color:var(--accent-ink); }
   .case-card-owner{ display:flex; align-items:center; gap:4px; }
   .case-card-owner .cell-person .avatar{ width:18px; height:18px; font-size:11px; }
-  .case-card .row-thread-btn{ flex:none; }
+  .case-card .row-thread-btn{ flex:none; height:24px; padding:0 10px; font-size:12px; }
+  .case-card-actions{ margin-top:5px; }
   .case-card.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
   .cell-person{ display:flex; align-items:center; gap:7px; }
   .cell-person .avatar{ width:22px; height:22px; font-size:10px; }
@@ -1495,8 +1496,8 @@
             '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
           '</div>'+
           '<div class="case-card-line case-card-owner">担当者：'+ownerHtml(c)+'</div>'+
-        '</div>'+
-        '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>';
+          '<div class="case-card-actions"><button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button></div>'+
+        '</div>';
       listEl.appendChild(card);
       bindRowActions(card, c);
     });
@@ -1606,8 +1607,8 @@
             '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
           '</div>'+
           '<div class="case-card-line case-card-owner">担当者：'+ownerHtml(c)+'</div>'+
-        '</div>'+
-        '<button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button>';
+          '<div class="case-card-actions"><button type="button" class="btn sm row-thread-btn" data-case="'+c.id+'">スレッド</button></div>'+
+        '</div>';
       listEl.appendChild(card);
       bindRowActions(card, c);
     });
