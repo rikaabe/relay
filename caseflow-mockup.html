@@ -763,8 +763,9 @@
   }
   .progress-num{ font-size:15px; font-weight:800; white-space:nowrap; }
   .progress-num b{ font-size:22px; }
-  .progress-track{ flex:1; height:12px; border-radius:7px; background:var(--paper); overflow:hidden; }
-  .progress-fill{ height:100%; background:var(--success); border-radius:7px; transition:width .4s ease; }
+  /* 星メーター：星の数＝抱え上限（MAX_PENDING）。達成率ぶんだけ左からオレンジに塗る */
+  .star-meter{ position:relative; font-size:24px; line-height:1; letter-spacing:2px; color:var(--border); user-select:none; }
+  .star-meter .star-fill{ position:absolute; left:0; top:0; height:100%; overflow:hidden; white-space:nowrap; color:#E8A33D; transition:width .4s ease; }
   .progress-pct{ font-size:13px; font-weight:700; color:var(--success); white-space:nowrap; }
 </style>
 
@@ -894,8 +895,8 @@
           </div>
         </div>
         <div class="progress-card">
-          <div class="progress-num" id="mineProgressNum">今日の担当 <b>3</b>件中 <b>1</b>件対応済み</div>
-          <div class="progress-track"><div class="progress-fill" id="mineProgressFill" style="width:33%"></div></div>
+          <div class="progress-num" id="mineProgressNum">現在のMY案件 <b>3</b>件中 <b>1</b>件対応済み</div>
+          <div class="star-meter" aria-hidden="true"><span id="mineStarBase">★★★★★</span><span class="star-fill" id="mineProgressFill" style="width:33%">★★★★★</span></div>
           <div class="progress-pct" id="mineProgressPct">33%</div>
         </div>
         <div class="table-scroll" style="padding-top:16px;">
@@ -1566,8 +1567,12 @@
     var total = mineAll.length;
     var doneCount = mineAll.filter(function(c){ return c.done; }).length;
     var pct = total ? Math.round(doneCount/total*100) : 0;
-    document.getElementById('mineProgressNum').innerHTML = '今日の担当 <b class="tnum">'+total+'</b>件中 <b class="tnum">'+doneCount+'</b>件対応済み';
-    document.getElementById('mineProgressFill').style.width = pct+'%';
+    document.getElementById('mineProgressNum').innerHTML = '現在のMY案件 <b class="tnum">'+total+'</b>件中 <b class="tnum">'+doneCount+'</b>件対応済み';
+    var stars = new Array(MAX_PENDING+1).join('★'); // 星の数＝抱え上限に連動
+    document.getElementById('mineStarBase').textContent = stars;
+    var fill = document.getElementById('mineProgressFill');
+    fill.textContent = stars;
+    fill.style.width = pct+'%';
     document.getElementById('mineProgressPct').textContent = pct+'%';
   }
   function renderMine(){
