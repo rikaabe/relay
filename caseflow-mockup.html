@@ -385,6 +385,22 @@
   .cell-person .avatar{ width:22px; height:22px; font-size:10px; }
   .avatar.stamp{ font-size:14px; background:var(--paper); }
 
+  /* ---------- 退勤確認ポップアップ（画面中央） ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; z-index:100; background:rgba(26,31,43,.45);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal-backdrop[hidden]{ display:none; }
+  .modal{
+    background:var(--surface); border-radius:var(--radius-l);
+    box-shadow:0 18px 50px rgba(26,31,43,.28);
+    padding:26px 28px; width:min(400px, calc(100vw - 48px)); text-align:center;
+  }
+  .modal-title{ font-size:16px; font-weight:800; line-height:1.6; }
+  .modal-title .tnum{ font-size:20px; margin:0 2px; }
+  .modal-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
+  .modal-actions .btn{ width:100%; height:40px; justify-content:center; font-size:13.5px; }
+
   /* ---------- Settings overlay ---------- */
   #view-settings{ background:var(--surface); }
   .settings-head{ flex:none; padding:16px 22px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); }
@@ -1360,6 +1376,17 @@
 <!-- ===== admin連動トースト（自動同期のお知らせ） ===== -->
 <div class="undo-toast" id="undoToast">
   <span id="undoToastText"></span>
+</div>
+
+<!-- ===== 退勤確認ポップアップ（未対応が残っているときだけ画面中央に表示） ===== -->
+<div class="modal-backdrop" id="clockoutModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="clockoutModalTitle">
+    <div class="modal-title" id="clockoutModalTitle">未対応案件が<span id="clockoutCount" class="tnum">0</span>件あります。</div>
+    <div class="modal-actions">
+      <button type="button" class="btn primary" id="clockoutStayBtn">未対応案件を対応してから退勤する</button>
+      <button type="button" class="btn" id="clockoutHandoffBtn">未対応案件は別の人に渡す</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -2755,8 +2782,25 @@
       btn.classList.toggle('active', btn.dataset.state===me.status);
     });
   }
-  // 退勤（営業時間内）＝未対応telを確認ダイアログ付きで即・自動振り直し（振り分けロジック第4章）。
+  // 退勤（営業時間内）＝未対応があるときだけ画面中央のポップアップで確認（振り分けロジック第4章）。
+  // 「別の人に渡す」を選んだ場合のみ即・自動振り直し。未対応が0件ならポップアップは出さずそのまま退勤。
   // 離席では振り直さない（離席にコストを付けると誰も押さなくなるため）。
+  var clockoutModal = document.getElementById('clockoutModal');
+  function openClockoutModal(count){
+    document.getElementById('clockoutCount').textContent = count;
+    clockoutModal.hidden = false;
+  }
+  function closeClockoutModal(){ clockoutModal.hidden = true; }
+  document.getElementById('clockoutStayBtn').addEventListener('click', closeClockoutModal);
+  document.getElementById('clockoutHandoffBtn').addEventListener('click', function(){
+    closeClockoutModal();
+    myself().status = 'offline';
+    var moved = reassignPendingFrom(CURRENT_USER);
+    renderOnlineToggle();
+    refreshAllCaseViews();
+    showSyncToast('退勤しました。未対応の'+moved+'件を別の担当へ振り直しました（あなたと新しい担当に通知が届きます）');
+  });
+  clockoutModal.addEventListener('click', function(e){ if(e.target===clockoutModal) closeClockoutModal(); });
   document.querySelectorAll('#onlineToggle button').forEach(function(btn){
     btn.addEventListener('click', function(){
       var me = myself();
@@ -2764,13 +2808,7 @@
       if(next==='offline' && me.status!=='offline'){
         var pendingList = cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; });
         if(pendingList.length){
-          var ok = confirm('未対応の案件が'+pendingList.length+'件あります。\n退勤すると、この'+pendingList.length+'件はすぐに別の担当へ自動で振り直されます（あなたの記録は「未対応のまま振り直し」＝0点）。\n退勤しますか？');
-          if(!ok) return;
-          me.status = 'offline';
-          var moved = reassignPendingFrom(CURRENT_USER);
-          renderOnlineToggle();
-          refreshAllCaseViews();
-          showSyncToast('退勤しました。未対応の'+moved+'件を別の担当へ振り直しました（あなたと新しい担当に通知が届きます）');
+          openClockoutModal(pendingList.length);
           return;
         }
       }
