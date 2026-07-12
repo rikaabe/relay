@@ -385,7 +385,8 @@
   .case-card.kind-notif-new::before{ background:var(--neutral-chip); }
   .case-card-main{ flex:1; min-width:0; }
   .case-card-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .case-card-kind{ font-weight:400; font-size:13.5px; flex:1; min-width:0; }
+  .case-card-kind{ font-weight:400; font-size:13.5px; min-width:0; }
+  .case-card-kind.notif-kind{ flex:1; }
   .case-card-time{ font-size:11.5px; color:var(--ink-faint); }
   .case-card .notif-dot{ flex:none; }
   .case-card .elapsed-tag{ display:inline; margin:0; }
@@ -770,7 +771,7 @@
   .audit-note{ display:flex; gap:8px; align-items:flex-start; padding:10px 12px; background:var(--success-soft); color:var(--success); border-radius:8px; font-size:12px; margin-top:14px; }
 
   .notif-daylabel{ font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:14px 0 8px; }
-  .notif-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none; }
+  .notif-dot{ display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent); vertical-align:middle; }
 
   .empty-state{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; color:var(--ink-faint); text-align:center; gap:6px; }
   .empty-state svg{ opacity:.5; margin-bottom:6px; }
@@ -2486,9 +2487,10 @@
         '<div class="case-card-main">'+
           '<div class="case-card-head">'+
             (n.vehicle ? vtag(n.vehicle,true) : '')+
-            '<span class="case-card-kind">'+n.text+'</span>'+
-            '<span class="case-card-time tnum">'+n.time+'</span>'+
-            (n.unread?'<div class="notif-dot"></div>':'')+
+            '<span class="case-card-kind notif-kind">'+n.text+
+              '&nbsp;&nbsp;<span class="case-card-time tnum">'+n.time+'</span>'+
+              (n.unread?' <span class="notif-dot"></span>':'')+
+            '</span>'+
           '</div>'+
           caseLine+
           '<div class="case-card-actions"><button type="button" class="btn sm notif-thread-btn" data-case="'+(c?c.id:'')+'">スレッド</button></div>'+
