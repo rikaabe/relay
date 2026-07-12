@@ -710,12 +710,26 @@
     border-radius:8px; font-size:12.5px; margin:18px 22px 0;
   }
   /* table-layout:fixed＋列幅指定：編集ON/OFFで列位置が動かないようにする */
-  .roster-table{ width:100%; min-width:960px; border-collapse:collapse; table-layout:fixed; font-size:13px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  .roster-table{ width:100%; min-width:1100px; border-collapse:collapse; table-layout:fixed; font-size:13px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
   .roster-table th{ text-align:left; font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--paper); }
-  .roster-table th.col-role{ width:170px; }
-  .roster-table th.col-perm{ width:290px; }
-  .roster-table th.col-updated{ width:140px; }
+  .roster-table th.col-role{ width:150px; }
+  .roster-table th.col-group{ width:170px; }
+  .roster-table th.col-perm{ width:280px; }
+  .roster-table th.col-updated{ width:130px; }
   .roster-table th.col-actions{ width:200px; }
+  .roster-table th.col-gname{ width:220px; }
+  .roster-table th.col-gmention{ width:240px; }
+  .roster-unassigned{ color:var(--ink-faint); font-size:12.5px; }
+  /* チーム管理のテキスト入力（チーム名・メンション名） */
+  .group-input{
+    width:100%; font-family:inherit; font-size:12.5px; font-weight:600; height:31px; padding:0 8px;
+    border-radius:7px; border:1px solid var(--border-strong); background:var(--surface); color:var(--ink);
+  }
+  .group-mention-cell{ display:flex; align-items:center; gap:2px; }
+  .group-members-cell{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; }
+  .group-members-cell .cell-person .avatar{ width:18px; height:18px; font-size:11px; }
+  .roster-actions .btn.danger-ghost{ color:var(--critical); border-color:var(--critical-soft); }
+  .roster-actions .btn.danger-ghost:hover{ background:var(--critical-soft); }
   /* height＝セレクト表示時の行高。編集ON/OFFで行の高さが変わらないよう常に確保 */
   .roster-table td{ padding:5px 14px; height:53px; border-bottom:1px solid var(--border); vertical-align:middle; }
   .roster-table tr:last-child td{ border-bottom:none; }
@@ -1280,7 +1294,20 @@
             </div>
             <div class="table-scroll" style="padding-top:14px;">
               <table class="roster-table" id="rosterTable">
-                <thead><tr><th>担当者</th><th class="col-role">担当区分</th><th class="sysadmin-only col-perm">権限</th><th class="col-updated">最終更新</th><th class="col-actions">操作</th></tr></thead>
+                <thead><tr><th>担当者</th><th class="col-role">担当区分</th><th class="col-group">チーム</th><th class="sysadmin-only col-perm">権限</th><th class="col-updated">最終更新</th><th class="col-actions">操作</th></tr></thead>
+                <tbody></tbody>
+              </table>
+
+              <!-- チーム管理：チームの追加・削除、名前・メンション名の変更 -->
+              <div class="roster-head" style="margin-top:28px; padding:0;">
+                <div style="flex:1;">
+                  <div class="roster-head-title">チーム管理</div>
+                  <div class="roster-head-sub">チームは自由に追加・削除できます。メンション名はスレッドの @ で使う呼び名で、そのチームの全員に通知が届きます。メンバーの所属は上の一覧の「チーム」列から変更します。</div>
+                </div>
+                <button type="button" class="btn sm" id="groupAddBtn">＋ チームを追加</button>
+              </div>
+              <table class="roster-table" id="groupTable" style="margin-top:12px;">
+                <thead><tr><th class="col-gname">チーム名</th><th class="col-gmention">メンション名</th><th>メンバー</th><th class="col-actions">操作</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -1488,16 +1515,40 @@
   // 担当区分は車・バイクの二択（「両方対応」は廃止）。応援は担当区分を変えずに行う。
   var roleMeta = { car:"車", bike:"バイク" };
 
-  // ---------------- @メンション（個人・チーム両方に対応） ----------------
-  // 全員がバイク・車いずれかのチームに所属しているため、個人のみ／個人＋チーム／チームのみ、
-  // どの組み合わせでもメッセージ内に@を複数個並べるだけで表現できる。
-  var MENTION_TEAMS = [
-    {key:"team-bike", label:"バイクチーム", icon:ICON_BIKE, members: team.filter(function(t){ return t.role==="bike"; })},
-    {key:"team-car", label:"車チーム", icon:ICON_CAR, members: team.filter(function(t){ return t.role==="car"; })},
-    {key:"team-all", label:"全員", icon:null, members: team},
+  // ---------------- チーム分け（担当区分・権限とは別の運用チーム） ----------------
+  // チームの数・名前・メンバーは今後変わる前提で、チーム編成タブから自由に追加・削除・変更できる。
+  // メンション名はスレッドの@で呼び出す名前（チームごとに設定でき、そのチームの全員に届く想定）。
+  var groups = [
+    {id:"g1", name:"バイク1st", mention:"バイク1st"},
+    {id:"g2", name:"バイク2nd", mention:"バイク2nd"},
+    {id:"g3", name:"車1st", mention:"車1st"},
+    {id:"g4", name:"車2nd", mention:"車2nd"},
+    {id:"g5", name:"車3rd", mention:"車3rd"},
   ];
-  var MENTION_NAMES = MENTION_TEAMS.map(function(g){ return g.label; }).concat(team.map(function(t){ return t.name; }));
-  MENTION_NAMES.sort(function(a,b){ return b.length - a.length; }); // 長い名前から先にマッチさせ、部分一致の誤爆を防ぐ
+  var GROUP_BY_NAME = {"山田 太郎":"g1", "田中 太郎":"g1", "高橋 健一":"g2", "鈴木 花子":"g3", "伊藤 誠":"g3", "中村 優子":"g4", "渡辺 美咲":"g5"};
+  team.forEach(function(t){ t.group = GROUP_BY_NAME[t.name] || null; });
+  function groupById(id){ return groups.find(function(g){ return g.id===id; }); }
+  function groupMembers(id){ return team.filter(function(t){ return t.group===id; }); }
+  function groupNameOf(t){ var g = t.group ? groupById(t.group) : null; return g ? g.name : null; }
+
+  // ---------------- @メンション（個人・チーム両方に対応） ----------------
+  // メンション先＝担当区分の自動グループ（バイク/車/全員）＋設定したチーム。
+  // チームの追加・変更はチーム編成タブで行い、ここには自動で反映される。
+  function mentionTeams(){
+    var auto = [
+      {label:"バイクチーム", icon:ICON_BIKE, members: team.filter(function(t){ return t.role==="bike"; })},
+      {label:"車チーム", icon:ICON_CAR, members: team.filter(function(t){ return t.role==="car"; })},
+      {label:"全員", icon:null, members: team},
+    ];
+    var custom = groups.map(function(g){ return {label:g.mention, icon:null, members: groupMembers(g.id)}; });
+    return auto.concat(custom);
+  }
+  var MENTION_NAMES = [];
+  function refreshMentionNames(){
+    MENTION_NAMES = mentionTeams().map(function(g){ return g.label; }).concat(team.map(function(t){ return t.name; }));
+    MENTION_NAMES.sort(function(a,b){ return b.length - a.length; }); // 長い名前から先にマッチさせ、部分一致の誤爆を防ぐ
+  }
+  refreshMentionNames();
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, function(ch){
       return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
@@ -1511,7 +1562,7 @@
   }
   function mentionMenuItems(query){
     var q = query.toLowerCase();
-    var teamItems = MENTION_TEAMS.filter(function(g){ return !q || g.label.toLowerCase().indexOf(q)>=0; }).map(function(g){
+    var teamItems = mentionTeams().filter(function(g){ return !q || g.label.toLowerCase().indexOf(q)>=0; }).map(function(g){
       return '<div class="mention-item" data-name="'+g.label+'"><span class="mention-item-icon team">'+(g.icon||'👥')+'</span>'+
         '<span class="mention-item-name">'+g.label+'</span><span class="mention-item-sub">'+g.members.length+'人のチーム</span></div>';
     });
@@ -2340,19 +2391,25 @@
         var roleOptions = ['bike','car'].map(function(r){
           return '<option value="'+r+'"'+(t.role===r?' selected':'')+'>'+roleMeta[r]+'</option>';
         }).join('');
+        var groupOptions = '<option value=""'+(!t.group?' selected':'')+'>未所属</option>' + groups.map(function(g){
+          return '<option value="'+g.id+'"'+(t.group===g.id?' selected':'')+'>'+escapeHtml(g.name)+'</option>';
+        }).join('');
         var permOptions = ['member','leader','sysadmin'].map(function(p){
           return '<option value="'+p+'"'+(t.perm===p?' selected':'')+'>'+permMeta[p]+'</option>';
         }).join('');
         tr.innerHTML =
           '<td>'+personChip(t.name)+'</td>'+
           '<td><select class="role-select" data-kind="role">'+roleOptions+'</select></td>'+
+          '<td><select class="role-select" data-kind="group">'+groupOptions+'</select></td>'+
           (isSysadmin ? '<td><select class="role-select" data-kind="perm">'+permOptions+'</select></td>' : '')+
           '<td class="roster-updated tnum">'+t.updated+'</td>'+
           '<td class="roster-actions"><button class="btn primary sm" data-act="save">保存</button> <button class="btn sm" data-act="cancel">キャンセル</button></td>';
       } else {
+        var gname = groupNameOf(t);
         tr.innerHTML =
           '<td>'+personChip(t.name)+'</td>'+
           '<td>'+roleMeta[t.role]+'</td>'+
+          '<td>'+(gname ? escapeHtml(gname) : '<span class="roster-unassigned">未所属</span>')+'</td>'+
           (isSysadmin ? '<td>'+permMeta[t.perm]+'</td>' : '')+
           '<td class="roster-updated tnum">'+t.updated+'</td>'+
           '<td class="roster-actions"><button class="btn sm" data-act="edit"'+(editingRosterIdx!==null?' disabled':'')+'>編集</button></td>';
@@ -2377,19 +2434,100 @@
   function saveRosterRow(i, tr){
     var t = team[i];
     var roleSel = tr.querySelector('select[data-kind="role"]');
+    var groupSel = tr.querySelector('select[data-kind="group"]');
     var permSel = tr.querySelector('select[data-kind="perm"]');
     var parts = [];
     if(roleSel && roleSel.value !== t.role){ t.role = roleSel.value; parts.push('担当区分'); }
+    if(groupSel && (groupSel.value || null) !== t.group){ t.group = groupSel.value || null; parts.push('チーム'); }
     if(permSel && permSel.value !== t.perm){ t.perm = permSel.value; parts.push('権限'); }
     if(parts.length) t.updated = "たった今";
     editingRosterIdx = null;
     renderRoster();
+    renderGroups();
+    refreshMentionNames();
     renderWorkload();
+    showRosterToast(parts.length ? "✓ "+t.name+"さんの"+parts.join('・')+"を変更しました" : "✓ 変更はありません");
+  }
+  function showRosterToast(text){
     var toast = document.getElementById('saveToast');
-    toast.textContent = parts.length ? "✓ "+t.name+"さんの"+parts.join('・')+"を変更しました" : "✓ 変更はありません";
+    toast.textContent = text;
     toast.classList.add('show');
     setTimeout(function(){ toast.classList.remove('show'); }, 2600);
   }
+
+  // ---------------- チーム管理（追加・削除・名前/メンション名の変更） ----------------
+  // チームの数・名前は今後変わる前提。削除したチームのメンバーは「未所属」に戻る。
+  // メンション名を変えるとスレッドの@候補にも即反映される。
+  var editingGroupId = null;
+  var groupSeq = groups.length;
+  function renderGroups(){
+    var body = document.querySelector('#groupTable tbody');
+    body.innerHTML = "";
+    groups.forEach(function(g){
+      var tr = document.createElement('tr');
+      var membersHtml = groupMembers(g.id).map(function(t){ return personChip(t.name); }).join('') ||
+        '<span class="roster-unassigned">メンバーなし</span>';
+      if(editingGroupId === g.id){
+        tr.innerHTML =
+          '<td><input type="text" class="group-input" data-kind="gname" value="'+escapeHtml(g.name)+'"></td>'+
+          '<td><div class="group-mention-cell">@<input type="text" class="group-input" data-kind="gmention" value="'+escapeHtml(g.mention)+'"></div></td>'+
+          '<td><div class="group-members-cell">'+membersHtml+'</div></td>'+
+          '<td class="roster-actions"><button class="btn primary sm" data-act="gsave">保存</button> <button class="btn sm" data-act="gcancel">キャンセル</button></td>';
+      } else {
+        tr.innerHTML =
+          '<td>'+escapeHtml(g.name)+'</td>'+
+          '<td><span class="mention-tag">@'+escapeHtml(g.mention)+'</span></td>'+
+          '<td><div class="group-members-cell">'+membersHtml+'</div></td>'+
+          '<td class="roster-actions"><button class="btn sm" data-act="gedit"'+(editingGroupId!==null?' disabled':'')+'>編集</button> '+
+          '<button class="btn sm danger-ghost" data-act="gdelete"'+(editingGroupId!==null?' disabled':'')+'>削除</button></td>';
+      }
+      tr.querySelectorAll('button[data-act]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var act = btn.dataset.act;
+          if(act === 'gedit'){ editingGroupId = g.id; renderGroups(); }
+          else if(act === 'gcancel'){ editingGroupId = null; renderGroups(); }
+          else if(act === 'gsave'){ saveGroupRow(g, tr); }
+          else if(act === 'gdelete'){ deleteGroup(g); }
+        });
+      });
+      body.appendChild(tr);
+    });
+  }
+  function saveGroupRow(g, tr){
+    var nameInput = tr.querySelector('input[data-kind="gname"]');
+    var mentionInput = tr.querySelector('input[data-kind="gmention"]');
+    var parts = [];
+    var newName = nameInput.value.trim();
+    var newMention = mentionInput.value.trim().replace(/^@/, '');
+    if(newName && newName !== g.name){ g.name = newName; parts.push('チーム名'); }
+    if(newMention && newMention !== g.mention){ g.mention = newMention; parts.push('メンション名'); }
+    editingGroupId = null;
+    renderGroups();
+    renderRoster();
+    refreshMentionNames();
+    showRosterToast(parts.length ? "✓ "+g.name+"の"+parts.join('・')+"を変更しました" : "✓ 変更はありません");
+  }
+  function deleteGroup(g){
+    var count = groupMembers(g.id).length;
+    groups = groups.filter(function(x){ return x.id !== g.id; });
+    team.forEach(function(t){ if(t.group === g.id) t.group = null; });
+    renderGroups();
+    renderRoster();
+    refreshMentionNames();
+    showRosterToast("✓ "+g.name+"を削除しました"+(count ? "（"+count+"人は未所属になりました）" : ""));
+  }
+  document.getElementById('groupAddBtn').addEventListener('click', function(){
+    if(editingGroupId !== null) return; // 編集中は追加しない（誤操作防止）
+    groupSeq++;
+    var g = {id:"g"+Date.now()+"_"+groupSeq, name:"新しいチーム"+groupSeq, mention:"新しいチーム"+groupSeq};
+    groups.push(g);
+    editingGroupId = g.id;
+    renderGroups();
+    var body = document.querySelector('#groupTable tbody');
+    body.lastElementChild.scrollIntoView({block:'center'});
+    var input = body.lastElementChild.querySelector('input[data-kind="gname"]');
+    if(input){ input.focus(); input.select(); }
+  });
 
   // ---------------- シミュレーション（100点満点の採点結果を表示） ----------------
   var sim = [
@@ -3020,6 +3158,7 @@
 
   // ---------------- Init ----------------
   renderRoster();
+  renderGroups();
   renderQueue('bike');
   renderQueue('car');
   renderMine();
