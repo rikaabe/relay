@@ -741,6 +741,8 @@
   .score-main-num .rule-value{ font-weight:inherit; }
   .rule-head{ display:flex; align-items:center; gap:10px; }
   .rule-order{ width:22px; height:22px; border-radius:6px; background:var(--paper); color:var(--ink-faint); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none; }
+  /* 編集できるカードは番号も青くして、編集の可否をひと目で分かるようにする */
+  .rule-card:not(.fixed-rule) .rule-order{ background:var(--accent); color:#fff; }
   .rule-name{ font-size:13.5px; font-weight:700; flex:1; }
   .switch{ position:relative; width:34px; height:20px; flex:none; }
   .switch input{ display:none; }
@@ -757,6 +759,9 @@
   .score-bar{ display:flex; gap:3px; margin-top:10px; }
   .score-seg{ padding:7px 8px; text-align:center; font-size:11px; font-weight:600; color:#fff; line-height:1.35;
     display:flex; flex-direction:column; justify-content:center; align-items:center; }
+  .score-sub{ font-size:9.5px; font-weight:500; opacity:.85; }
+  /* ラベルと点数の高さを3セグメントで揃えるための見えない行（内訳がない列に入れる） */
+  .score-sub.spacer{ visibility:hidden; }
   .score-main-num{ display:block; font-size:15px; font-weight:800; }
   .score-seg.speed{ flex:6; background:var(--accent); border-radius:6px 0 0 6px; }
   .score-seg.ready{ flex:3; background:#7C8CF0; }
@@ -1308,10 +1313,14 @@
                   </div>
                   <div class="score-bar" id="scoreBar">
                     <div class="score-seg speed" id="segSpeed">対応の早さ<br><b class="score-main-num"><span id="speedTotal">60</span>点</b><br>
-                      <span style="font-size:9.5px;font-weight:500;opacity:.85;">コメント<span class="rule-value" id="scoreCommentValue">40</span><input type="number" class="score-input rule-edit-input" id="scoreComment" data-display="scoreCommentValue" value="40" min="0" max="100" hidden>+tel<span class="rule-value" id="scoreTelValue">20</span><input type="number" class="score-input rule-edit-input" id="scoreTel" data-display="scoreTelValue" value="20" min="0" max="100" hidden></span>
+                      <span class="score-sub">コメント<span class="rule-value" id="scoreCommentValue">40</span><input type="number" class="score-input rule-edit-input" id="scoreComment" data-display="scoreCommentValue" value="40" min="0" max="100" hidden>+tel<span class="rule-value" id="scoreTelValue">20</span><input type="number" class="score-input rule-edit-input" id="scoreTel" data-display="scoreTelValue" value="20" min="0" max="100" hidden></span>
                     </div>
-                    <div class="score-seg ready" id="segReady">いますぐ動けるか<br><b class="score-main-num"><span class="rule-value" id="scoreReadyValue">30</span><input type="number" class="score-input rule-edit-input" id="scoreReady" data-display="scoreReadyValue" value="30" min="0" max="100" hidden>点</b></div>
-                    <div class="score-seg boost" id="segBoost">私いけます！<br><b class="score-main-num">+<span class="rule-value" id="scoreBoostValue">10</span><input type="number" class="score-input rule-edit-input" id="scoreBoost" data-display="scoreBoostValue" value="10" min="0" max="100" hidden>点</b></div>
+                    <div class="score-seg ready" id="segReady">いますぐ動けるか<br><b class="score-main-num"><span class="rule-value" id="scoreReadyValue">30</span><input type="number" class="score-input rule-edit-input" id="scoreReady" data-display="scoreReadyValue" value="30" min="0" max="100" hidden>点</b><br>
+                      <span class="score-sub spacer">&nbsp;</span>
+                    </div>
+                    <div class="score-seg boost" id="segBoost">私いけます！<br><b class="score-main-num">+<span class="rule-value" id="scoreBoostValue">10</span><input type="number" class="score-input rule-edit-input" id="scoreBoost" data-display="scoreBoostValue" value="10" min="0" max="100" hidden>点</b><br>
+                      <span class="score-sub spacer">&nbsp;</span>
+                    </div>
                   </div>
                   <div class="score-total-row ok" id="scoreTotalRow">合計 <span id="scoreTotalVal">100</span>点／100点</div>
                   <div class="rule-num-row">コメント評価窓：直近 <span class="rule-value" id="commentWindowValue">10</span><input type="number" class="rule-edit-input" id="commentWindowInput" data-display="commentWindowValue" value="10" min="3" max="30" hidden> 出勤日分（12:00〜17:00の勤務を含む日のみ）</div>
