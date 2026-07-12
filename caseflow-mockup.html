@@ -210,6 +210,8 @@
     box-shadow:0 0 0 2px var(--surface); /* 緑のピルやクリーム背景の上でも輪郭が立つように白フチ */
   }
   .nav-item .badge.urgent{ background:var(--critical); color:#fff; }
+  /* 通知のバッジは通知の慣習に合わせて赤（未読があることを一目で伝える） */
+  .nav-item[data-view="notif"] .badge{ background:var(--critical); color:#fff; }
   .nav-item:hover .nav-icon{ background:var(--paper); }
   .nav-item:hover{ color:var(--ink); }
   .nav-item.active{ color:var(--accent-ink); }
