@@ -755,7 +755,8 @@
 
   /* 100点満点の採点内訳バー（振り分けロジック第2章） */
   .score-bar{ display:flex; gap:3px; margin-top:10px; }
-  .score-seg{ padding:7px 8px; text-align:center; font-size:11px; font-weight:600; color:#fff; line-height:1.35; }
+  .score-seg{ padding:7px 8px; text-align:center; font-size:11px; font-weight:600; color:#fff; line-height:1.35;
+    display:flex; flex-direction:column; justify-content:center; align-items:center; }
   .score-main-num{ display:block; font-size:15px; font-weight:800; }
   .score-seg.speed{ flex:6; background:var(--accent); border-radius:6px 0 0 6px; }
   .score-seg.ready{ flex:3; background:#7C8CF0; }
@@ -1317,12 +1318,13 @@
                   <div class="rule-num-row">tel評価窓：直近 <span class="rule-value" id="telWindowValue">20</span><input type="number" class="rule-edit-input" id="telWindowInput" data-display="telWindowValue" value="20" min="5" max="100" hidden> 件</div>
                   <div class="rule-num-row">私いけます！の対応率基準 <span class="rule-value" id="boostThresholdValue">80</span><input type="number" class="rule-edit-input" id="boostThresholdInput" data-display="boostThresholdValue" value="80" min="0" max="100" hidden> %</div>
                 </div>
-                <div class="rule-card fixed-rule">
+                <div class="rule-card" id="ruleCard5">
                   <div class="rule-head">
                     <div class="rule-order">5</div>
                     <div class="rule-name">期限を過ぎたら自動で振り直し</div>
-                    <span class="rule-fixed-badge">常時適用</span>
+                    <button type="button" class="rule-edit-btn" data-card="ruleCard5">編集</button>
                   </div>
+                  <div class="rule-num-row">期限：受信から <span class="rule-value" id="reassignDeadlineValue">2</span><input type="number" class="rule-edit-input" id="reassignDeadlineInput" data-display="reassignDeadlineValue" value="2" min="1" max="24" hidden> 時間</div>
                 </div>
                 <div class="rule-card fixed-rule">
                   <div class="rule-head">
