@@ -379,10 +379,15 @@
   .case-card::before{ content:""; position:absolute; left:9px; top:8px; bottom:8px; width:4px; border-radius:4px; background:var(--border); }
   .case-card.kind-upload::before{ background:#ECB22E; }
   .case-card.kind-reupload::before{ background:#2EB67D; }
+  .case-card.kind-notif-sla::before{ background:var(--critical); }
+  .case-card.kind-notif-assign::before{ background:var(--accent); }
+  .case-card.kind-notif-mention::before{ background:#FFA500; }
+  .case-card.kind-notif-new::before{ background:var(--neutral-chip); }
   .case-card-main{ flex:1; min-width:0; }
   .case-card-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .case-card-kind{ font-weight:400; font-size:13.5px; }
+  .case-card-kind{ font-weight:400; font-size:13.5px; flex:1; min-width:0; }
   .case-card-time{ font-size:11.5px; color:var(--ink-faint); }
+  .case-card .notif-dot{ flex:none; }
   .case-card .elapsed-tag{ display:inline; margin:0; }
   .case-card.elapsed-over .elapsed-tag{ color:var(--warning); }
   .case-card-line{ font-size:12.5px; margin-top:3px; color:var(--ink); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
@@ -390,7 +395,7 @@
   .case-card-url:hover{ color:var(--accent-ink); }
   .case-card-owner{ display:flex; align-items:center; gap:4px; }
   .case-card-owner .cell-person .avatar{ width:18px; height:18px; font-size:11px; }
-  .case-card .row-thread-btn{ flex:none; height:24px; padding:0 10px; font-size:12px; }
+  .case-card .row-thread-btn, .case-card .notif-thread-btn{ flex:none; height:24px; padding:0 10px; font-size:12px; }
   .case-card-actions{ margin-top:5px; }
   .case-card.queue-row-flash{ animation:rowFlash 1.6s ease-out; }
   .cell-person{ display:flex; align-items:center; gap:7px; }
@@ -764,28 +769,8 @@
   .sim-assignee{ flex:none; display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
   .audit-note{ display:flex; gap:8px; align-items:flex-start; padding:10px 12px; background:var(--success-soft); color:var(--success); border-radius:8px; font-size:12px; margin-top:14px; }
 
-  .notif-head{ padding:18px 22px 0; }
-  .notif-head-title{ font-size:14px; font-weight:800; }
-  .notif-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
-  .mine-notif-card{ flex:none; margin:16px 22px 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
-
-  .notif-scroll{ padding:6px 0 20px; }
-  .notif-daylabel{ font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:14px 22px 8px; }
-  .notif-row{ display:flex; gap:12px; align-items:center; padding:11px 22px; border-bottom:1px solid var(--border); }
-  .notif-row:hover{ background:var(--paper); }
-  .notif-icon{ width:32px; height:32px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center; }
-  .notif-icon.assign{ background:var(--accent-soft); color:var(--accent-ink); }
-  .notif-icon.sla{ background:var(--critical-soft); color:var(--critical); }
-  .notif-icon.mention{ background:var(--warning-soft); color:var(--warning); }
-  .notif-icon.new{ background:var(--neutral-chip-soft); color:var(--neutral-chip); }
-  .notif-body{ flex:1; min-width:0; }
-  .notif-top{ display:flex; align-items:center; gap:10px; flex-wrap:nowrap; }
-  .notif-text{ font-size:13px; flex:1; min-width:0; }
-  .notif-text b{ font-weight:700; }
-  .notif-text .vtag{ margin-right:2px; }
-  .notif-time{ font-size:11.5px; color:var(--ink-faint); flex:none; white-space:nowrap; }
+  .notif-daylabel{ font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:14px 0 8px; }
   .notif-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none; }
-  .notif-actions{ display:flex; align-items:center; gap:6px; flex:none; }
 
   .empty-state{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; color:var(--ink-faint); text-align:center; gap:6px; }
   .empty-state svg{ opacity:.5; margin-bottom:6px; }
@@ -969,9 +954,7 @@
           </div>
         </div>
         <div class="table-scroll" style="padding-top:16px;">
-          <div class="mine-notif-card" id="mineNotifCard">
-            <div id="mineNotifList"></div>
-          </div>
+          <div class="case-cards" id="mineNotifList"></div>
         </div>
       </section>
 
@@ -2483,37 +2466,38 @@
   var notifications = [
     {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', text:'<b>311998</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"assign", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当があなたから <b>鈴木 花子</b>さんに変わりました。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
-    {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>鈴木 花子</b>さんがスレッドであなたをメンションしました（<b>521769</b>）', time:"08:24", unread:true, lockedType:true},
-    {day:"yesterday", vehicle:"bike", cls:"mention", caseId:"#B-0005", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>伊藤 誠</b>さんがスレッドで <b>バイクチーム</b> をメンションしました（<b>523371</b>）', time:"17:40", unread:false, lockedType:true},
+    {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>鈴木 花子</b>さんがスレッドであなたをメンションしました', time:"08:24", unread:true, lockedType:true},
+    {day:"yesterday", vehicle:"bike", cls:"mention", caseId:"#B-0005", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>', text:'<b>伊藤 誠</b>さんがスレッドで <b>バイクチーム</b> をメンションしました', time:"17:40", unread:false, lockedType:true},
   ];
   function visibleNotifications(){
     return notifications;
   }
-  // 通知は左の「通知」タブに一本化。スレッドボタンでサイドバーを開いて返信する。
+  // 通知は左の「通知」タブに一本化。案件タブと同じカード表示にし、「再アップロード完了」等の
+  // 種別ラベルの位置に通知本文が入る。スレッドボタンでサイドバーを開いて返信する。
   function notifRowHtml(n, mode){
     var c = n.caseId ? cases.find(function(cc){ return cc.id===n.caseId; }) : null;
     var uid = mode+'_'+(n.caseId||'none').replace(/[^A-Za-z0-9]/g,'')+'_'+n.time.replace(':','');
-    var actions = '';
-    if(c){
-      actions = '<div class="notif-actions">'+
-        '<a class="btn primary sm" href="'+c.adminUrl+'" target="_blank" rel="noopener">admin</a>'+
-        '<button type="button" class="btn sm notif-thread-btn" data-case="'+c.id+'">スレッド</button>'+
-      '</div>';
-    }
-    return '<div class="notif-row" data-uid="'+uid+'">'+
-        '<div class="notif-icon '+n.cls+'">'+n.icon+'</div>'+
-        '<div class="notif-body">'+
-          '<div class="notif-top">'+
-            '<div class="notif-text">'+vtag(n.vehicle,true)+' '+n.text+'</div>'+
-            '<div class="notif-time tnum">'+n.time+'</div>'+
+    var caseLine = c ?
+      '<div class="case-card-line">'+
+        '<span>査定依頼ID：<span class="tnum">'+caseNo(c)+'</span></span>'+
+        '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
+      '</div>' : '';
+    return '<div class="case-card kind-notif-'+n.cls+'" data-uid="'+uid+'">'+
+        '<div class="case-card-main">'+
+          '<div class="case-card-head">'+
+            (n.vehicle ? vtag(n.vehicle,true) : '')+
+            '<span class="case-card-kind">'+n.text+'</span>'+
+            '<span class="case-card-time tnum">'+n.time+'</span>'+
             (n.unread?'<div class="notif-dot"></div>':'')+
-            actions+
           '</div>'+
+          caseLine+
+          '<div class="case-card-actions"><button type="button" class="btn sm notif-thread-btn" data-case="'+(c?c.id:'')+'">スレッド</button></div>'+
         '</div>'+
       '</div>';
   }
   function bindNotifRowActions(container){
     container.querySelectorAll('.notif-thread-btn').forEach(function(btn){
+      if(!btn.dataset.case) return;
       btn.addEventListener('click', function(){ openRail(btn.dataset.case); });
     });
   }
