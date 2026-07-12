@@ -205,10 +205,11 @@
   .nav-item .badge{
     position:absolute; top:-4px; right:-4px; min-width:17px; height:17px; padding:0 4px;
     display:flex; align-items:center; justify-content:center;
-    font-size:10.5px; font-weight:700; color:var(--ink-soft); background:var(--neutral-chip-soft);
+    font-size:10.5px; font-weight:700; color:#fff; background:#333535;
     border-radius:20px; font-variant-numeric:tabular-nums;
+    box-shadow:0 0 0 2px var(--surface); /* 緑のピルやクリーム背景の上でも輪郭が立つように白フチ */
   }
-  .nav-item .badge.urgent{ background:var(--critical-soft); color:var(--critical); }
+  .nav-item .badge.urgent{ background:var(--critical); color:#fff; }
   .nav-item:hover .nav-icon{ background:var(--paper); }
   .nav-item:hover{ color:var(--ink); }
   .nav-item.active{ color:var(--accent-ink); }
