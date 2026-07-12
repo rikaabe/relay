@@ -107,9 +107,12 @@
   /* ---------- トップバーの稼働状況ボタン（常設・高さは検索窓と同じ34px） ---------- */
   .online-toggle.topbar-status{ margin-left:auto; flex:none; height:34px; }
   .online-toggle.topbar-status button{ flex:none; padding:0 16px; min-width:120px; font-size:13.5px; } /* 押しやすいよう従来の約2倍幅 */
-  /* ●は選択中の状態にだけ表示（どれが今の状態か一目で分かるように） */
-  .online-toggle.topbar-status .status-dot{ display:none; }
-  .online-toggle.topbar-status button.active .status-dot{ display:inline-block; }
+  /* アイコンは選択中の状態にだけ表示（どれが今の状態か一目で分かるように） */
+  .online-toggle.topbar-status .status-icon{ display:none; }
+  .online-toggle.topbar-status button.active .status-icon{ display:inline-flex; align-items:center; }
+  .status-icon.online{ color:var(--success); }
+  .status-icon.away{ color:var(--warning); }
+  .status-icon.offline{ color:var(--ink-faint); }
 
   /* ---------- トップバーの「私いけます！」ボタン（稼働状況の右隣・高さは検索窓と同じ） ---------- */
   .topbar-boost{
@@ -832,9 +835,9 @@
     </div>
     <!-- 稼働状況はワンクリックで切り替えられるよう右上に常設（自動振り分けに反映） -->
     <div class="online-toggle topbar-status" id="onlineToggle" title="稼働状況（自動振り分けに反映）。営業時間内に退勤すると未対応の案件は確認のうえ即・別の担当へ振り直されます">
-      <button type="button" data-state="online"><span class="status-dot online"></span>出勤</button>
-      <button type="button" data-state="away"><span class="status-dot away"></span>離席</button>
-      <button type="button" data-state="offline"><span class="status-dot offline"></span>退勤</button>
+      <button type="button" data-state="online"><span class="status-icon online"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg></span>出勤</button>
+      <button type="button" data-state="away"><span class="status-icon away"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2"/><path d="M10 2v2"/><path d="M14 2v2"/></svg></span>離席</button>
+      <button type="button" data-state="offline"><span class="status-icon offline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span>退勤</button>
     </div>
     <!-- 私いけます！＝本人単位の+10点/24時間（案件単位ではないため、案件行ではなくここに置く） -->
     <button type="button" class="topbar-boost" id="boostTopBtn" title="押してから24時間、自動振り分けで優先されやすくなります。担当はサーバーが自動で決めます">私いけます！</button>
@@ -2932,7 +2935,8 @@
     var topBtn = document.getElementById('boostTopBtn');
     var on = !!myself().boost;
     topBtn.classList.toggle('on', on);
-    topBtn.innerHTML = on ? '✓ 私いけます！受付済み' : '私いけます！';
+    var ICON_HAND = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>';
+    topBtn.innerHTML = on ? ICON_HAND+' 私いけます！受付済み' : '私いけます！';
     var el = document.getElementById('boostState');
     if(!el) return;
     if(on){
