@@ -1,44 +1,51 @@
 <title>Relay — 案件管理UIモックアップ</title>
 <style>
   :root{
-    --ink:#1A1F2B;
-    --ink-soft:#5B6272;
-    --ink-faint:#9098A8;
-    --paper:#F4F5F9;
-    --surface:#FFFFFF;
-    --border:#E1E4EC;
-    --border-strong:#CBD0DC;
+    /* ===== デザインシステム：KATIX × Warm（Minimal SaaS Dashboardベース） =====
+       基調＝ウォームニュートラル紙色、文字＝グラファイト墨色（Warm Graphite案と同じ）。
+       ハイライト＝KATIXブランド緑 #389656（bike.katix.co.jp のCTA・下線と同色）。
+       意味色（状態・車/バイク・編集可否の青）の役割は従来のまま */
+    --ink:#1C1B17;
+    --ink-soft:#66655B;
+    --ink-faint:#96948A;
+    --paper:#F2F0E9;
+    --surface:#FFFEFA;
+    --border:#E2DFD3;
+    --border-strong:#C9C5B7;
     --accent:#4C5FD5;
     --accent-ink:#2F3FA8;
-    --accent-soft:#EEF0FD;
+    --accent-soft:#EBEDFB;
+    --brand:#389656;        /* KATIXグリーン：ナビ現在地・主要ボタン専用 */
+    --brand-strong:#2F7A47; /* hover・アクティブ文字用の濃い緑 */
+    --brand-soft:#E7F3EB;
     --success:#17845A;
-    --success-soft:#E5F4EE;
-    --warning:#AD7A1E;
-    --warning-soft:#FBF1DE;
+    --success-soft:#E3F1E7;
+    --warning:#A9761C;
+    --warning-soft:#F8EFD9;
     --critical:#C64444;
-    --critical-soft:#FBEAEA;
-    --neutral-chip:#5B6272;
-    --neutral-chip-soft:#ECEDF2;
+    --critical-soft:#F9E8E4;
+    --neutral-chip:#66655B;
+    --neutral-chip-soft:#EBE9DF;
     --hold-chip:#7A5CB0;
-    --hold-chip-soft:#F1EBF9;
+    --hold-chip-soft:#F0EBF8;
     --car:#2F6FB0;
-    --car-soft:#E7F0F9;
+    --car-soft:#E5EFF7;
     --bike:#32CD32;
-    --bike-soft:#E9F9E9;
-    --radius-s:6px;
-    --radius-m:10px;
-    --radius-l:14px;
-    --shadow-panel:0 1px 2px rgba(26,31,43,0.04), 0 8px 24px -12px rgba(26,31,43,0.12);
-    --shadow-card:0 1px 2px rgba(26,31,43,0.04), 0 12px 32px -20px rgba(26,31,43,0.18);
-    /* KPIデータ系列（validate_palette.js 検証済み） */
+    --bike-soft:#E7F6E4;
+    --radius-s:8px;
+    --radius-m:12px;
+    --radius-l:16px;
+    --shadow-panel:0 1px 2px rgba(38,35,25,0.04), 0 8px 24px -12px rgba(38,35,25,0.12);
+    --shadow-card:0 1px 2px rgba(38,35,25,0.04), 0 12px 32px -20px rgba(38,35,25,0.18);
+    /* KPIデータ系列（成約＝KATIXグリーンに統一） */
     --series-upload:#4C5FD5;
-    --series-deal:#17845A;
+    --series-deal:#389656;
     --funnel-1:#A9B4EF;   /* ordinal ramp 薄→濃（対白 2.01:1 クリア） */
     --funnel-2:#7C8CF0;
     --funnel-3:#4C5FD5;
-    --spark:#C6CBD8;      /* スパークライン用の控えめグレー */
-    --gridline:#EDEFF4;   /* ヘアライン目盛り */
-    --baseline:#DDE0E8;
+    --spark:#C9C6BA;      /* スパークライン用の控えめグレー（暖色調律） */
+    --gridline:#ECEAE0;   /* ヘアライン目盛り */
+    --baseline:#DFDCD0;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -853,6 +860,37 @@
   .star-row svg{ flex:none; display:block; }
   .star-meter .star-fill{ position:absolute; left:0; top:0; height:100%; overflow:hidden; color:#fcf16e; transition:width .4s ease; }
   .progress-pct{ font-size:13px; font-weight:700; color:var(--success); white-space:nowrap; }
+
+  /* ===== クローム調整（KATIX × Warm） =====
+     骨格・レイアウト・機能は不変。サイドバーは自社サイト同様の白基調レール、
+     ハイライト（現在地・主要ボタン）＝KATIXグリーン。
+     青は「情報・編集可否・データ」の意味色に専念させる */
+
+  /* ブランドマーク：KATIXグリーン */
+  .brand .mark{ background:linear-gradient(135deg,#389656,#02A852); }
+
+  /* サイドバー：白基調レール＋現在地はKATIXグリーンのピル */
+  /* バイク/車アイコンも他のナビアイコンと同じ配色（色分けはバッジ・チップ側に任せる） */
+  .nav-item.bike svg, .nav-item.car svg{ color:inherit; }
+  .nav-item.active{ color:var(--brand-strong); }
+  .nav-item.active .nav-icon{ background:var(--brand); }
+  .nav-item.active svg, .nav-item.active.car svg, .nav-item.active.bike svg{ color:#fff; }
+
+  /* 主要アクション＝KATIXグリーン（自社サイトのCTAと同じ） */
+  .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn.primary:hover{ background:var(--brand-strong); }
+  .rule-edit-btn.editing{ background:var(--brand); border-color:var(--brand); color:#fff; }
+  .switch input:checked + .switch-track{ background:var(--brand); }
+  .topbar-boost.on{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  /* KPIヒーローカード：KATIXチャコール面（自社サイトのダークセクションと同色） */
+  .kpi-card.hero{ background:#333535; border-color:#333535; }
+  .kpi-card.hero .kpi-label{ color:rgba(255,255,255,.72); }
+
+  /* KPI内の緑＝KATIXグリーン系に統一
+     （チップの文字はKATIX緑の濃色#2F7A47：淡緑地でも読めるコントラストを確保） */
+  .stat-chip.good{ color:var(--brand-strong); background:var(--brand-soft); }
+  .kpi-delta.down{ color:var(--brand-strong); }
 </style>
 
 <div class="app">
