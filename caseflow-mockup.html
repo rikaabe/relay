@@ -729,11 +729,12 @@
   .rules-head-title{ font-size:14px; font-weight:800; }
   .rules-head-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; margin-bottom:4px; }
   .rules-grid{ padding:14px 22px 28px; }
-  .rule-card{ border:1px solid var(--border); border-radius:var(--radius-m); padding:14px 16px; margin-bottom:12px; background:var(--surface); }
+  /* 編集できるカード＝青、常時適用（編集不可）＝白で見分ける */
+  .rule-card{ border:1px solid var(--accent); border-radius:var(--radius-m); padding:14px 16px; margin-bottom:12px; background:var(--accent-soft); }
   .rule-card.off{ opacity:.5; }
-  .rule-card.fixed-rule{ background:var(--accent-soft); border-color:var(--accent); }
+  .rule-card.fixed-rule{ background:var(--surface); border-color:var(--border); }
   .rule-fixed-badge{ font-size:11px; font-weight:700; color:var(--accent-ink); background:var(--surface); border:1px solid var(--accent); border-radius:20px; padding:3px 10px; flex:none; }
-  .rule-edit-btn{ -webkit-appearance:none; appearance:none; font-size:11px; font-weight:700; color:var(--accent-ink); background:var(--surface); border:1px solid var(--accent); border-radius:20px; padding:3px 10px; flex:none; cursor:pointer; font-family:inherit; }
+  .rule-edit-btn{ -webkit-appearance:none; appearance:none; font-size:13px; font-weight:700; color:var(--accent-ink); background:var(--surface); border:1px solid var(--accent); border-radius:20px; padding:7px 18px; flex:none; cursor:pointer; font-family:inherit; }
   .rule-edit-btn:hover{ background:var(--accent-soft); }
   .rule-edit-btn.editing{ background:var(--accent); border-color:var(--accent); color:#fff; }
   .rule-value{ font-weight:700; }
@@ -1330,7 +1331,6 @@
                     <span class="rule-fixed-badge">常時適用</span>
                   </div>
                 </div>
-                <button class="btn primary" id="rulesSaveBtn" style="margin-top:4px;">変更を保存</button>
             </div>
           </div>
         </div>
@@ -2399,13 +2399,16 @@
     input.addEventListener('input', openSimModal);
   });
 
-  // 誤操作防止：カードごとの「編集」を押すまで、その数値は表示のみでロックされている
+  // 誤操作防止：カードごとの「編集」を押すまで、その数値は表示のみでロックされている。
+  // 編集中はボタンが「変更を保存」になり、押すと保存してもとの「編集」に戻る。
   document.querySelectorAll('.rule-edit-btn').forEach(function(editBtn){
     var card = document.getElementById(editBtn.dataset.card);
     var values = card.querySelectorAll('.rule-value');
     var inputs = card.querySelectorAll('.rule-edit-input');
     var editing = false;
+    var feedbackTimer = null;
     editBtn.addEventListener('click', function(){
+      clearTimeout(feedbackTimer);
       editing = !editing;
       if(editing){
         inputs.forEach(function(input){
@@ -2414,7 +2417,7 @@
         });
         values.forEach(function(v){ v.hidden = true; });
         inputs.forEach(function(input){ input.hidden = false; });
-        editBtn.textContent = '完了';
+        editBtn.textContent = '変更を保存';
         editBtn.classList.add('editing');
       } else {
         inputs.forEach(function(input){
@@ -2423,17 +2426,11 @@
         });
         values.forEach(function(v){ v.hidden = false; });
         inputs.forEach(function(input){ input.hidden = true; });
-        editBtn.textContent = '編集';
+        editBtn.textContent = '✓ 保存しました';
         editBtn.classList.remove('editing');
+        feedbackTimer = setTimeout(function(){ editBtn.textContent = '編集'; }, 2200);
       }
     });
-  });
-  document.getElementById('rulesSaveBtn').addEventListener('click', function(){
-    document.querySelectorAll('.rule-edit-btn.editing').forEach(function(btn){ btn.click(); });
-    var saveBtn = document.getElementById('rulesSaveBtn');
-    var original = saveBtn.textContent;
-    saveBtn.textContent = '✓ 保存しました';
-    setTimeout(function(){ saveBtn.textContent = original; }, 2200);
   });
 
   // ---------------- 自動振り分け設定：点数配分（コメント/tel/動けるか/私いけます！） ----------------
