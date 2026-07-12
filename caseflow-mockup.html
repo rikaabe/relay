@@ -30,8 +30,8 @@
     --hold-chip-soft:#F0EBF8;
     --car:#2F6FB0;
     --car-soft:#E5EFF7;
-    --bike:#32CD32;
-    --bike-soft:#E7F6E4;
+    --bike:#389656;
+    --bike-soft:#E7F3EB;
     --radius-s:8px;
     --radius-m:12px;
     --radius-l:16px;
@@ -858,7 +858,7 @@
   .star-meter{ position:relative; color:var(--border); user-select:none; }
   .star-row{ display:flex; }
   .star-row svg{ flex:none; display:block; }
-  .star-meter .star-fill{ position:absolute; left:0; top:0; height:100%; overflow:hidden; color:#fcf16e; transition:width .4s ease; }
+  .star-meter .star-fill{ position:absolute; left:0; top:0; height:100%; overflow:hidden; color:#E6BE52; transition:width .4s ease; }
   .progress-pct{ font-size:13px; font-weight:700; color:var(--success); white-space:nowrap; }
 
   /* ===== クローム調整（KATIX × Warm） =====
@@ -1017,7 +1017,7 @@
           </div>
         </div>
         <div class="progress-card">
-          <div class="progress-num" id="mineProgressNum">現在のMY案件 <b>3</b>件中 <b>1</b>件対応済み</div>
+          <div class="progress-num" id="mineProgressNum">現在のマイ案件 <b>3</b>件中 <b>1</b>件対応済み</div>
           <div class="star-meter" aria-hidden="true"><span class="star-row" id="mineStarBase"></span><span class="star-row star-fill" id="mineProgressFill" style="width:33%"></span></div>
           <div class="progress-pct" id="mineProgressPct">33%</div>
         </div>
@@ -1770,7 +1770,7 @@
     var total = mineAll.length;
     var doneCount = mineAll.filter(function(c){ return c.done; }).length;
     var pct = total ? Math.round(doneCount/total*100) : 0;
-    document.getElementById('mineProgressNum').innerHTML = '現在のMY案件 <b class="tnum">'+total+'</b>件中 <b class="tnum">'+doneCount+'</b>件対応済み';
+    document.getElementById('mineProgressNum').innerHTML = '現在のマイ案件 <b class="tnum">'+total+'</b>件中 <b class="tnum">'+doneCount+'</b>件対応済み';
     var baseEl = document.getElementById('mineStarBase');
     var fill = document.getElementById('mineProgressFill');
     if(!baseEl.firstChild){
