@@ -1523,7 +1523,6 @@
               <!-- 主役：現在の持ち点の比較（点数順・積み上げ） -->
               <div class="panel">
                 <div class="panel-title">現在の持ち点（100点満点＋私いけます！最大10点）</div>
-                <div class="panel-sub" id="rateScoreSub">—</div>
                 <div class="rate-stat-row" id="rateScoreStats"></div>
                 <div id="rateScoreBody"></div>
                 <div class="legend-row">
@@ -1542,13 +1541,13 @@
               <div class="split-grid" style="margin-top:16px;">
                 <div class="panel">
                   <div class="panel-title">telの対応スピード（直近20件）</div>
-                  <div class="panel-sub">届いてから最初の対応までの平均時間。棒が短いほど早い。下段は中央値、右は採点（20点満点）</div>
+                  <div class="panel-sub">採点は20点満点</div>
                   <div class="rate-stat-row" id="rateTelStats"></div>
                   <div id="rateTelBody"></div>
                 </div>
                 <div class="panel">
                   <div class="panel-title">コメントの対応スピード（直近10出勤日）</div>
-                  <div class="panel-sub">お客様コメントに返信するまでの平均時間。棒が短いほど早い。下段は中央値、右は採点（40点満点）</div>
+                  <div class="panel-sub">採点は40点満点</div>
                   <div class="rate-stat-row" id="rateCommentStats"></div>
                   <div id="rateCommentBody"></div>
                 </div>
@@ -3314,10 +3313,6 @@
     // 持ち点チャート（点数の高い順・保留は最後）
     document.getElementById('rateScoreBody').innerHTML =
       rows.length ? scored.concat(holds).map(rateScoreRowHtml).join('') : emptyHtml;
-    var subUnit = rateView.unit === 'person' ? '点数の高い順。' : 'チーム所属メンバーの平均点。点数の高い順。';
-    document.getElementById('rateScoreSub').textContent = subUnit +
-      (scored.length ? '現在のトップは '+scored[0].name+'（'+rateTotalOf(scored[0].score)+'点）' : 'ー') +
-      (holds.length ? '／評価保留 '+holds.length+(rateView.unit==='person'?'人':'チーム') : '');
     // 全体平均点はKPIと同じ大きな数字で表示（表示中のメンバーが対象・評価保留は除外）
     var avgTotal = rateAvg(scored, function(r){ return rateTotalOf(r.score); });
     document.getElementById('rateScoreStats').innerHTML =
