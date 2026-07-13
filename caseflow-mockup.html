@@ -863,6 +863,9 @@
     font-variant-numeric:tabular-nums;
   }
   .rate-stat .val .unit{ font-size:13px; font-weight:600; color:var(--ink-soft); margin:0 1px; }
+  /* 持ち点パネルの全体平均だけ特大＋赤で強調（スピード2パネルの統計は通常のまま） */
+  #rateScoreStats .val{ font-size:40px; color:var(--critical); }
+  #rateScoreStats .val .unit{ font-size:16px; color:var(--critical); }
   /* スピード行：1本のトラックに 塗り（＝平均時間）・時間ラベル・採点 をまとめて表示する。
      ラベルは塗りの先端に置き、採点はトラック右端に固定（列がバラけず1ユニットで読める） */
   .rate-speed-track{ position:relative; flex:1; height:36px; background:var(--paper); border-radius:9px; }
