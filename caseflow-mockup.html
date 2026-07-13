@@ -824,16 +824,21 @@
   .rate-row:last-child{ border-bottom:none; }
   .rate-row .mp-name{ width:190px; }
   .rate-row.hold .mp-name{ opacity:.55; }
+  /* 採点4項目の色。青の濃淡ではなく色相ではっきり分ける（白文字が4.5:1以上載せられる濃さ）。
+     車=青・バイク=緑の意味色と混ざらないよう、tel=ティール／動けるか=紫／私いけます！=琥珀 */
   .rate-track{ flex:1; display:flex; gap:2px; }
-  .rate-seg{ height:20px; min-width:2px; border-radius:3px; }
-  .rate-seg.comment{ background:var(--funnel-3); border-radius:5px 3px 3px 5px; }
-  .rate-seg.tel{ background:var(--funnel-2); }
-  .rate-seg.ready{ background:var(--funnel-1); }
-  .rate-seg.boost{ background:var(--surface); border:1.5px dashed var(--accent); }
+  .rate-seg{
+    height:20px; min-width:2px; border-radius:3px;
+    display:flex; align-items:center; padding:0 7px; overflow:hidden;
+  }
+  .rate-seg.comment{ background:#4C5FD5; border-radius:5px 3px 3px 5px; }
+  .rate-seg.tel{ background:#0E7A88; }
+  .rate-seg.ready{ background:#7A5CB0; }
+  .rate-seg.boost{ background:#A9761C; border-radius:3px 5px 5px 3px; }
+  .rate-seg .sl{ font-size:10.5px; font-weight:700; color:#fff; white-space:nowrap; }
   .rate-total{ width:64px; flex:none; text-align:right; font-size:14.5px; font-weight:800; font-variant-numeric:tabular-nums; }
   .rate-total .u{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-left:1px; }
   .rate-hold-note{ flex:1; font-size:11.5px; color:var(--ink-faint); }
-  .legend-swatch.dashed{ background:var(--surface); border:1.5px dashed var(--accent); }
   /* スピード行：棒の長さ＝平均対応時間（短いほど良い） */
   .rate-speed-fill{ height:14px; margin:2px 0; border-radius:0 4px 4px 0; min-width:3px; }
   .rate-nums{ width:118px; flex:none; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.4; white-space:nowrap; }
@@ -1509,10 +1514,10 @@
                 <div class="panel-sub" id="rateScoreSub">—</div>
                 <div id="rateScoreBody"></div>
                 <div class="legend-row">
-                  <span><span class="legend-swatch" style="background:var(--funnel-3)"></span>コメントの早さ（40点）</span>
-                  <span><span class="legend-swatch" style="background:var(--funnel-2)"></span>telの早さ（20点）</span>
-                  <span><span class="legend-swatch" style="background:var(--funnel-1)"></span>いますぐ動けるか（30点）</span>
-                  <span><span class="legend-swatch dashed"></span>私いけます！（＋10点）</span>
+                  <span><span class="legend-swatch" style="background:#4C5FD5"></span>コメントの早さ（40点）</span>
+                  <span><span class="legend-swatch" style="background:#0E7A88"></span>telの早さ（20点）</span>
+                  <span><span class="legend-swatch" style="background:#7A5CB0"></span>いますぐ動けるか（30点）</span>
+                  <span><span class="legend-swatch" style="background:#A9761C"></span>私いけます！（＋10点）</span>
                 </div>
                 <details class="data-table">
                   <summary>表でも見る</summary>
@@ -3222,13 +3227,15 @@
     }
     var s = row.score;
     var segs = [
-      {cls:'comment', pts:s.comment, name:'コメントの早さ'},
-      {cls:'tel',     pts:s.tel,     name:'telの早さ'},
-      {cls:'ready',   pts:s.ready,   name:'いますぐ動けるか'},
-      {cls:'boost',   pts:s.boost,   name:'私いけます！'},
+      {cls:'comment', pts:s.comment, name:'コメントの早さ', label:'コメント '+s.comment},
+      {cls:'tel',     pts:s.tel,     name:'telの早さ',      label:'tel '+s.tel},
+      {cls:'ready',   pts:s.ready,   name:'いますぐ動けるか', label:'動けるか '+s.ready},
+      {cls:'boost',   pts:s.boost,   name:'私いけます！',    label:'私いけます！'},
     ].filter(function(seg){ return seg.pts > 0; }).map(function(seg){
       var w = (seg.pts / RATE_MAX_TOTAL * 100);
-      return '<div class="rate-seg '+seg.cls+'" style="width:'+w+'%;" title="'+seg.name+' '+seg.pts+'点"></div>';
+      // 細すぎるセグメントは中の文字を省略（はみ出し防止）。tooltipと下の表で補完する
+      var label = seg.pts >= 6 ? '<span class="sl">'+seg.label+'</span>' : '';
+      return '<div class="rate-seg '+seg.cls+'" style="width:'+w+'%;" title="'+seg.name+' '+seg.pts+'点">'+label+'</div>';
     }).join('');
     return '<div class="rate-row"><div class="mp-name">'+row.label+'</div>'+
       '<div class="rate-track">'+segs+'</div>'+
@@ -3292,7 +3299,8 @@
       var speedRows = rows.filter(function(r){ return r.score && r[kind] && r[kind].avgSec != null; })
         .sort(function(a,b){ return a[kind].avgSec - b[kind].avgSec; });
       var maxAvg = speedRows.length ? speedRows[speedRows.length-1][kind].avgSec : 1;
-      var color = kind === 'tel' ? 'var(--funnel-2)' : 'var(--funnel-3)';
+      // 持ち点チャートの色分けと合わせる（tel=ティール／コメント=青）
+      var color = kind === 'tel' ? '#0E7A88' : '#4C5FD5';
       var maxPts = kind === 'tel' ? 20 : 40;
       var el = document.getElementById(kind === 'tel' ? 'rateTelBody' : 'rateCommentBody');
       el.innerHTML = rows.length
