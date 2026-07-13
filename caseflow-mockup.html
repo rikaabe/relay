@@ -810,6 +810,38 @@
   .rule-num-row{ display:flex; align-items:center; gap:6px; margin-top:10px; font-size:12.5px; font-weight:600; flex-wrap:wrap; min-height:30px; }
   .rule-num-row input[type=number]{ width:60px; height:30px; font-family:inherit; font-size:13px; font-weight:700; padding:0 7px; border:1px solid var(--border-strong); border-radius:7px; text-align:right; background:var(--surface); }
 
+  /* ---------- 内部レート（隠しページ・システム管理者のみ） ----------
+     設定＞自動振り分け設定タブを3回続けてクリックすると解錠。
+     採点セグメントの色は自動振り分け設定カード4と同じ青系（funnel ramp）で統一 */
+  .rate-body{ padding:18px 22px 28px; }
+  .rate-secret-badge{
+    display:inline-block; margin-left:8px; padding:2px 9px; border-radius:999px;
+    font-size:10.5px; font-weight:800; letter-spacing:.04em; vertical-align:2px;
+    color:var(--warning); background:var(--warning-soft);
+  }
+  .rate-filters{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:14px 0 16px; }
+  .rate-row{ display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--gridline); }
+  .rate-row:last-child{ border-bottom:none; }
+  .rate-row .mp-name{ width:190px; }
+  .rate-row.hold .mp-name{ opacity:.55; }
+  .rate-track{ flex:1; display:flex; gap:2px; }
+  .rate-seg{ height:20px; min-width:2px; border-radius:3px; }
+  .rate-seg.comment{ background:var(--funnel-3); border-radius:5px 3px 3px 5px; }
+  .rate-seg.tel{ background:var(--funnel-2); }
+  .rate-seg.ready{ background:var(--funnel-1); }
+  .rate-seg.boost{ background:var(--surface); border:1.5px dashed var(--accent); }
+  .rate-total{ width:64px; flex:none; text-align:right; font-size:14.5px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .rate-total .u{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-left:1px; }
+  .rate-hold-note{ flex:1; font-size:11.5px; color:var(--ink-faint); }
+  .legend-swatch.dashed{ background:var(--surface); border:1.5px dashed var(--accent); }
+  /* スピード行：棒の長さ＝平均対応時間（短いほど良い） */
+  .rate-speed-fill{ height:14px; margin:2px 0; border-radius:0 4px 4px 0; min-width:3px; }
+  .rate-nums{ width:118px; flex:none; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.4; white-space:nowrap; }
+  .rate-nums .med{ display:block; font-size:10.5px; color:var(--ink-faint); font-weight:500; }
+  .rate-pts{ width:72px; flex:none; text-align:right; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .rate-pts .max{ font-size:10.5px; color:var(--ink-faint); font-weight:600; }
+  .rate-pts.low{ color:var(--warning); }
+
   .sim-modal{ width:min(560px, calc(100vw - 48px)); text-align:left; padding:24px 26px; }
   .sim-modal .modal-title{ text-align:left; }
   .sim-modal .sim-card{ margin-top:14px; border:none; padding:0; }
@@ -1193,6 +1225,8 @@
             <button data-tab="admin">管理</button>
             <button data-tab="teams">チーム編成</button>
             <button data-tab="rules">自動振り分け設定</button>
+            <!-- 内部レート：通常は非表示。自動振り分け設定タブを3回続けてクリックすると解錠される隠しタブ -->
+            <button data-tab="rate" style="display:none;">内部レート</button>
           </div>
         </div>
 
@@ -1423,6 +1457,73 @@
                 </div>
             </div>
           </div>
+
+          <!-- 内部レート管理（隠しページ）：自動振り分けの採点をメンバー別に可視化。
+               本人・リーダーには見せない前提のため、タブは通常非表示（3連続クリックで解錠） -->
+          <div class="settings-panel" id="tab-rate">
+            <div class="rate-body">
+              <div class="rules-head" style="padding:0;">
+                <div class="rules-head-title">内部レート管理<span class="rate-secret-badge">非公開</span></div>
+                <div class="rules-head-sub">
+                  自動振り分けの採点（コメント40点・tel20点・いますぐ動けるか30点・私いけます！＋10点）をメンバー別にそのまま可視化した画面です。
+                  システム管理者のみ閲覧でき、メンバー本人・リーダーには表示されません。<br>
+                  評価窓：コメント＝直近10出勤日（12:00〜17:00の勤務を含む日）／tel＝直近20件。毎日6:00に再計算（この画面は 2026/01/10 06:00 時点）。
+                </div>
+              </div>
+              <div class="rate-filters">
+                <div class="filter-group">
+                  <span class="filter-label">表示単位</span>
+                  <div class="segmented" id="rateUnitSeg">
+                    <button class="active" data-unit="person">個人別</button>
+                    <button data-unit="team">チーム別</button>
+                  </div>
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label">担当区分</span>
+                  <div class="segmented" id="rateScopeSeg">
+                    <button class="active" data-scope="all">すべて</button>
+                    <button data-scope="car">車</button>
+                    <button data-scope="bike">バイク</button>
+                  </div>
+                </div>
+                <div class="filter-group" id="rateGroupWrap">
+                  <span class="filter-label">チーム</span>
+                  <div class="segmented" id="rateGroupSeg"></div>
+                </div>
+              </div>
+
+              <!-- 主役：現在の持ち点の比較（点数順・積み上げ） -->
+              <div class="panel">
+                <div class="panel-title">現在の持ち点（100点満点＋私いけます！最大10点）</div>
+                <div class="panel-sub" id="rateScoreSub">—</div>
+                <div id="rateScoreBody"></div>
+                <div class="legend-row">
+                  <span><span class="legend-swatch" style="background:var(--funnel-3)"></span>コメントの早さ（40点）</span>
+                  <span><span class="legend-swatch" style="background:var(--funnel-2)"></span>telの早さ（20点）</span>
+                  <span><span class="legend-swatch" style="background:var(--funnel-1)"></span>いますぐ動けるか（30点）</span>
+                  <span><span class="legend-swatch dashed"></span>私いけます！（＋10点）</span>
+                </div>
+                <details class="data-table">
+                  <summary>表でも見る</summary>
+                  <table class="dt" id="rateScoreTable"></table>
+                </details>
+              </div>
+
+              <!-- 脇役：tel／コメントそれぞれの対応スピードの実測値 -->
+              <div class="split-grid" style="margin-top:16px;">
+                <div class="panel">
+                  <div class="panel-title">telの対応スピード（直近20件）</div>
+                  <div class="panel-sub">届いてから最初の対応までの平均時間。棒が短いほど早い。下段は中央値、右は採点（20点満点）</div>
+                  <div id="rateTelBody"></div>
+                </div>
+                <div class="panel">
+                  <div class="panel-title">コメントの対応スピード（直近10出勤日）</div>
+                  <div class="panel-sub">お客様コメントに返信するまでの平均時間。棒が短いほど早い。下段は中央値、右は採点（40点満点）</div>
+                  <div id="rateCommentBody"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1573,6 +1674,20 @@
   function groupById(id){ return groups.find(function(g){ return g.id===id; }); }
   function groupMembers(id){ return team.filter(function(t){ return t.group===id; }); }
   function groupNameOf(t){ var g = t.group ? groupById(t.group) : null; return g ? g.name : null; }
+
+  // ---------------- 内部レート（隠しページ）用の実測データ ----------------
+  // avgSec/medSec＝最初の対応までの平均・中央値（秒）。pts＝採点（コメント40点・tel20点満点）。
+  // 実績が評価窓（コメント10出勤日・tel20件）に満たない人は pts:null＝評価保留（例：高橋）。
+  var RATE_BY_NAME = {
+    "山田 太郎": {comment:{avgSec:320,  medSec:250,  pts:36, days:10}, tel:{avgSec:550,  medSec:460,  pts:18, count:20}},
+    "鈴木 花子": {comment:{avgSec:280,  medSec:230,  pts:40, days:10}, tel:{avgSec:450,  medSec:365,  pts:20, count:20}},
+    "伊藤 誠":   {comment:{avgSec:490,  medSec:400,  pts:28, days:10}, tel:{avgSec:890,  medSec:750,  pts:12, count:20}},
+    "田中 太郎": {comment:{avgSec:690,  medSec:560,  pts:20, days:10}, tel:{avgSec:1100, medSec:945,  pts:8,  count:20}},
+    "中村 優子": {comment:{avgSec:410,  medSec:330,  pts:32, days:10}, tel:{avgSec:720,  medSec:615,  pts:14, count:20}},
+    "高橋 健一": {comment:{avgSec:null, medSec:null, pts:null, days:2}, tel:{avgSec:null, medSec:null, pts:null, count:3}},
+    "渡辺 美咲": {comment:{avgSec:350,  medSec:285,  pts:34, days:10}, tel:{avgSec:640,  medSec:530,  pts:16, count:20}},
+  };
+  team.forEach(function(t){ t.rate = RATE_BY_NAME[t.name] || null; });
 
   // ---------------- @メンション（個人・チーム両方に対応） ----------------
   // メンション先＝担当区分の自動グループ（バイク/車/全員）＋設定したチーム。
@@ -2893,8 +3008,8 @@
     });
   });
   // 権限に応じてタブ・要素の表示可否を切り替える。
-  var LEADER_TABS = ['admin'];            // leader以上（管理）
-  var SYSADMIN_TABS = ['teams','rules'];  // システム管理者のみ（チーム編成・自動振り分け設定）
+  var LEADER_TABS = ['admin'];                   // leader以上（管理）
+  var SYSADMIN_TABS = ['teams','rules','rate'];  // システム管理者のみ（チーム編成・自動振り分け設定・内部レート）
   function tabAllowed(tab){
     if(SYSADMIN_TABS.indexOf(tab) >= 0) return viewerRole==='sysadmin';
     if(LEADER_TABS.indexOf(tab) >= 0) return viewerRole==='leader' || viewerRole==='sysadmin';
@@ -2904,7 +3019,9 @@
     var isLeader = viewerRole==='leader' || viewerRole==='sysadmin';
     var isSysadmin = viewerRole==='sysadmin';
     document.querySelectorAll('#settingsTabs button').forEach(function(b){
-      b.style.display = tabAllowed(b.dataset.tab) ? '' : 'none';
+      // 内部レートは権限があっても、3連続クリックで解錠するまでタブ自体を見せない
+      var show = tabAllowed(b.dataset.tab) && (b.dataset.tab !== 'rate' || rateUnlocked);
+      b.style.display = show ? '' : 'none';
     });
     // leader以上のみ閲覧可の要素（個人別KPI・目標件数など）を一般メンバーには隠す。
     document.querySelectorAll('.leader-only').forEach(function(el){ el.style.display = isLeader ? '' : 'none'; });
@@ -2928,6 +3045,215 @@
     document.querySelectorAll('.settings-panel').forEach(function(p){p.classList.remove('active');});
     document.getElementById('tab-'+tab).classList.add('active');
   }
+
+  // ---------------- 内部レート（隠しページ） ----------------
+  // 自動振り分け設定タブを短時間（1.2秒以内）に3回クリックすると解錠。
+  // 解錠はこのセッション（開いている間）だけ有効で、リロードすると再び隠れる。
+  var rateUnlocked = false;
+  var rateView = {unit:'person', scope:'all', group:'all'};
+  var RATE_CLICK_WINDOW_MS = 1200;
+  var RATE_MAX_TOTAL = 110;      // 100点満点＋私いけます！10点
+  var rateClickTimes = [];
+  (function(){
+    var rulesBtn = document.querySelector('#settingsTabs button[data-tab="rules"]');
+    var rateBtn = document.querySelector('#settingsTabs button[data-tab="rate"]');
+    rulesBtn.addEventListener('click', function(){
+      var now = Date.now();
+      rateClickTimes = rateClickTimes.filter(function(ts){ return now - ts < RATE_CLICK_WINDOW_MS; });
+      rateClickTimes.push(now);
+      if(rateClickTimes.length >= 3){
+        rateClickTimes = [];
+        rateUnlocked = true;
+        applyRolePermissions();
+        renderRate();
+        openSettings('rate');
+      }
+    });
+    // 解錠後にタブから開き直した時も、チーム編成や稼働状況の変更を反映して描き直す
+    rateBtn.addEventListener('click', renderRate);
+  })();
+
+  function fmtDur(sec){
+    if(sec == null) return '—';
+    var m = Math.floor(sec/60), s = Math.round(sec%60);
+    if(m === 0) return s+'秒';
+    return m+'分'+(s>0 ? (s<10?'0':'')+s+'秒' : '');
+  }
+  // 現在の持ち点の内訳。実績が評価窓に満たない人は null（評価保留）
+  function rateScoreOf(t){
+    if(!t.rate || t.rate.comment.pts == null || t.rate.tel.pts == null) return null;
+    return {
+      comment: t.rate.comment.pts,
+      tel: t.rate.tel.pts,
+      ready: t.status === 'online' ? 30 : 0,
+      boost: t.boost ? 10 : 0,
+    };
+  }
+  function rateTotalOf(s){ return s.comment + s.tel + s.ready + s.boost; }
+  function rateHoldReason(t){
+    return 'tel '+t.rate.tel.count+'/20件・コメント出勤'+t.rate.comment.days+'/10日のため評価保留';
+  }
+  function rateRound(v){ return Math.round(v*10)/10; }
+  function rateAvg(list, pick){
+    var vals = list.map(pick).filter(function(v){ return v != null; });
+    if(!vals.length) return null;
+    return vals.reduce(function(a,b){ return a+b; }, 0) / vals.length;
+  }
+
+  // フィルタ後のメンバー（個人別）。行データ＝{label, score, tel, comment, holdNote}
+  function ratePersonRows(){
+    return team.filter(function(t){
+      if(rateView.scope !== 'all' && t.role !== rateView.scope) return false;
+      if(rateView.group !== 'all' && t.group !== rateView.group) return false;
+      return true;
+    }).map(function(t){
+      var score = rateScoreOf(t);
+      return {
+        label: personChip(t.name) + (rateView.scope === 'all' ? ' ' + vtag(t.role, true) : ''),
+        name: t.name,
+        score: score,
+        tel: t.rate.tel,
+        comment: t.rate.comment,
+        holdNote: score ? null : rateHoldReason(t),
+      };
+    });
+  }
+  // チーム別＝所属メンバーの平均（評価保留の人は平均から除外）
+  function rateTeamRows(){
+    return groups.map(function(g){
+      var members = groupMembers(g.id).filter(function(t){
+        return rateView.scope === 'all' || t.role === rateView.scope;
+      });
+      if(!members.length) return null;
+      var scored = members.map(rateScoreOf).filter(Boolean);
+      var label = '<span class="cell-person"><span class="avatar">👥</span>'+g.name+'（'+members.length+'人）</span>';
+      if(!scored.length){
+        return {label:label, name:g.name, score:null, tel:null, comment:null, holdNote:'評価できるメンバーがいないため保留'};
+      }
+      var evaluated = members.filter(function(t){ return rateScoreOf(t); });
+      return {
+        label: label,
+        name: g.name,
+        score: {
+          comment: rateRound(rateAvg(scored, function(s){ return s.comment; })),
+          tel: rateRound(rateAvg(scored, function(s){ return s.tel; })),
+          ready: rateRound(rateAvg(scored, function(s){ return s.ready; })),
+          boost: rateRound(rateAvg(scored, function(s){ return s.boost; })),
+        },
+        tel: {
+          avgSec: rateAvg(evaluated, function(t){ return t.rate.tel.avgSec; }),
+          medSec: rateAvg(evaluated, function(t){ return t.rate.tel.medSec; }),
+          pts: rateRound(rateAvg(evaluated, function(t){ return t.rate.tel.pts; })),
+        },
+        comment: {
+          avgSec: rateAvg(evaluated, function(t){ return t.rate.comment.avgSec; }),
+          medSec: rateAvg(evaluated, function(t){ return t.rate.comment.medSec; }),
+          pts: rateRound(rateAvg(evaluated, function(t){ return t.rate.comment.pts; })),
+        },
+        holdNote: null,
+      };
+    }).filter(Boolean);
+  }
+
+  function rateScoreRowHtml(row){
+    if(!row.score){
+      return '<div class="rate-row hold"><div class="mp-name">'+row.label+'</div>'+
+        '<div class="rate-hold-note">'+row.holdNote+'</div>'+
+        '<div class="rate-total" style="color:var(--ink-faint);">—</div></div>';
+    }
+    var s = row.score;
+    var segs = [
+      {cls:'comment', pts:s.comment, name:'コメントの早さ'},
+      {cls:'tel',     pts:s.tel,     name:'telの早さ'},
+      {cls:'ready',   pts:s.ready,   name:'いますぐ動けるか'},
+      {cls:'boost',   pts:s.boost,   name:'私いけます！'},
+    ].filter(function(seg){ return seg.pts > 0; }).map(function(seg){
+      var w = (seg.pts / RATE_MAX_TOTAL * 100);
+      return '<div class="rate-seg '+seg.cls+'" style="width:'+w+'%;" title="'+seg.name+' '+seg.pts+'点"></div>';
+    }).join('');
+    return '<div class="rate-row"><div class="mp-name">'+row.label+'</div>'+
+      '<div class="rate-track">'+segs+'</div>'+
+      '<div class="rate-total">'+rateTotalOf(s)+'<span class="u">点</span></div></div>';
+  }
+  function rateSpeedRowHtml(row, kind, maxAvg, color, maxPts){
+    var d = row[kind];
+    if(!row.score || !d || d.avgSec == null){
+      return '<div class="rate-row hold"><div class="mp-name">'+row.label+'</div>'+
+        '<div class="rate-hold-note">'+row.holdNote+'</div></div>';
+    }
+    var w = Math.max(d.avgSec / maxAvg * 100, 4);
+    var low = d.pts < maxPts / 2;
+    return '<div class="rate-row"><div class="mp-name">'+row.label+'</div>'+
+      '<div class="mp-track" style="height:auto;"><div class="rate-speed-fill" style="width:'+w+'%; background:'+color+';"></div></div>'+
+      '<div class="rate-nums">平均 '+fmtDur(d.avgSec)+'<span class="med">中央値 '+fmtDur(d.medSec)+'</span></div>'+
+      '<div class="rate-pts'+(low?' low':'')+'">'+d.pts+'<span class="max">/'+maxPts+'点</span></div></div>';
+  }
+
+  function renderRate(){
+    if(!rateUnlocked) return;
+    // フィルタのアクティブ表示（チームはチーム編成の変更に追随して作り直す）
+    document.querySelectorAll('#rateUnitSeg button').forEach(function(b){ b.classList.toggle('active', b.dataset.unit === rateView.unit); });
+    document.querySelectorAll('#rateScopeSeg button').forEach(function(b){ b.classList.toggle('active', b.dataset.scope === rateView.scope); });
+    if(rateView.group !== 'all' && !groupById(rateView.group)) rateView.group = 'all';
+    document.getElementById('rateGroupSeg').innerHTML =
+      '<button data-group="all"'+(rateView.group==='all'?' class="active"':'')+'>すべて</button>' +
+      groups.map(function(g){
+        return '<button data-group="'+g.id+'"'+(rateView.group===g.id?' class="active"':'')+'>'+g.name+'</button>';
+      }).join('');
+    // チーム別表示のときは個人向けのチーム絞り込みを隠す（二重の絞り込みで混乱させない）
+    document.getElementById('rateGroupWrap').style.display = rateView.unit === 'person' ? '' : 'none';
+
+    var rows = rateView.unit === 'person' ? ratePersonRows() : rateTeamRows();
+    var scored = rows.filter(function(r){ return r.score; });
+    var holds = rows.filter(function(r){ return !r.score; });
+    scored.sort(function(a,b){ return rateTotalOf(b.score) - rateTotalOf(a.score); });
+
+    var emptyHtml = '<div class="split-empty">この条件に当てはまる'+(rateView.unit==='person'?'メンバー':'チーム')+'はいません。担当区分とチームの組み合わせを見直してください。</div>';
+
+    // 持ち点チャート（点数の高い順・保留は最後）
+    document.getElementById('rateScoreBody').innerHTML =
+      rows.length ? scored.concat(holds).map(rateScoreRowHtml).join('') : emptyHtml;
+    var subUnit = rateView.unit === 'person' ? '点数の高い順。' : 'チーム所属メンバーの平均点。点数の高い順。';
+    document.getElementById('rateScoreSub').textContent = subUnit +
+      (scored.length ? '現在のトップは '+scored[0].name+'（'+rateTotalOf(scored[0].score)+'点）' : 'ー') +
+      (holds.length ? '／評価保留 '+holds.length+(rateView.unit==='person'?'人':'チーム') : '');
+
+    // データ表（グラフの双子）
+    var th = rateView.unit === 'person' ? 'メンバー' : 'チーム';
+    document.getElementById('rateScoreTable').innerHTML =
+      '<tr><th>'+th+'</th><th>コメント(40)</th><th>tel(20)</th><th>動けるか(30)</th><th>私いけます！(+10)</th><th>合計</th></tr>' +
+      scored.concat(holds).map(function(r){
+        if(!r.score) return '<tr><td>'+r.name+'</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>';
+        var s = r.score;
+        return '<tr><td>'+r.name+'</td><td>'+s.comment+'</td><td>'+s.tel+'</td><td>'+s.ready+'</td><td>'+s.boost+'</td><td><b>'+rateTotalOf(s)+'</b></td></tr>';
+      }).join('');
+
+    // スピード2パネル（速い順・保留は最後）。棒のスケールは表示中の最遅平均に合わせる
+    ['tel','comment'].forEach(function(kind){
+      var speedRows = rows.filter(function(r){ return r.score && r[kind] && r[kind].avgSec != null; })
+        .sort(function(a,b){ return a[kind].avgSec - b[kind].avgSec; });
+      var maxAvg = speedRows.length ? speedRows[speedRows.length-1][kind].avgSec : 1;
+      var color = kind === 'tel' ? 'var(--funnel-2)' : 'var(--funnel-3)';
+      var maxPts = kind === 'tel' ? 20 : 40;
+      var el = document.getElementById(kind === 'tel' ? 'rateTelBody' : 'rateCommentBody');
+      el.innerHTML = rows.length
+        ? speedRows.concat(holds).map(function(r){ return rateSpeedRowHtml(r, kind, maxAvg, color, maxPts); }).join('')
+        : emptyHtml;
+    });
+  }
+  // フィルタ操作（ボタンは描画のたびに作り直すため、押下は親で受ける）
+  document.getElementById('rateUnitSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    rateView.unit = b.dataset.unit; renderRate();
+  });
+  document.getElementById('rateScopeSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    rateView.scope = b.dataset.scope; renderRate();
+  });
+  document.getElementById('rateGroupSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    rateView.group = b.dataset.group; renderRate();
+  });
 
   // ---------------- Nav ----------------
   function updateNavBadges(){
