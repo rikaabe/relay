@@ -851,13 +851,21 @@
     font-variant-numeric:tabular-nums;
   }
   .rate-stat .val .unit{ font-size:13px; font-weight:600; color:var(--ink-soft); margin:0 1px; }
-  /* スピード行：棒の長さ＝平均対応時間（短いほど良い） */
-  .rate-speed-fill{ height:14px; margin:2px 0; border-radius:0 4px 4px 0; min-width:3px; }
-  .rate-nums{ width:118px; flex:none; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.4; white-space:nowrap; }
-  .rate-nums .med{ display:block; font-size:10.5px; color:var(--ink-faint); font-weight:500; }
-  .rate-pts{ width:72px; flex:none; text-align:right; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; }
-  .rate-pts .max{ font-size:10.5px; color:var(--ink-faint); font-weight:600; }
-  .rate-pts.low{ color:var(--warning); }
+  /* スピード行：1本のトラックに 塗り（＝平均時間）・時間ラベル・採点 をまとめて表示する。
+     ラベルは塗りの先端に置き、採点はトラック右端に固定（列がバラけず1ユニットで読める） */
+  .rate-speed-track{ position:relative; flex:1; height:36px; background:var(--paper); border-radius:9px; }
+  .rate-speed-fill{ position:absolute; left:0; top:0; bottom:0; min-width:6px; border-radius:9px 6px 6px 9px; }
+  .rate-speed-info{
+    position:absolute; top:50%; transform:translateY(-50%);
+    font-size:12px; font-weight:800; line-height:1.35; white-space:nowrap; font-variant-numeric:tabular-nums;
+  }
+  .rate-speed-info .med{ display:block; font-size:10.5px; color:var(--ink-faint); font-weight:500; }
+  .rate-speed-pts{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-size:14px; font-weight:800; font-variant-numeric:tabular-nums;
+  }
+  .rate-speed-pts .max{ font-size:10.5px; color:var(--ink-faint); font-weight:600; }
+  .rate-speed-pts.low{ color:var(--warning); }
   /* 解錠パスワードのポップアップ（2段階目） */
   .rate-login-modal{ width:min(360px, calc(100vw - 48px)); }
   .rate-login-sub{ font-size:12.5px; color:var(--ink-soft); margin-top:6px; }
@@ -3099,6 +3107,7 @@
   var RATE_CLICK_COUNT = 5;
   var RATE_CLICK_WINDOW_MS = 3000;
   var RATE_MAX_TOTAL = 110;      // 100点満点＋私いけます！10点
+  var RATE_SPEED_MAX_W = 40;     // スピード棒の最大幅%。先端の時間ラベルと右端の採点が重ならない上限
   // モック用の閲覧パスワード。実装ではフロントに埋め込まず、サーバー側で認証すること
   var RATE_PASSWORD = 'relay2026';
   var rateClickTimes = [];
@@ -3281,12 +3290,16 @@
       return '<div class="rate-row hold"><div class="mp-name">'+row.label+'</div>'+
         '<div class="rate-hold-note">'+row.holdNote+'</div></div>';
     }
-    var w = Math.max(d.avgSec / maxAvg * 100, 4);
+    var w = Math.max(d.avgSec / maxAvg * RATE_SPEED_MAX_W, 4);
     var low = d.pts < maxPts / 2;
+    // 塗り・時間・採点を1本のトラックにまとめる（時間ラベルは塗りの先端、採点は右端固定）
     return '<div class="rate-row"><div class="mp-name">'+row.label+'</div>'+
-      '<div class="mp-track" style="height:auto;"><div class="rate-speed-fill" style="width:'+w+'%; background:'+color+';"></div></div>'+
-      '<div class="rate-nums">平均 '+fmtDur(d.avgSec)+'<span class="med">中央値 '+fmtDur(d.medSec)+'</span></div>'+
-      '<div class="rate-pts'+(low?' low':'')+'">'+d.pts+'<span class="max">/'+maxPts+'点</span></div></div>';
+      '<div class="rate-speed-track">'+
+        '<div class="rate-speed-fill" style="width:'+w+'%; background:'+color+';"></div>'+
+        '<div class="rate-speed-info" style="left:calc('+w+'% + 10px);">平均 '+fmtDur(d.avgSec)+
+          '<span class="med">中央値 '+fmtDur(d.medSec)+'</span></div>'+
+        '<div class="rate-speed-pts'+(low?' low':'')+'">'+d.pts+'<span class="max">/'+maxPts+'点</span></div>'+
+      '</div></div>';
   }
 
   function renderRate(){
