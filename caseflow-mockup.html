@@ -3078,7 +3078,7 @@
   var rateUnlocked = false;
   var rateView = {unit:'person', scope:'all', group:'all'};
   var RATE_CLICK_COUNT = 5;
-  var RATE_CLICK_WINDOW_MS = 2500;
+  var RATE_CLICK_WINDOW_MS = 3000;
   var RATE_MAX_TOTAL = 110;      // 100点満点＋私いけます！10点
   // モック用の閲覧パスワード。実装ではフロントに埋め込まず、サーバー側で認証すること
   var RATE_PASSWORD = 'relay2026';
@@ -3108,8 +3108,10 @@
         input.select();
       }
     }
-    // 1段階目：タブボタン以外（＝右側の空欄）のクリックだけを数える
-    tabsBar.addEventListener('click', function(e){
+    // 1段階目：タブボタン以外（＝右側の空欄）のクリックだけを数える。
+    // 見た目の「右の空欄」はピル型の#settingsTabsの外側＝親の.settings-tabs行に属するため、
+    // リスナーは行全体（親）に張り、ボタンのクリックだけ除外する
+    tabsBar.parentElement.addEventListener('click', function(e){
       if(e.target.closest('button')) return;
       if(viewerRole !== 'sysadmin' || rateUnlocked) return;
       var now = Date.now();
