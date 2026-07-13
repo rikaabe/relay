@@ -2019,6 +2019,18 @@
   </div>
 </div>
 
+<!-- ===== リマインダー確認の2段階ポップアップ（誤タップ防止） ===== -->
+<div class="modal-backdrop" id="remindConfirmModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="remindConfirmTitle">
+    <div class="modal-title" id="remindConfirmTitle">このリマインダーを確認済みにしますか？</div>
+    <div id="remindConfirmText" style="font-size:13px; color:var(--ink-soft); margin-top:8px; line-height:1.7;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn primary" id="remindConfirmOk">確認済みにする</button>
+      <button type="button" class="btn" id="remindConfirmCancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   // ---------------- Icons ----------------
@@ -2386,13 +2398,14 @@
     listEl.innerHTML = "";
     // 自分宛リマインダー（時刻到来分）はマイ案件の最上部。「確認した」を押すまで残る
     var myReminders = reminders.filter(function(r){ return r.bucket==='today' && !r.done; });
+    // 表示は「時間＋設定時のコメント／adminURL」のみのシンプル構成
     myReminders.forEach(function(r){
       var wrap = document.createElement('div');
       wrap.innerHTML = '<div class="remind-card">'+
         '<div class="remind-time tnum">'+r.when+'<span class="remind-date">'+r.date+'</span></div>'+
         '<div class="remind-body">'+
-          '<div class="remind-text">リマインダー：'+escapeHtml(r.text)+'</div>'+
-          '<div class="remind-meta">adminで設定（設定者：'+escapeHtml(r.setBy)+'）　<a href="'+r.adminUrl+'" target="_blank" rel="noopener">内容確認ページ '+ICON_EXT+'</a></div>'+
+          '<div class="remind-text">'+escapeHtml(r.text)+'</div>'+
+          '<div class="remind-meta"><a class="case-card-url" href="'+r.adminUrl+'" target="_blank" rel="noopener">'+r.adminUrl+'</a></div>'+
         '</div>'+
         '<button type="button" class="btn sm mine-remind-done" data-id="'+r.id+'">確認した</button>'+
       '</div>';
@@ -2444,13 +2457,7 @@
       });
     });
     listEl.querySelectorAll('.mine-remind-done').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var r = reminders.find(function(x){ return x.id===btn.dataset.id; });
-        if(!r) return;
-        r.done = true;
-        showSyncToast('リマインダーを確認済みにしました');
-        renderMine(); updateNavBadges();
-      });
+      btn.addEventListener('click', function(){ openRemindConfirm(btn.dataset.id); });
     });
     if(mine.length===0 && mineComments.length===0 && mineNego.length===0 && myReminders.length===0){
       listEl.innerHTML = '<div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div>';
@@ -4129,6 +4136,33 @@
     {id:'RM-2', bucket:'today', when:'17:30', date:'今日', text:'527009 の入金確認ステータスをチェック', adminUrl:'https://admin.example.com/cases/527009', setBy:'山田 太郎', done:false},
     {id:'RM-3', bucket:'upcoming', when:'10:00', date:'明日', text:'モトショップ青空に再交渉の結果を連絡', adminUrl:'https://admin.example.com/cases/527779', setBy:'伊藤 誠', done:false},
   ];
+  // 「確認した」は誤タップ防止のため2段階（ポップアップで最終確認してから確定）
+  var remindConfirmId = null;
+  function openRemindConfirm(id){
+    var r = reminders.find(function(x){ return x.id===id; });
+    if(!r) return;
+    remindConfirmId = id;
+    document.getElementById('remindConfirmText').innerHTML =
+      '<b class="tnum">'+r.when+'</b>　'+escapeHtml(r.text)+'<br>'+
+      '<span style="color:var(--ink-faint); font-size:12px;">確認済みにするとマイ案件から消えます。</span>';
+    document.getElementById('remindConfirmModal').hidden = false;
+  }
+  function closeRemindConfirm(){
+    remindConfirmId = null;
+    document.getElementById('remindConfirmModal').hidden = true;
+  }
+  document.getElementById('remindConfirmOk').addEventListener('click', function(){
+    var r = reminders.find(function(x){ return x.id===remindConfirmId; });
+    closeRemindConfirm();
+    if(!r) return;
+    r.done = true;
+    showSyncToast('リマインダーを確認済みにしました');
+    renderMine(); updateNavBadges();
+  });
+  document.getElementById('remindConfirmCancel').addEventListener('click', closeRemindConfirm);
+  document.getElementById('remindConfirmModal').addEventListener('click', function(e){
+    if(e.target===this) closeRemindConfirm();
+  });
 
   // ---------------- 掲示板 ----------------
   // お知らせ（リーダー/管理者の周知・ピン留めあり）と自由投稿（全員）の2カテゴリ。
