@@ -1657,7 +1657,8 @@
   // assignedNew: 自分に振り分けられてからまだマイ案件タブを開いていない＝マイ案件バッジの対象。
   var cases = [
     {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"山田 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/311742"},
-    {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:null, adminUrl:"https://admin.example.com/cases/524170"},
+    // 再アップロード案件は既存案件（元の担当者が再アップロードを依頼した案件）のため、必ず担当者を持つ
+    {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, adminUrl:"https://admin.example.com/cases/524170"},
     {id:"#B-0012", vehicle:"bike", recMin:3, title:"アップロード内容の確認依頼", customer:"伊藤 誠", kind:"査定アップロード確認", status:"reupload", received:"07/04 03:20", elapsedMin:393, due:"ok", dueLabel:"本日18:00", owner:{name:"鈴木 花子"}, adminUrl:"https://admin.example.com/cases/521769"},
     {id:"#B-0005", vehicle:"bike", recMin:6, title:"再アップロード完了、内容確認済み", customer:"渡辺 美咲", kind:"再アップロード確認", status:"reviewing", received:"07/04 07:20", elapsedMin:153, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/523371"},
     {id:"#C-0002", vehicle:"car", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, assignedNew:true, adminUrl:"https://admin.example.com/cases/311998"},
