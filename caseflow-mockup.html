@@ -842,12 +842,15 @@
   .rate-total{ width:64px; flex:none; text-align:right; font-size:14.5px; font-weight:800; font-variant-numeric:tabular-nums; }
   .rate-total .u{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-left:1px; }
   .rate-hold-note{ flex:1; font-size:11.5px; color:var(--ink-faint); }
-  /* 表示中メンバー全体のサマリー（平均・中央値）。基準値としてグラフの上に置く */
-  .rate-overall{
-    display:inline-flex; align-items:center; gap:6px; margin:10px 0 4px;
-    padding:4px 12px; border-radius:999px; background:var(--paper);
-    font-size:12px; font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums;
+  /* 表示中メンバー全体のサマリー（平均・中央値）。KPIのスタットタイルと同じ
+     「小さなラベル＋大きな数字」でグラフの上に基準値として置く */
+  .rate-stat-row{ display:flex; gap:36px; margin:16px 0 8px; flex-wrap:wrap; }
+  .rate-stat .lbl{ font-size:11.5px; font-weight:700; color:var(--ink-faint); }
+  .rate-stat .val{
+    font-size:27px; font-weight:800; letter-spacing:-0.02em; line-height:1.15; margin-top:3px;
+    font-variant-numeric:tabular-nums;
   }
+  .rate-stat .val .unit{ font-size:13px; font-weight:600; color:var(--ink-soft); margin:0 1px; }
   /* スピード行：棒の長さ＝平均対応時間（短いほど良い） */
   .rate-speed-fill{ height:14px; margin:2px 0; border-radius:0 4px 4px 0; min-width:3px; }
   .rate-nums{ width:118px; flex:none; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.4; white-space:nowrap; }
@@ -1521,6 +1524,7 @@
               <div class="panel">
                 <div class="panel-title">現在の持ち点（100点満点＋私いけます！最大10点）</div>
                 <div class="panel-sub" id="rateScoreSub">—</div>
+                <div class="rate-stat-row" id="rateScoreStats"></div>
                 <div id="rateScoreBody"></div>
                 <div class="legend-row">
                   <span><span class="legend-swatch" style="background:#4C5FD5"></span>コメントの早さ（40点）</span>
@@ -1539,13 +1543,13 @@
                 <div class="panel">
                   <div class="panel-title">telの対応スピード（直近20件）</div>
                   <div class="panel-sub">届いてから最初の対応までの平均時間。棒が短いほど早い。下段は中央値、右は採点（20点満点）</div>
-                  <div class="rate-overall" id="rateTelOverall">—</div>
+                  <div class="rate-stat-row" id="rateTelStats"></div>
                   <div id="rateTelBody"></div>
                 </div>
                 <div class="panel">
                   <div class="panel-title">コメントの対応スピード（直近10出勤日）</div>
                   <div class="panel-sub">お客様コメントに返信するまでの平均時間。棒が短いほど早い。下段は中央値、右は採点（40点満点）</div>
-                  <div class="rate-overall" id="rateCommentOverall">—</div>
+                  <div class="rate-stat-row" id="rateCommentStats"></div>
                   <div id="rateCommentBody"></div>
                 </div>
               </div>
@@ -3155,6 +3159,17 @@
     if(m === 0) return s+'秒';
     return m+'分'+(s>0 ? (s<10?'0':'')+s+'秒' : '');
   }
+  // 大きく見せる用：分・秒の単位だけ小さくする（KPIスタットの .unit と同じ扱い）
+  function fmtDurHtml(sec){
+    if(sec == null) return '—';
+    var total = Math.round(sec);
+    var m = Math.floor(total/60), s = total%60;
+    if(m === 0) return s+'<span class="unit">秒</span>';
+    return m+'<span class="unit">分</span>'+(s>0 ? (s<10?'0':'')+s+'<span class="unit">秒</span>' : '');
+  }
+  function rateStatHtml(label, valueHtml){
+    return '<div class="rate-stat"><div class="lbl">'+label+'</div><div class="val">'+valueHtml+'</div></div>';
+  }
   // 現在の持ち点の内訳。実績が評価窓に満たない人は null（評価保留）
   function rateScoreOf(t){
     if(!t.rate || t.rate.comment.pts == null || t.rate.tel.pts == null) return null;
@@ -3300,10 +3315,13 @@
     document.getElementById('rateScoreBody').innerHTML =
       rows.length ? scored.concat(holds).map(rateScoreRowHtml).join('') : emptyHtml;
     var subUnit = rateView.unit === 'person' ? '点数の高い順。' : 'チーム所属メンバーの平均点。点数の高い順。';
-    var avgTotal = rateAvg(scored, function(r){ return rateTotalOf(r.score); });
     document.getElementById('rateScoreSub').textContent = subUnit +
-      (scored.length ? '全体平均 '+rateRound(avgTotal)+'点／現在のトップは '+scored[0].name+'（'+rateTotalOf(scored[0].score)+'点）' : 'ー') +
+      (scored.length ? '現在のトップは '+scored[0].name+'（'+rateTotalOf(scored[0].score)+'点）' : 'ー') +
       (holds.length ? '／評価保留 '+holds.length+(rateView.unit==='person'?'人':'チーム') : '');
+    // 全体平均点はKPIと同じ大きな数字で表示（表示中のメンバーが対象・評価保留は除外）
+    var avgTotal = rateAvg(scored, function(r){ return rateTotalOf(r.score); });
+    document.getElementById('rateScoreStats').innerHTML =
+      rateStatHtml('全体平均', avgTotal != null ? rateRound(avgTotal)+'<span class="unit">点</span>' : '—');
 
     // データ表（グラフの双子）
     var th = rateView.unit === 'person' ? 'メンバー' : 'チーム';
@@ -3327,11 +3345,12 @@
       el.innerHTML = rows.length
         ? speedRows.concat(holds).map(function(r){ return rateSpeedRowHtml(r, kind, maxAvg, color, maxPts); }).join('')
         : emptyHtml;
-      // 表示中メンバー全体の平均対応スピードと中央値（評価保留は除外）
+      // 表示中メンバー全体の平均対応スピードと中央値（評価保留は除外）をKPIと同じ大きな数字で表示
       var avgAll = rateAvg(speedRows, function(r){ return r[kind].avgSec; });
       var medAll = rateMedian(speedRows, function(r){ return r[kind].avgSec; });
-      document.getElementById(kind === 'tel' ? 'rateTelOverall' : 'rateCommentOverall').textContent =
-        avgAll != null ? '全体：平均 '+fmtDur(avgAll)+'／中央値 '+fmtDur(medAll) : '全体：—';
+      document.getElementById(kind === 'tel' ? 'rateTelStats' : 'rateCommentStats').innerHTML =
+        rateStatHtml('全体の平均対応スピード', fmtDurHtml(avgAll)) +
+        rateStatHtml('全体の中央値', fmtDurHtml(medAll));
     });
   }
   // フィルタ操作（ボタンは描画のたびに作り直すため、押下は親で受ける）
