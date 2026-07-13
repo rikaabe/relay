@@ -1212,12 +1212,6 @@
           </span>
           KPI
         </li>
-        <li class="nav-item" data-view="goal">
-          <span class="nav-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
-          </span>
-          目標
-        </li>
         <li class="nav-item" data-view="settings" id="navSettings">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -1593,46 +1587,6 @@
         </div>
       </section>
 
-      <!-- ============ 目標 ============ -->
-      <section class="view" id="view-goal">
-        <div class="view-head">
-          <div>
-            <div class="view-title">目標</div>
-          </div>
-        </div>
-        <div class="table-scroll" style="padding-top:14px;">
-          <div class="goal-grid">
-            <div class="goal-panel">
-              <div class="goal-panel-title">今月の目標と実績（7月）</div>
-              <div class="goal-num-row" id="goalSummaryNums"></div>
-              <div class="goal-panel-note">成約数・成約率は現在の実績をリアルタイムで反映します（マイページの「私の達成状況」と同じ数字）。</div>
-            </div>
-            <div class="goal-panel">
-              <div class="goal-panel-title">telシミュレーター — 1日何件で目標に届く？</div>
-              <div class="goal-slider-label">1日のtel対応：<span class="tnum" id="goalSimTelLabel">8</span> 件</div>
-              <input type="range" class="goal-slider" id="goalSimSlider" min="1" max="20" step="1" value="8">
-              <div class="goal-sim-result" id="goalSimResult"></div>
-              <div class="goal-panel-note" id="goalSimNote"></div>
-            </div>
-          </div>
-          <div class="goal-panel">
-            <div class="goal-panel-title">日次tel目標カレンダー（7月）</div>
-            <div class="inline-form-row" style="margin-bottom:12px;">
-              <span style="font-size:12.5px; color:var(--ink-soft);">今月の1日あたりtel目標（月に1度設定）：</span>
-              <input type="number" id="goalTelPerDayInput" min="1" max="30" value="8" style="width:70px; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--border); border-radius:8px;">
-              <span style="font-size:12.5px; color:var(--ink-soft);">件</span>
-              <button type="button" class="btn sm" id="goalTelPerDaySave">設定</button>
-            </div>
-            <div class="goal-cal" id="goalCalendar"></div>
-            <div class="goal-legend">
-              <span><span class="sw" style="background:var(--brand-soft); border:1px solid var(--brand);"></span>目標達成</span>
-              <span><span class="sw" style="background:var(--critical-soft); border:1px solid var(--critical);"></span>未達</span>
-              <span><span class="sw" style="background:var(--paper); border:1px solid var(--border);"></span>休日・実績なし</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- ============ 設定（運用管理） ============ -->
       <section class="view" id="view-settings">
         <div class="settings-head">
@@ -1704,6 +1658,38 @@
                   <div class="stat-value" id="myRate">—</div>
                   <div class="stat-chip flat" id="myRateNote">—</div>
                   <div class="stat-spark"><div id="mySparkRate"></div><div class="cap">直近7日の動き</div></div>
+                </div>
+              </div>
+
+              <!-- 目標：達成状況の直下に統合（独立タブにはしない）。数字は達成状況とリアルタイム連動 -->
+              <div class="mypage-section-label" style="margin-top:22px;">目標</div>
+              <div class="goal-grid">
+                <div class="goal-panel">
+                  <div class="goal-panel-title">今月の目標と実績（7月）</div>
+                  <div class="goal-num-row" id="goalSummaryNums"></div>
+                  <div class="goal-panel-note">成約数・成約率は現在の実績をリアルタイムで反映します（上の「私の達成状況」と同じ数字）。</div>
+                </div>
+                <div class="goal-panel">
+                  <div class="goal-panel-title">telシミュレーター — 1日何件で目標に届く？</div>
+                  <div class="goal-slider-label">1日のtel対応：<span class="tnum" id="goalSimTelLabel">8</span> 件</div>
+                  <input type="range" class="goal-slider" id="goalSimSlider" min="1" max="20" step="1" value="8">
+                  <div class="goal-sim-result" id="goalSimResult"></div>
+                  <div class="goal-panel-note" id="goalSimNote"></div>
+                </div>
+              </div>
+              <div class="goal-panel" style="margin-bottom:22px;">
+                <div class="goal-panel-title">日次tel目標カレンダー（7月）</div>
+                <div class="inline-form-row" style="margin-bottom:12px;">
+                  <span style="font-size:12.5px; color:var(--ink-soft);">今月の1日あたりtel目標（月に1度設定）：</span>
+                  <input type="number" id="goalTelPerDayInput" min="1" max="30" value="8" style="width:70px; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--border); border-radius:8px;">
+                  <span style="font-size:12.5px; color:var(--ink-soft);">件</span>
+                  <button type="button" class="btn sm" id="goalTelPerDaySave">設定</button>
+                </div>
+                <div class="goal-cal" id="goalCalendar"></div>
+                <div class="goal-legend">
+                  <span><span class="sw" style="background:var(--brand-soft); border:1px solid var(--brand);"></span>目標達成</span>
+                  <span><span class="sw" style="background:var(--critical-soft); border:1px solid var(--critical);"></span>未達</span>
+                  <span><span class="sw" style="background:var(--paper); border:1px solid var(--border);"></span>休日・実績なし</span>
                 </div>
               </div>
 
@@ -3286,7 +3272,7 @@
   //   board    … 掲示板の重要なお知らせ（ピン留め投稿）
   // 案件一覧（バイク・車）の新着はここには出さない。マイ案件への新規追加はマイ案件のバッジで知らせる。
   var notifications = [
-    {day:"today", vehicle:null, cls:"reminder", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>', text:'リマインダー：<b>15:00 長谷川商店に折り返しtel</b>（adminで設定・設定者：中村 優子）', time:"09:50", unread:true, lockedType:true},
+    {day:"today", vehicle:null, cls:"reminder", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>', text:'リマインダー：<b>15:00 サンライズ商会に折り返しtel</b>（adminで設定・設定者：中村 優子）', time:"09:50", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"sub", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/><path d="M18 8h4"/></svg>', text:'<b>田中 太郎</b>さんが本日不在のため、コメント案件 <b>527451</b> が代打募集になっています', time:"09:35", unread:true, lockedType:true},
     {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'急', text:'<b>311998</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"assign", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当があなたから <b>鈴木 花子</b>さんに変わりました。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
@@ -3861,13 +3847,13 @@
   var commentTab = 'bike';
   // sub: 代打が確定している場合 {name, auto:自動振り分けか}
   var commentCases = [
-    {id:'CM-01', vehicle:'bike', no:'525586', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/525586', msg:'どうしても70万以上がいいんですけど、その場合はどうすればいいですか？', owner:'山田 太郎', sub:null, received:'07/04 09:42', elapsedMin:10, done:false, assignedNew:true},
-    {id:'CM-02', vehicle:'bike', no:'527451', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527451', msg:'交渉お願い致します。', owner:'田中 太郎', sub:null, received:'07/04 09:35', elapsedMin:17, done:false},
-    {id:'CM-03', vehicle:'bike', no:'526879', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/526879', msg:'岡山県倉敷市中島1590-11　ブリーゼモールC107', owner:'高橋 健一', sub:{name:'山田 太郎', auto:true}, received:'07/04 08:55', elapsedMin:57, done:false, assignedNew:true},
-    {id:'CM-04', vehicle:'bike', no:'527009', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527009', msg:'金額提示の件、承知しました。よろしくお願いします。', owner:'山田 太郎', sub:null, received:'07/04 08:20', elapsedMin:92, done:true},
-    {id:'CM-05', vehicle:'car', no:'527780', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527780', msg:'引き取りの日程を変更できますか？来週の平日希望です。', owner:'鈴木 花子', sub:null, received:'07/04 09:30', elapsedMin:22, done:false},
-    {id:'CM-06', vehicle:'car', no:'526312', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/526312', msg:'振込先の口座情報を変更したいです。', owner:'伊藤 誠', sub:null, received:'07/04 08:40', elapsedMin:72, done:true},
-    {id:'CM-07', vehicle:'car', no:'527455', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527455', msg:'書類は再送済みです。ご確認お願いします。', owner:'中村 優子', sub:null, received:'07/04 09:12', elapsedMin:40, done:false},
+    {id:'CM-01', vehicle:'bike', no:'525586', adminUrl:'https://admin.example.com/cases/525586', msg:'どうしても70万以上がいいんですけど、その場合はどうすればいいですか？', owner:'山田 太郎', sub:null, received:'07/04 09:42', elapsedMin:10, done:false, assignedNew:true},
+    {id:'CM-02', vehicle:'bike', no:'527451', adminUrl:'https://admin.example.com/cases/527451', msg:'交渉お願い致します。', owner:'田中 太郎', sub:null, received:'07/04 09:35', elapsedMin:17, done:false},
+    {id:'CM-03', vehicle:'bike', no:'526879', adminUrl:'https://admin.example.com/cases/526879', msg:'〇〇県サンプル市デモ町1-2-3　サンプルビル101', owner:'高橋 健一', sub:{name:'山田 太郎', auto:true}, received:'07/04 08:55', elapsedMin:57, done:false, assignedNew:true},
+    {id:'CM-04', vehicle:'bike', no:'527009', adminUrl:'https://admin.example.com/cases/527009', msg:'金額提示の件、承知しました。よろしくお願いします。', owner:'山田 太郎', sub:null, received:'07/04 08:20', elapsedMin:92, done:true},
+    {id:'CM-05', vehicle:'car', no:'527780', adminUrl:'https://admin.example.com/cases/527780', msg:'引き取りの日程を変更できますか？来週の平日希望です。', owner:'鈴木 花子', sub:null, received:'07/04 09:30', elapsedMin:22, done:false},
+    {id:'CM-06', vehicle:'car', no:'526312', adminUrl:'https://admin.example.com/cases/526312', msg:'振込先の口座情報を変更したいです。', owner:'伊藤 誠', sub:null, received:'07/04 08:40', elapsedMin:72, done:true},
+    {id:'CM-07', vehicle:'car', no:'527455', adminUrl:'https://admin.example.com/cases/527455', msg:'書類は再送済みです。ご確認お願いします。', owner:'中村 優子', sub:null, received:'07/04 09:12', elapsedMin:40, done:false},
   ];
   function presenceOf(name){
     var t = team.find(function(x){ return x.name===name; });
@@ -3966,10 +3952,10 @@
     done:{label:'完了', cls:'done'},
   };
   var negoItems = [
-    {id:'NG-01', vehicle:'bike', shop:'長谷川商店', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527479', note:'ユーザー希望70万円。上限の確認をお願いします。', requester:'中村 優子', assignee:null, status:'todo', requested:'07/04 08:55', doneAt:null},
-    {id:'NG-02', vehicle:'bike', shop:'RSオートバイ', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527779', note:'再交渉希望。前回提示から＋3万円まで可。', requester:'山田 太郎', assignee:'伊藤 誠', status:'doing', requested:'07/04 08:10', doneAt:null},
-    {id:'NG-03', vehicle:'bike', shop:'バイクプラザ丸亀', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527347', note:'落札額の相談。至急お願いします。', requester:'渡辺 美咲', assignee:null, status:'todo', requested:'07/04 09:20', doneAt:null},
-    {id:'NG-04', vehicle:'car', shop:'合同会社新潟オート', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/526306', note:'減額提案あり。事実確認のうえ交渉お願いします。', requester:'鈴木 花子', assignee:'渡辺 美咲', status:'done', requested:'07/03 16:40', doneAt:'07/04 09:00'},
+    {id:'NG-01', vehicle:'bike', shop:'サンライズ商会', adminUrl:'https://admin.example.com/cases/527479', note:'ユーザー希望70万円。上限の確認をお願いします。', requester:'中村 優子', assignee:null, status:'todo', requested:'07/04 08:55', doneAt:null},
+    {id:'NG-02', vehicle:'bike', shop:'モトショップ青空', adminUrl:'https://admin.example.com/cases/527779', note:'再交渉希望。前回提示から＋3万円まで可。', requester:'山田 太郎', assignee:'伊藤 誠', status:'doing', requested:'07/04 08:10', doneAt:null},
+    {id:'NG-03', vehicle:'bike', shop:'オートプラザ中央', adminUrl:'https://admin.example.com/cases/527347', note:'落札額の相談。至急お願いします。', requester:'渡辺 美咲', assignee:null, status:'todo', requested:'07/04 09:20', doneAt:null},
+    {id:'NG-04', vehicle:'car', shop:'ひまわり自動車', adminUrl:'https://admin.example.com/cases/526306', note:'減額提案あり。事実確認のうえ交渉お願いします。', requester:'鈴木 花子', assignee:'渡辺 美咲', status:'done', requested:'07/03 16:40', doneAt:'07/04 09:00'},
   ];
   var negoSeq = 5;
   function negoCardHtml(n){
@@ -4040,10 +4026,10 @@
   // ---------------- リマインダー ----------------
   // adminで設定されたリマインダーの受信一覧（Relayは受け側のみ・作成はadminから）。
   var reminders = [
-    {id:'RM-1', bucket:'today', when:'15:00', date:'今日', text:'長谷川商店に折り返しtel（減額の件）', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527479', setBy:'中村 優子', done:false},
-    {id:'RM-2', bucket:'today', when:'17:30', date:'今日', text:'527009 の入金確認ステータスをチェック', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527009', setBy:'山田 太郎', done:false},
-    {id:'RM-3', bucket:'upcoming', when:'10:00', date:'明日', text:'RSオートバイに再交渉の結果を連絡', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527779', setBy:'伊藤 誠', done:false},
-    {id:'RM-4', bucket:'done', when:'13:00', date:'07/03', text:'バイクプラザ丸亀の書類到着確認', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527347', setBy:'山田 太郎', done:true},
+    {id:'RM-1', bucket:'today', when:'15:00', date:'今日', text:'サンライズ商会に折り返しtel（減額の件）', adminUrl:'https://admin.example.com/cases/527479', setBy:'中村 優子', done:false},
+    {id:'RM-2', bucket:'today', when:'17:30', date:'今日', text:'527009 の入金確認ステータスをチェック', adminUrl:'https://admin.example.com/cases/527009', setBy:'山田 太郎', done:false},
+    {id:'RM-3', bucket:'upcoming', when:'10:00', date:'明日', text:'モトショップ青空に再交渉の結果を連絡', adminUrl:'https://admin.example.com/cases/527779', setBy:'伊藤 誠', done:false},
+    {id:'RM-4', bucket:'done', when:'13:00', date:'07/03', text:'オートプラザ中央の書類到着確認', adminUrl:'https://admin.example.com/cases/527347', setBy:'山田 太郎', done:true},
   ];
   function renderReminders(){
     var el = document.getElementById('reminderList');
@@ -4153,13 +4139,13 @@
   var idstopFilter = 'active';
   var idstopQuery = '';
   var idstopRows = [
-    {date:'07/04', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/525597', owner:'五十嵐', note:'純正パーツを含めた金額になってないため', cleared:false},
-    {date:'07/04', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/522153', owner:'ツェテン', note:'引き上げ前減額', cleared:false},
-    {date:'07/03', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/522193', owner:'香田', note:'所有権解除待ち', cleared:false},
-    {date:'07/02', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/524413', owner:'五十嵐', note:'引き上げ前減額', cleared:false},
-    {date:'07/01', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/518224', owner:'香田', note:'減額事実確認中', cleared:true},
-    {date:'06/28', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/514075', owner:'柏木', note:'減額フォームまち → 承認済みを確認', cleared:true},
-    {date:'06/27', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/518251', owner:'秋元', note:'業者から減額提案をしていたため事実確認中', cleared:true},
+    {date:'07/04', url:'https://admin.example.com/cases/525597', owner:'田中', note:'純正パーツを含めた金額になってないため', cleared:false},
+    {date:'07/04', url:'https://admin.example.com/cases/522153', owner:'鈴木', note:'引き上げ前減額', cleared:false},
+    {date:'07/03', url:'https://admin.example.com/cases/522193', owner:'中村', note:'所有権解除待ち', cleared:false},
+    {date:'07/02', url:'https://admin.example.com/cases/524413', owner:'田中', note:'引き上げ前減額', cleared:false},
+    {date:'07/01', url:'https://admin.example.com/cases/518224', owner:'中村', note:'減額事実確認中', cleared:true},
+    {date:'06/28', url:'https://admin.example.com/cases/514075', owner:'渡辺', note:'減額フォームまち → 承認済みを確認', cleared:true},
+    {date:'06/27', url:'https://admin.example.com/cases/518251', owner:'伊藤', note:'業者から減額提案をしていたため事実確認中', cleared:true},
   ];
   function renderIdstop(){
     var body = document.getElementById('idstopBody');
@@ -4277,7 +4263,6 @@
       updateNavBadges();
     }
     if(v==='idstop'){ renderIdstop(); }
-    if(v==='goal'){ renderGoal(); }
   }
 
   // 新ページのイベント（タブ・フォーム・スライダー）
@@ -4661,6 +4646,7 @@
     renderOnlineToggle();
     renderBoost();
     renderMypageStats();
+    renderGoal();  // 目標セクション（マイページ内に統合）
   }
   // サイドバー下部の名前・アイコン → 設定＞マイページへ直行
   document.getElementById('whoTrigger').addEventListener('click', function(){
