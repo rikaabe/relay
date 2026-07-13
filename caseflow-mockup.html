@@ -1523,6 +1523,14 @@
               </div>
               <div class="rate-filters">
                 <div class="filter-group">
+                  <span class="filter-label">期間</span>
+                  <div class="segmented" id="ratePeriodSeg">
+                    <button class="active" data-period="daily">デイリー</button>
+                    <button data-period="weekly">ウィークリー</button>
+                    <button data-period="monthly">マンスリー</button>
+                  </div>
+                </div>
+                <div class="filter-group">
                   <span class="filter-label">表示単位</span>
                   <div class="segmented" id="rateUnitSeg">
                     <button class="active" data-unit="person">個人別</button>
@@ -1543,9 +1551,9 @@
                 </div>
               </div>
 
-              <!-- 主役：現在の持ち点の比較（点数順・積み上げ） -->
+              <!-- 主役：持ち点の比較（点数順・積み上げ）。タイトルは期間切替に追随 -->
               <div class="panel">
-                <div class="panel-title">現在の持ち点（100点満点＋私いけます！最大10点）</div>
+                <div class="panel-title" id="ratePanelScoreTitle">現在の持ち点（100点満点＋私いけます！最大10点）</div>
                 <div class="rate-stat-row" id="rateScoreStats"></div>
                 <div id="rateScoreBody"></div>
                 <div class="legend-row">
@@ -1563,13 +1571,13 @@
               <!-- 脇役：tel／コメントそれぞれの対応スピードの実測値 -->
               <div class="split-grid" style="margin-top:16px;">
                 <div class="panel">
-                  <div class="panel-title">telの対応スピード（直近20件）</div>
+                  <div class="panel-title" id="ratePanelTelTitle">telの対応スピード（直近20件）</div>
                   <div class="panel-sub">採点は20点満点</div>
                   <div class="rate-stat-row" id="rateTelStats"></div>
                   <div id="rateTelBody"></div>
                 </div>
                 <div class="panel">
-                  <div class="panel-title">コメントの対応スピード（直近10出勤日）</div>
+                  <div class="panel-title" id="ratePanelCommentTitle">コメントの対応スピード（直近10出勤日）</div>
                   <div class="panel-sub">採点は40点満点</div>
                   <div class="rate-stat-row" id="rateCommentStats"></div>
                   <div id="rateCommentBody"></div>
@@ -1746,16 +1754,39 @@
   // ---------------- 内部レート（隠しページ）用の実測データ ----------------
   // avgSec/medSec＝最初の対応までの平均・中央値（秒）。pts＝採点（コメント40点・tel20点満点）。
   // 実績が評価窓（コメント10出勤日・tel20件）に満たない人は pts:null＝評価保留（例：高橋）。
-  var RATE_BY_NAME = {
-    "山田 太郎": {comment:{avgSec:320,  medSec:250,  pts:36, days:10}, tel:{avgSec:550,  medSec:460,  pts:18, count:20}},
-    "鈴木 花子": {comment:{avgSec:280,  medSec:230,  pts:40, days:10}, tel:{avgSec:450,  medSec:365,  pts:20, count:20}},
-    "伊藤 誠":   {comment:{avgSec:490,  medSec:400,  pts:28, days:10}, tel:{avgSec:890,  medSec:750,  pts:12, count:20}},
-    "田中 太郎": {comment:{avgSec:690,  medSec:560,  pts:20, days:10}, tel:{avgSec:1100, medSec:945,  pts:8,  count:20}},
-    "中村 優子": {comment:{avgSec:410,  medSec:330,  pts:32, days:10}, tel:{avgSec:720,  medSec:615,  pts:14, count:20}},
-    "高橋 健一": {comment:{avgSec:null, medSec:null, pts:null, days:2}, tel:{avgSec:null, medSec:null, pts:null, count:3}},
-    "渡辺 美咲": {comment:{avgSec:350,  medSec:285,  pts:34, days:10}, tel:{avgSec:640,  medSec:530,  pts:16, count:20}},
+  // daily＝今朝6:00時点のスナップショット。weekly/monthly＝期間中の各朝6:00時点の平均。
+  // weekly/monthly は「動けるか(ready)」「私いけます！(boost)」も期間平均値を持つ
+  // （dailyはその時点の稼働状況・ブースト状態から算出するためデータには持たない）。
+  var RATE_DATA = {
+    daily: {
+      "山田 太郎": {comment:{avgSec:320,  medSec:250,  pts:36, days:10}, tel:{avgSec:550,  medSec:460,  pts:18, count:20}},
+      "鈴木 花子": {comment:{avgSec:280,  medSec:230,  pts:40, days:10}, tel:{avgSec:450,  medSec:365,  pts:20, count:20}},
+      "伊藤 誠":   {comment:{avgSec:490,  medSec:400,  pts:28, days:10}, tel:{avgSec:890,  medSec:750,  pts:12, count:20}},
+      "田中 太郎": {comment:{avgSec:690,  medSec:560,  pts:20, days:10}, tel:{avgSec:1100, medSec:945,  pts:8,  count:20}},
+      "中村 優子": {comment:{avgSec:410,  medSec:330,  pts:32, days:10}, tel:{avgSec:720,  medSec:615,  pts:14, count:20}},
+      "高橋 健一": {comment:{avgSec:null, medSec:null, pts:null, days:2}, tel:{avgSec:null, medSec:null, pts:null, count:3}},
+      "渡辺 美咲": {comment:{avgSec:350,  medSec:285,  pts:34, days:10}, tel:{avgSec:640,  medSec:530,  pts:16, count:20}},
+    },
+    weekly: {
+      "山田 太郎": {ready:26, boost:3, comment:{avgSec:345,  medSec:275,  pts:34, days:10}, tel:{avgSec:585,  medSec:490,  pts:16, count:20}},
+      "鈴木 花子": {ready:28, boost:0, comment:{avgSec:295,  medSec:240,  pts:38, days:10}, tel:{avgSec:470,  medSec:380,  pts:20, count:20}},
+      "伊藤 誠":   {ready:23, boost:6, comment:{avgSec:465,  medSec:385,  pts:30, days:10}, tel:{avgSec:860,  medSec:720,  pts:12, count:20}},
+      "田中 太郎": {ready:18, boost:0, comment:{avgSec:650,  medSec:530,  pts:22, days:10}, tel:{avgSec:1060, medSec:900,  pts:10, count:20}},
+      "中村 優子": {ready:27, boost:1, comment:{avgSec:420,  medSec:345,  pts:32, days:10}, tel:{avgSec:735,  medSec:625,  pts:14, count:20}},
+      "高橋 健一": {ready:0,  boost:0, comment:{avgSec:null, medSec:null, pts:null, days:2}, tel:{avgSec:null, medSec:null, pts:null, count:3}},
+      "渡辺 美咲": {ready:25, boost:0, comment:{avgSec:360,  medSec:295,  pts:34, days:10}, tel:{avgSec:655,  medSec:545,  pts:16, count:20}},
+    },
+    monthly: {
+      "山田 太郎": {ready:25, boost:2, comment:{avgSec:365,  medSec:295,  pts:34, days:10}, tel:{avgSec:620,  medSec:520,  pts:16, count:20}},
+      "鈴木 花子": {ready:27, boost:1, comment:{avgSec:305,  medSec:250,  pts:38, days:10}, tel:{avgSec:485,  medSec:395,  pts:18, count:20}},
+      "伊藤 誠":   {ready:22, boost:5, comment:{avgSec:445,  medSec:370,  pts:30, days:10}, tel:{avgSec:830,  medSec:695,  pts:12, count:20}},
+      "田中 太郎": {ready:19, boost:1, comment:{avgSec:620,  medSec:505,  pts:24, days:10}, tel:{avgSec:1010, medSec:860,  pts:10, count:20}},
+      "中村 優子": {ready:26, boost:0, comment:{avgSec:430,  medSec:355,  pts:32, days:10}, tel:{avgSec:750,  medSec:640,  pts:14, count:20}},
+      "高橋 健一": {ready:0,  boost:0, comment:{avgSec:null, medSec:null, pts:null, days:2}, tel:{avgSec:null, medSec:null, pts:null, count:3}},
+      "渡辺 美咲": {ready:24, boost:1, comment:{avgSec:375,  medSec:305,  pts:32, days:10}, tel:{avgSec:670,  medSec:560,  pts:16, count:20}},
+    },
   };
-  team.forEach(function(t){ t.rate = RATE_BY_NAME[t.name] || null; });
+  team.forEach(function(t){ t.rate = RATE_DATA.daily[t.name] || null; });
 
   // ---------------- @メンション（個人・チーム両方に対応） ----------------
   // メンション先＝担当区分の自動グループ（バイク/車/全員）＋設定したチーム。
@@ -3119,7 +3150,13 @@
   // →パスワード入力ポップアップ→正しいパスワードでタブが出現。
   // 解錠はこのセッション（開いている間）だけ有効で、リロードすると再び隠れる。
   var rateUnlocked = false;
-  var rateView = {unit:'person', scope:'all', group:'all'};
+  var rateView = {period:'daily', unit:'person', scope:'all', group:'all'};
+  // 期間ごとのパネルタイトル（デイリー＝時点の持ち点／ウィークリー・マンスリー＝期間平均）
+  var RATE_PERIOD_META = {
+    daily:  {score:'現在の持ち点（100点満点＋私いけます！最大10点）',      tel:'telの対応スピード（直近20件）',  comment:'コメントの対応スピード（直近10出勤日）'},
+    weekly: {score:'直近7日の平均持ち点（100点満点＋私いけます！最大10点）',  tel:'telの対応スピード（直近7日の平均）',  comment:'コメントの対応スピード（直近7日の平均）'},
+    monthly:{score:'直近30日の平均持ち点（100点満点＋私いけます！最大10点）', tel:'telの対応スピード（直近30日の平均）', comment:'コメントの対応スピード（直近30日の平均）'},
+  };
   var RATE_CLICK_COUNT = 5;
   var RATE_CLICK_WINDOW_MS = 3000;
   var RATE_MAX_TOTAL = 110;      // 100点満点＋私いけます！10点
@@ -3195,14 +3232,16 @@
   function rateStatHtml(label, valueHtml){
     return '<div class="rate-stat"><div class="lbl">'+label+'</div><div class="val">'+valueHtml+'</div></div>';
   }
-  // 現在の持ち点の内訳。実績が評価窓に満たない人は null（評価保留）
+  // 持ち点の内訳。実績が評価窓に満たない人は null（評価保留）。
+  // 動けるか・私いけます！は、デイリー＝現在の稼働状況から算出／
+  // ウィークリー・マンスリー＝データが持つ期間平均値を使う
   function rateScoreOf(t){
     if(!t.rate || t.rate.comment.pts == null || t.rate.tel.pts == null) return null;
     return {
       comment: t.rate.comment.pts,
       tel: t.rate.tel.pts,
-      ready: t.status === 'online' ? 30 : 0,
-      boost: t.boost ? 10 : 0,
+      ready: t.rate.ready != null ? t.rate.ready : (t.status === 'online' ? 30 : 0),
+      boost: t.rate.boost != null ? t.rate.boost : (t.boost ? 10 : 0),
     };
   }
   function rateTotalOf(s){ return s.comment + s.tel + s.ready + s.boost; }
@@ -3324,7 +3363,14 @@
 
   function renderRate(){
     if(!rateUnlocked) return;
+    // 選択中の期間のデータに差し替え、パネルタイトルも期間に追随させる
+    team.forEach(function(t){ t.rate = RATE_DATA[rateView.period][t.name] || null; });
+    var pm = RATE_PERIOD_META[rateView.period];
+    document.getElementById('ratePanelScoreTitle').textContent = pm.score;
+    document.getElementById('ratePanelTelTitle').textContent = pm.tel;
+    document.getElementById('ratePanelCommentTitle').textContent = pm.comment;
     // フィルタのアクティブ表示（チームはチーム編成の変更に追随して作り直す）
+    document.querySelectorAll('#ratePeriodSeg button').forEach(function(b){ b.classList.toggle('active', b.dataset.period === rateView.period); });
     document.querySelectorAll('#rateUnitSeg button').forEach(function(b){ b.classList.toggle('active', b.dataset.unit === rateView.unit); });
     document.querySelectorAll('#rateScopeSeg button').forEach(function(b){ b.classList.toggle('active', b.dataset.scope === rateView.scope); });
     if(rateView.group !== 'all' && !groupById(rateView.group)) rateView.group = 'all';
@@ -3384,6 +3430,10 @@
     });
   }
   // フィルタ操作（ボタンは描画のたびに作り直すため、押下は親で受ける）
+  document.getElementById('ratePeriodSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    rateView.period = b.dataset.period; renderRate();
+  });
   document.getElementById('rateUnitSeg').addEventListener('click', function(e){
     var b = e.target.closest('button'); if(!b) return;
     rateView.unit = b.dataset.unit; renderRate();
