@@ -413,13 +413,15 @@
     position:absolute; left:1px; top:42px; width:40px;
     text-align:center; font-size:10.5px; color:var(--ink-faint);
   }
-  /* 案件一覧：縦ラインの左に対応済みチェックを表示（未対応はアイコンなし＝空欄） */
+  /* 案件一覧：縦ラインの左に対応済みチェックを表示（未対応はアイコンなし＝空欄）。
+     対応済みはカード背景も薄緑にして、ひと目で見分けられるようにする */
   .case-card.queue-card{ padding-left:60px; }
   .case-card.queue-card::before{ left:47px; }
+  .case-card.is-done{ background:var(--success-soft); }
   .case-done-icon{
     position:absolute; left:6px; top:9px; width:30px; height:30px; border-radius:8px;
     display:flex; align-items:center; justify-content:center;
-    background:var(--success-soft); color:var(--success);
+    background:var(--success); color:#fff;
   }
   .case-card .elapsed-tag{ display:inline; margin:0; }
   .case-card.elapsed-over .elapsed-tag{ color:var(--warning); }
@@ -1861,7 +1863,7 @@
     list.forEach(function(c){
       var card = document.createElement('div');
       var km = kindRowMeta(c.kind);
-      card.className = 'case-card queue-card ' + km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
+      card.className = 'case-card queue-card ' + km.cls + (c.done ? ' is-done' : '') + (c.elapsedMin>120 ? ' elapsed-over' : '');
       card.dataset.id = c.id;
       card.innerHTML =
         (c.done ? '<div class="case-done-icon" title="対応済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' : '')+
