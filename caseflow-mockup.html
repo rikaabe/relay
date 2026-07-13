@@ -985,19 +985,14 @@
   .kpi-delta.down{ color:var(--brand-strong); }
 
   /* ===== 新ページ群（コメント案件・交渉依頼・リマインダー・掲示板・IDストップ・目標） ===== */
-  /* サイドバー：グループ見出し。項目が増えたぶん全体をコンパクト化して1画面に収める */
-  .nav-list{ gap:4px; padding:0; }
+  /* サイドバー：項目が増えたぶん全体をコンパクト化して1画面に収める */
+  .nav-list{ gap:5px; padding:0; }
   .nav-item{ font-size:9.5px; gap:1px; }
   .nav-icon{ width:31px; height:31px; border-radius:9px; }
   .nav-item svg{ width:17px; height:17px; }
   .nav-item .badge{ min-width:15px; height:15px; font-size:9.5px; top:-3px; right:-3px; }
   .sidebar{ padding-top:10px; }
   .sidebar-foot{ padding-top:6px; }
-  .nav-group-label{
-    padding:4px 0 0; font-size:9px; font-weight:800; letter-spacing:.18em;
-    color:var(--ink-faint); user-select:none; text-align:center;
-  }
-  .nav-group-label:first-child{ padding-top:0; }
 
   /* 代打（不在カバー）バッジ */
   .sub-badge{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:6px; white-space:nowrap; }
@@ -1160,7 +1155,6 @@
     <!-- ===== Sidebar ===== -->
     <nav class="sidebar">
       <ul class="nav-list">
-        <li class="nav-group-label">案件</li>
         <li class="nav-item active" data-view="mine">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
@@ -1201,7 +1195,6 @@
           </span>
           交渉依頼
         </li>
-        <li class="nav-group-label">ツール</li>
         <li class="nav-item" data-view="team">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.8"/><path d="M21.5 19c0-2.6-1.8-4.3-4.2-4.8"/></svg>
@@ -1228,7 +1221,6 @@
           </span>
           IDストップ
         </li>
-        <li class="nav-group-label">分析</li>
         <li class="nav-item" data-view="kpi">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
