@@ -825,7 +825,7 @@
   .rate-row .mp-name{ width:190px; }
   .rate-row.hold .mp-name{ opacity:.55; }
   /* 採点4項目の色。青の濃淡ではなく色相ではっきり分ける。
-     コメント=青／tel=黄（文字は墨色）／動けるか=紫。私いけます！はボーナス扱いを示す点線囲み
+     コメント=青／tel=ティール／動けるか=紫。私いけます！はボーナス扱いを示す点線囲み
      （自動振り分け設定カード4と同じデザイン）。点数はセグメント内ラベル・tooltip・表でも読める */
   .rate-track{ flex:1; display:flex; gap:2px; }
   .rate-seg{
@@ -833,11 +833,10 @@
     display:flex; align-items:center; padding:0 7px; overflow:hidden;
   }
   .rate-seg.comment{ background:#4C5FD5; border-radius:5px 3px 3px 5px; }
-  .rate-seg.tel{ background:#D9A400; }
+  .rate-seg.tel{ background:#0E7A88; }
   .rate-seg.ready{ background:#7A5CB0; }
   .rate-seg.boost{ background:var(--surface); border:1.5px dashed var(--accent); border-radius:3px 5px 5px 3px; }
   .rate-seg .sl{ font-size:10.5px; font-weight:700; color:#fff; white-space:nowrap; }
-  .rate-seg.tel .sl{ color:var(--ink); }
   .rate-seg.boost .sl{ color:var(--accent-ink); }
   .legend-swatch.dashed{ background:var(--surface); border:1.5px dashed var(--accent); }
   .rate-total{ width:64px; flex:none; text-align:right; font-size:14.5px; font-weight:800; font-variant-numeric:tabular-nums; }
@@ -1519,7 +1518,7 @@
                 <div id="rateScoreBody"></div>
                 <div class="legend-row">
                   <span><span class="legend-swatch" style="background:#4C5FD5"></span>コメントの早さ（40点）</span>
-                  <span><span class="legend-swatch" style="background:#D9A400"></span>telの早さ（20点）</span>
+                  <span><span class="legend-swatch" style="background:#0E7A88"></span>telの早さ（20点）</span>
                   <span><span class="legend-swatch" style="background:#7A5CB0"></span>いますぐ動けるか（30点）</span>
                   <span><span class="legend-swatch dashed"></span>私いけます！（＋10点）</span>
                 </div>
@@ -3304,8 +3303,8 @@
       var speedRows = rows.filter(function(r){ return r.score && r[kind] && r[kind].avgSec != null; })
         .sort(function(a,b){ return a[kind].avgSec - b[kind].avgSec; });
       var maxAvg = speedRows.length ? speedRows[speedRows.length-1][kind].avgSec : 1;
-      // 持ち点チャートの色分けと合わせる（tel=黄／コメント=青）
-      var color = kind === 'tel' ? '#D9A400' : '#4C5FD5';
+      // 持ち点チャートの色分けと合わせる（tel=ティール／コメント=青）
+      var color = kind === 'tel' ? '#0E7A88' : '#4C5FD5';
       var maxPts = kind === 'tel' ? 20 : 40;
       var el = document.getElementById(kind === 'tel' ? 'rateTelBody' : 'rateCommentBody');
       el.innerHTML = rows.length
