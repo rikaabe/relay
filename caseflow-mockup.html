@@ -985,12 +985,14 @@
   .kpi-delta.down{ color:var(--brand-strong); }
 
   /* ===== 新ページ群（コメント案件・交渉依頼・リマインダー・掲示板・IDストップ・目標） ===== */
-  /* サイドバー：項目が増えたぶん全体をコンパクト化して1画面に収める */
-  .nav-list{ gap:5px; padding:0; }
+  /* サイドバー：項目が増えたぶん全体をコンパクト化して1画面に収める。
+     バッジがリストの端（overflow境界）で見切れないよう、上下左右に余白を確保し
+     バッジ自体もアイコンの内側寄りに配置する */
+  .nav-list{ gap:5px; padding:4px 2px; }
   .nav-item{ font-size:9.5px; gap:1px; }
   .nav-icon{ width:31px; height:31px; border-radius:9px; }
   .nav-item svg{ width:17px; height:17px; }
-  .nav-item .badge{ min-width:15px; height:15px; font-size:9.5px; top:-3px; right:-3px; }
+  .nav-item .badge{ min-width:15px; height:15px; font-size:9.5px; top:-2px; right:-2px; }
   .sidebar{ padding-top:10px; }
   .sidebar-foot{ padding-top:6px; }
 
