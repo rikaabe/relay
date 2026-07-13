@@ -1107,6 +1107,13 @@
   .goal-legend{ display:flex; gap:14px; font-size:11.5px; color:var(--ink-faint); margin-top:10px; }
   .goal-legend .sw{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
 
+  /* 車種タブの種別フィルタ：3ボタン均等幅・アイコン付き */
+  .queue-type-seg{ flex:1; max-width:420px; }
+  .queue-type-seg button{
+    flex:1 1 0; display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  }
+  .queue-type-seg button svg{ flex:none; }
+
   /* チームページ（チャット＋コメント当番） */
   .team-grid{ display:grid; grid-template-columns:380px 1fr; gap:14px; align-items:start; }
   @media (max-width:1100px){ .team-grid{ grid-template-columns:1fr; } }
@@ -1249,11 +1256,10 @@
             </div>
           </div>
           <div class="queue-filters">
-            <div class="segmented" id="queueTypeSeg_bike">
-              <button class="active" data-type="all">すべて</button>
-              <button data-type="tel">tel</button>
-              <button data-type="comment">コメント</button>
-              <button data-type="reminder">リマインダー</button>
+            <div class="segmented queue-type-seg" id="queueTypeSeg_bike">
+              <button class="active" data-type="tel"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>tel</button>
+              <button data-type="comment"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>コメント</button>
+              <button data-type="reminder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>リマインダー</button>
             </div>
             <div class="search-mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>このキューを検索</div>
           </div>
@@ -1275,11 +1281,10 @@
             </div>
           </div>
           <div class="queue-filters">
-            <div class="segmented" id="queueTypeSeg_car">
-              <button class="active" data-type="all">すべて</button>
-              <button data-type="tel">tel</button>
-              <button data-type="comment">コメント</button>
-              <button data-type="reminder">リマインダー</button>
+            <div class="segmented queue-type-seg" id="queueTypeSeg_car">
+              <button class="active" data-type="tel"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>tel</button>
+              <button data-type="comment"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>コメント</button>
+              <button data-type="reminder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>リマインダー</button>
             </div>
             <div class="search-mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>このキューを検索</div>
           </div>
@@ -2249,8 +2254,8 @@
 
   // ---------------- Vehicle queue views (バイク案件一覧 / 車案件一覧) ----------------
   var queueState = {
-    bike:{selected:null},
-    car:{selected:null},
+    bike:{selected:null, type:'tel'},
+    car:{selected:null, type:'tel'},
   };
 
   function queueCasesFor(vehicle){
@@ -2287,7 +2292,7 @@
   // 上部の種別フィルタで絞り込み。「すべて」では種別ごとの小見出し付きで縦に並べる。
   function renderQueue(vehicle){
     var st = queueState[vehicle];
-    var type = st.type || 'all';
+    var type = st.type || 'tel';
     var listEl = document.getElementById('queueList_'+vehicle);
     var sections = [];
     if(type==='all' || type==='tel'){
