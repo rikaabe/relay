@@ -3373,12 +3373,14 @@
       el.innerHTML = rows.length
         ? speedRows.concat(holds).map(function(r){ return rateSpeedRowHtml(r, kind, maxAvg, color, maxPts); }).join('')
         : emptyHtml;
-      // 表示中メンバー全体の平均対応スピードと中央値（評価保留は除外）をKPIと同じ大きな数字で表示
+      // 表示中メンバー全体の平均対応スピード・中央値・平均点（評価保留は除外）をKPIと同じ大きな数字で表示
       var avgAll = rateAvg(speedRows, function(r){ return r[kind].avgSec; });
       var medAll = rateMedian(speedRows, function(r){ return r[kind].avgSec; });
+      var avgPts = rateAvg(speedRows, function(r){ return r[kind].pts; });
       document.getElementById(kind === 'tel' ? 'rateTelStats' : 'rateCommentStats').innerHTML =
         rateStatHtml('全体の平均対応スピード', fmtDurHtml(avgAll)) +
-        rateStatHtml('全体の中央値', fmtDurHtml(medAll));
+        rateStatHtml('全体の中央値', fmtDurHtml(medAll)) +
+        rateStatHtml('全体の平均点', avgPts != null ? rateRound(avgPts)+'<span class="unit">/'+maxPts+'点</span>' : '—');
     });
   }
   // フィルタ操作（ボタンは描画のたびに作り直すため、押下は親で受ける）
