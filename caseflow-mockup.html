@@ -1110,7 +1110,24 @@
   .goal-legend{ display:flex; gap:14px; font-size:11.5px; color:var(--ink-faint); margin-top:10px; }
   .goal-legend .sw{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
 
+  /* チームページ（チャット＋コメント当番） */
+  .team-grid{ display:grid; grid-template-columns:380px 1fr; gap:14px; align-items:start; }
+  @media (max-width:1100px){ .team-grid{ grid-template-columns:1fr; } }
+  .team-member-row{ display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px dashed var(--border); font-size:13px; }
+  .team-member-row:last-child{ border-bottom:none; }
+  .presence-tag{ font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; white-space:nowrap; }
+  .presence-tag.online{ color:var(--brand-strong); background:var(--brand-soft); }
+  .presence-tag.away{ color:var(--warning); background:var(--warning-soft); }
+  .presence-tag.offline{ color:var(--neutral-chip); background:var(--neutral-chip-soft); }
+  .duty-tag{ font-size:10.5px; font-weight:800; color:#fff; background:var(--brand); padding:3px 9px; border-radius:6px; margin-left:auto; white-space:nowrap; }
+  .duty-set-btn{ margin-left:auto; }
+  .team-chat-box{ display:flex; flex-direction:column; gap:10px; max-height:430px; overflow-y:auto; padding:4px 2px 10px; }
+  .chat-sys{ text-align:center; font-size:11.5px; color:var(--ink-faint); background:var(--paper); border-radius:8px; padding:5px 10px; }
+  .team-empty{ font-size:12.5px; color:var(--ink-faint); padding:10px 0; }
+
   /* 通知：新しい種別のアイコン・左ライン色 */
+  .case-card.kind-notif-comment::before{ background:var(--car); }
+  .notif-type-icon.comment{ background:var(--car-soft); color:var(--car); }
   .case-card.kind-notif-reminder::before{ background:var(--warning); }
   .case-card.kind-notif-nego::before{ background:var(--hold-chip); }
   .case-card.kind-notif-board::before{ background:var(--brand); }
@@ -1185,6 +1202,12 @@
           交渉依頼
         </li>
         <li class="nav-group-label">ツール</li>
+        <li class="nav-item" data-view="team">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.8"/><path d="M21.5 19c0-2.6-1.8-4.3-4.2-4.8"/></svg>
+          </span>
+          チーム
+        </li>
         <li class="nav-item" data-view="reminder">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/></svg>
@@ -1448,9 +1471,6 @@
           <div>
             <div class="view-title">コメント案件</div>
           </div>
-          <div class="view-head-actions">
-            <button type="button" class="btn sm" id="demoCommentAutoBtn" title="代打募集のまま30分経過した場合の自動振り分けをシミュレートします">▶ デモ：30分拾われなかった場合</button>
-          </div>
         </div>
         <div class="queue-filters" style="margin-top:10px;">
           <div class="segmented" id="commentVehicleSeg">
@@ -1498,6 +1518,32 @@
             </div>
           </div>
           <div class="case-cards" id="negoList"></div>
+        </div>
+      </section>
+
+      <!-- ============ チーム（チャット＋コメント当番の切り替え） ============ -->
+      <section class="view" id="view-team">
+        <div class="view-head">
+          <div>
+            <div class="view-title">チーム</div>
+          </div>
+        </div>
+        <div class="queue-filters" style="margin-top:10px;">
+          <div class="segmented" id="teamSeg"></div>
+        </div>
+        <div class="table-scroll" style="padding-top:14px;">
+          <div class="team-grid">
+            <div class="goal-panel">
+              <div class="goal-panel-title">メンバーと本日のコメント対応（当番）</div>
+              <div id="teamMemberList"></div>
+              <div class="goal-panel-note">担当者が不在のコメント案件は、ここで設定した当番に通知が届きます。当番はいつでも切り替えできます（切り替えるとチャットにも記録されます）。</div>
+            </div>
+            <div class="goal-panel">
+              <div class="goal-panel-title">チームチャット</div>
+              <div class="team-chat-box" id="teamChatBox"></div>
+              <div class="board-comment-input"><input type="text" id="teamChatInput" placeholder="メッセージを書く…"><button type="button" class="btn sm primary" id="teamChatSend">送信</button></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -3268,12 +3314,11 @@
   //   mention  … スレッドで自分または自分のチームがメンションされた
   //   reminder … adminで設定されたリマインダーの時刻到来
   //   nego     … 自分が依頼した交渉の完了
-  //   sub      … 自分のチームでコメント案件の代打募集が発生
+  //   comment  … 自分が対応すべきコメント案件（1件ごと・syncCommentNotificationsが生成）
   //   board    … 掲示板の重要なお知らせ（ピン留め投稿）
   // 案件一覧（バイク・車）の新着はここには出さない。マイ案件への新規追加はマイ案件のバッジで知らせる。
   var notifications = [
     {day:"today", vehicle:null, cls:"reminder", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>', text:'リマインダー：<b>15:00 サンライズ商会に折り返しtel</b>（adminで設定・設定者：中村 優子）', time:"09:50", unread:true, lockedType:true},
-    {day:"today", vehicle:"bike", cls:"sub", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/><path d="M18 8h4"/></svg>', text:'<b>田中 太郎</b>さんが本日不在のため、コメント案件 <b>527451</b> が代打募集になっています', time:"09:35", unread:true, lockedType:true},
     {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'急', text:'<b>311998</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"assign", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当があなたから <b>鈴木 花子</b>さんに変わりました。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>', text:'<b>鈴木 花子</b>さんがスレッドであなたをメンションしました', time:"08:24", unread:true, lockedType:true},
@@ -3839,76 +3884,74 @@
   // ================================================================
 
   // ---------------- コメント案件（バイク/車） ----------------
-  // お客様コメントはtelで担当者が決まっている前提 → 担当者へ通知が基本。
-  // 担当者が不在（away/offline）の場合はハイブリッド方式：
-  //   1) 「代打募集」としてチームの誰でも「対応します」で引き取れる
-  //   2) SUB_WAIT_MIN分拾われなければ出勤中メンバーへ自動振り分け（代打バッジ付き）
-  var SUB_WAIT_MIN = 30;
+  // お客様コメントはtelで担当者が決まっている前提 → 対応漏れ防止のため、対応すべき人に
+  // 案件ごとの通知を送る（syncCommentNotifications）。
+  // 担当者が不在（away/offline）の場合はチーム単位でカバーする：各チームに「本日の
+  // コメント対応（当番）」を1人設定でき、チームページ（チャット）から切り替えられる。
   var commentTab = 'bike';
-  // sub: 代打が確定している場合 {name, auto:自動振り分けか}
   var commentCases = [
-    {id:'CM-01', vehicle:'bike', no:'525586', adminUrl:'https://admin.example.com/cases/525586', msg:'どうしても70万以上がいいんですけど、その場合はどうすればいいですか？', owner:'山田 太郎', sub:null, received:'07/04 09:42', elapsedMin:10, done:false, assignedNew:true},
-    {id:'CM-02', vehicle:'bike', no:'527451', adminUrl:'https://admin.example.com/cases/527451', msg:'交渉お願い致します。', owner:'田中 太郎', sub:null, received:'07/04 09:35', elapsedMin:17, done:false},
-    {id:'CM-03', vehicle:'bike', no:'526879', adminUrl:'https://admin.example.com/cases/526879', msg:'〇〇県サンプル市デモ町1-2-3　サンプルビル101', owner:'高橋 健一', sub:{name:'山田 太郎', auto:true}, received:'07/04 08:55', elapsedMin:57, done:false, assignedNew:true},
-    {id:'CM-04', vehicle:'bike', no:'527009', adminUrl:'https://admin.example.com/cases/527009', msg:'金額提示の件、承知しました。よろしくお願いします。', owner:'山田 太郎', sub:null, received:'07/04 08:20', elapsedMin:92, done:true},
-    {id:'CM-05', vehicle:'car', no:'527780', adminUrl:'https://admin.example.com/cases/527780', msg:'引き取りの日程を変更できますか？来週の平日希望です。', owner:'鈴木 花子', sub:null, received:'07/04 09:30', elapsedMin:22, done:false},
-    {id:'CM-06', vehicle:'car', no:'526312', adminUrl:'https://admin.example.com/cases/526312', msg:'振込先の口座情報を変更したいです。', owner:'伊藤 誠', sub:null, received:'07/04 08:40', elapsedMin:72, done:true},
-    {id:'CM-07', vehicle:'car', no:'527455', adminUrl:'https://admin.example.com/cases/527455', msg:'書類は再送済みです。ご確認お願いします。', owner:'中村 優子', sub:null, received:'07/04 09:12', elapsedMin:40, done:false},
+    {id:'CM-01', vehicle:'bike', no:'525586', adminUrl:'https://admin.example.com/cases/525586', owner:'山田 太郎', received:'07/04 09:42', elapsedMin:10, done:false, assignedNew:true},
+    {id:'CM-02', vehicle:'bike', no:'527451', adminUrl:'https://admin.example.com/cases/527451', owner:'田中 太郎', received:'07/04 09:35', elapsedMin:17, done:false, assignedNew:true},
+    {id:'CM-03', vehicle:'bike', no:'526879', adminUrl:'https://admin.example.com/cases/526879', owner:'高橋 健一', received:'07/04 08:55', elapsedMin:57, done:false},
+    {id:'CM-04', vehicle:'bike', no:'527009', adminUrl:'https://admin.example.com/cases/527009', owner:'山田 太郎', received:'07/04 08:20', elapsedMin:92, done:true},
+    {id:'CM-05', vehicle:'car', no:'527780', adminUrl:'https://admin.example.com/cases/527780', owner:'鈴木 花子', received:'07/04 09:30', elapsedMin:22, done:false},
+    {id:'CM-06', vehicle:'car', no:'526312', adminUrl:'https://admin.example.com/cases/526312', owner:'伊藤 誠', received:'07/04 08:40', elapsedMin:72, done:true},
+    {id:'CM-07', vehicle:'car', no:'527455', adminUrl:'https://admin.example.com/cases/527455', owner:'中村 優子', received:'07/04 09:12', elapsedMin:40, done:false},
   ];
   function presenceOf(name){
     var t = team.find(function(x){ return x.name===name; });
     return t ? t.status : 'online';
   }
-  // 実際にこのコメントを対応する人。担当者が出勤中なら担当者、代打が決まっていれば代打、
-  // 担当者不在で代打未定なら null（＝代打募集中）
-  function commentAssignee(c){
-    if(c.sub) return c.sub.name;
-    return presenceOf(c.owner)==='online' ? c.owner : null;
+  function groupOf(name){
+    var t = team.find(function(x){ return x.name===name; });
+    return t ? t.group : null;
   }
-  function commentRecruiting(c){ return !c.done && !commentAssignee(c); }
+  // 各チームの「本日のコメント対応（当番）」。不在メンバー宛のコメントはこの人に流れる。
+  // チームページから切り替え可能。バイク2ndは出勤者がいないため未設定（＝要対応の状態）を再現。
+  var TEAM_DUTY = {g1:'山田 太郎', g2:null, g3:'鈴木 花子', g4:'中村 優子', g5:'渡辺 美咲'};
+  // このコメントを実際に対応する人。担当者が出勤中なら担当者本人、不在ならチームの当番。
+  // 当番も未設定・不在なら null（＝対応者未設定。コメント一覧とバッジで警告する）
+  function commentAssignee(c){
+    if(presenceOf(c.owner)==='online') return c.owner;
+    var g = groupOf(c.owner);
+    var duty = g ? TEAM_DUTY[g] : null;
+    if(duty && presenceOf(duty)==='online') return duty;
+    return null;
+  }
+  function commentUnassigned(c){ return !c.done && !commentAssignee(c); }
   function commentCardHtml(c, inMine){
     var assignee = commentAssignee(c);
-    var recruiting = commentRecruiting(c);
     var absent = presenceOf(c.owner)!=='online';
     var ownerLine = '担当者：'+personChip(c.owner)+(absent ? '<span class="owner-absent">本日不在</span>' : '');
-    if(c.sub){
-      ownerLine += ' <span class="sub-badge sub">代打：'+escapeHtml(c.sub.name)+(c.sub.auto?'（自動振り分け）':'')+'</span>';
-    }
-    var head =
-      '<div class="case-card-head">'+
-        (inMine ? vtag(c.vehicle) : '')+
-        '<span class="case-card-kind">お客様コメント</span>'+
-        (recruiting ? '<span class="sub-badge recruit">代打募集中</span>' : '')+
-        '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
-      '</div>';
-    var actions = '';
-    if(recruiting){
-      actions = '<div class="case-card-actions">'+
-        '<button type="button" class="btn sm primary comment-pickup-btn" data-id="'+c.id+'">対応します</button>'+
-        '<span style="font-size:11.5px; color:var(--ink-faint);">'+SUB_WAIT_MIN+'分拾われなければ出勤中のメンバーに自動で振り分けられます</span>'+
-      '</div>';
+    if(absent && assignee){
+      var g = groupById(groupOf(c.owner));
+      ownerLine += ' <span class="sub-badge sub">代打：'+escapeHtml(assignee)+'（'+escapeHtml(g?g.name:'')+'の当番）</span>';
+    } else if(absent && !c.done){
+      ownerLine += ' <span class="sub-badge recruit">対応者未設定 — チームページで当番を設定してください</span>';
     }
     return '<div class="case-card queue-card kind-upload'+(c.done?' is-done':'')+(c.elapsedMin>120?' elapsed-over':'')+'" data-id="'+c.id+'">'+
       (c.done ? '<div class="case-done-icon" title="対応済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' : '')+
       '<div class="case-card-main">'+
-        head+
+        '<div class="case-card-head">'+
+          (inMine ? vtag(c.vehicle) : '')+
+          '<span class="case-card-kind">お客様コメント</span>'+
+          '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
+        '</div>'+
         '<div class="case-card-line">'+
           '<span>査定依頼ID：<span class="tnum">'+c.no+'</span></span>'+
           '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
         '</div>'+
-        '<div class="comment-msg">'+escapeHtml(c.msg)+'</div>'+
         '<div class="case-card-line case-card-owner">'+ownerLine+'</div>'+
-        actions+
       '</div>'+
     '</div>';
   }
   function renderComments(){
     var listEl = document.getElementById('commentList');
     var list = commentCases.filter(function(c){ return c.vehicle===commentTab; });
-    // 代打募集中 → 未対応 → 対応済み の順
+    // 対応者未設定 → 未対応 → 対応済み の順（同区分内は受信が古い順）
     list.sort(function(a,b){
-      var pa = commentRecruiting(a)?0:(a.done?2:1);
-      var pb = commentRecruiting(b)?0:(b.done?2:1);
+      var pa = commentUnassigned(a)?0:(a.done?2:1);
+      var pb = commentUnassigned(b)?0:(b.done?2:1);
       if(pa!==pb) return pa-pb;
       return b.elapsedMin - a.elapsedMin;
     });
@@ -3917,29 +3960,110 @@
       return;
     }
     listEl.innerHTML = list.map(function(c){ return commentCardHtml(c, false); }).join('');
-    listEl.querySelectorAll('.comment-pickup-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var c = commentCases.find(function(x){ return x.id===btn.dataset.id; });
-        if(!c) return;
-        c.sub = {name:CURRENT_USER, auto:false};
-        c.assignedNew = true;
-        showSyncToast('コメント案件 '+c.no+' の代打を引き受けました（マイ案件に追加されます）');
-        renderComments(); renderMine(); updateNavBadges();
-      });
+  }
+  // 対応漏れ防止：自分が対応すべきコメント案件は1件ごとに通知タブへ届く。
+  // （実運用ではサーバーがコメント受信・当番切り替えのたびにプッシュする想定）
+  var commentNotifiedIds = {};
+  var ICON_COMMENT_NOTIF = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>';
+  function syncCommentNotifications(){
+    var added = 0;
+    commentCases.forEach(function(c){
+      if(c.done || commentNotifiedIds[c.id]) return;
+      if(commentAssignee(c)!==CURRENT_USER) return;
+      commentNotifiedIds[c.id] = true;
+      var covering = c.owner!==CURRENT_USER;
+      var g = covering ? groupById(groupOf(c.owner)) : null;
+      notifications.unshift({day:'today', vehicle:c.vehicle, cls:'comment', caseId:null,
+        icon:ICON_COMMENT_NOTIF,
+        text:'<b>'+c.no+'</b> にお客様からコメントが届きました'+(covering ? '（担当の<b>'+escapeHtml(c.owner)+'</b>さんが不在のため、'+escapeHtml(g?g.name:'チーム')+'の当番のあなたが対応）' : ''),
+        time:(c.received.split(' ')[1]||c.received), unread:true, lockedType:true});
+      added++;
+    });
+    return added;
+  }
+
+  // ---------------- チーム（チャット＋コメント当番の切り替え） ----------------
+  // Slackのチームチャンネル相当。コメント対応の調整会話と当番の切り替えを同じ場所で行う。
+  var teamView = GROUP_BY_NAME[CURRENT_USER] || 'g1';
+  var teamChats = {
+    g1:[
+      {name:'田中 太郎', time:'08:45', text:'すみません、本日お休みをいただきます。コメント対応をお願いできますか？'},
+      {name:'山田 太郎', time:'08:47', text:'了解です。今日は私が当番で受けます。お大事に！'},
+      {sys:true, time:'08:47', text:'本日のコメント対応（当番）が 山田 太郎 さんに設定されました'},
+    ],
+    g3:[
+      {name:'鈴木 花子', time:'09:00', text:'今日の車1stのコメントは私が受けます。'},
+      {sys:true, time:'09:01', text:'本日のコメント対応（当番）が 鈴木 花子 さんに設定されました'},
+    ],
+  };
+  function teamChatOf(g){ if(!teamChats[g]) teamChats[g] = []; return teamChats[g]; }
+  var PRESENCE_META = {online:{label:'出勤中', cls:'online'}, away:{label:'離席中', cls:'away'}, offline:{label:'退勤', cls:'offline'}};
+  function renderTeamSeg(){
+    var seg = document.getElementById('teamSeg');
+    seg.innerHTML = groups.map(function(g){
+      return '<button data-group="'+g.id+'"'+(g.id===teamView?' class="active"':'')+'>'+escapeHtml(g.name)+'</button>';
+    }).join('');
+  }
+  function renderTeamMembers(){
+    var el = document.getElementById('teamMemberList');
+    var members = groupMembers(teamView);
+    if(members.length===0){
+      el.innerHTML = '<div class="team-empty">このチームにはまだメンバーがいません（設定＞チーム編成から追加できます）。</div>';
+      return;
+    }
+    var duty = TEAM_DUTY[teamView];
+    el.innerHTML = members.map(function(t){
+      var pm = PRESENCE_META[t.status] || PRESENCE_META.online;
+      var right;
+      if(duty===t.name){
+        right = '<span class="duty-tag">本日の当番</span>';
+      } else if(t.status==='online'){
+        right = '<button type="button" class="btn sm duty-set-btn" data-name="'+escapeHtml(t.name)+'">当番にする</button>';
+      } else {
+        right = '';
+      }
+      return '<div class="team-member-row">'+personChip(t.name)+'<span class="presence-tag '+pm.cls+'">'+pm.label+'</span>'+right+'</div>';
+    }).join('');
+    if(!duty){
+      var hasOnline = members.some(function(t){ return t.status==='online'; });
+      el.innerHTML += '<div class="team-empty">'+(hasOnline
+        ? '⚠ 当番が未設定です。不在メンバー宛のコメントが誰にも届かないため、当番を設定してください。'
+        : '⚠ 出勤中のメンバーがいないため当番を設定できません。不在メンバー宛のコメントは「対応者未設定」になります。')+'</div>';
+    }
+    el.querySelectorAll('.duty-set-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ setTeamDuty(teamView, btn.dataset.name); });
     });
   }
-  // デモ：代打募集のまま30分経過 → 出勤中のチームメンバーへ自動振り分け
-  function simulateCommentAutoAssign(){
-    var targets = commentCases.filter(commentRecruiting);
-    if(targets.length===0){ showSyncToast('代打募集中のコメント案件がありません（デモ）'); return; }
-    targets.forEach(function(c){
-      var next = team
-        .filter(function(t){ return t.name!==c.owner && t.status==='online' && t.role===c.vehicle; })
-        .sort(function(a,b){ return pendingCountOf(a.name) - pendingCountOf(b.name); })[0];
-      if(next){ c.sub = {name:next.name, auto:true}; if(next.name===CURRENT_USER) c.assignedNew = true; }
-    });
-    showSyncToast(SUB_WAIT_MIN+'分拾われなかったため、出勤中のメンバーに自動で振り分けました（デモ）');
-    renderComments(); renderMine(); updateNavBadges();
+  function setTeamDuty(g, name){
+    TEAM_DUTY[g] = name;
+    var gObj = groupById(g);
+    teamChatOf(g).push({sys:true, time:'たった今', text:'本日のコメント対応（当番）が '+name+' さんに設定されました'});
+    showSyncToast((gObj?gObj.name:'チーム')+'の当番を'+name+'さんに切り替えました。不在メンバー宛のコメント通知はこの人に届きます');
+    var added = syncCommentNotifications();
+    if(added) renderMineNotifPanel();
+    renderTeamPage(); renderComments(); renderMine(); updateNavBadges();
+  }
+  function renderTeamChat(){
+    var box = document.getElementById('teamChatBox');
+    var msgs = teamChatOf(teamView);
+    if(msgs.length===0){
+      box.innerHTML = '<div class="team-empty">まだメッセージはありません。最初のメッセージを送ってみましょう。</div>';
+      return;
+    }
+    box.innerHTML = msgs.map(function(m){
+      if(m.sys) return '<div class="chat-sys">'+escapeHtml(m.text)+'（'+m.time+'）</div>';
+      return messageBubbleHtml(m);
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+  function renderTeamPage(){ renderTeamSeg(); renderTeamMembers(); renderTeamChat(); }
+  function sendTeamChat(){
+    var input = document.getElementById('teamChatInput');
+    var val = input.value.trim();
+    if(!val) return;
+    teamChatOf(teamView).push({name:CURRENT_USER, time:'たった今', text:val});
+    input.value = '';
+    renderTeamChat();
   }
 
   // ---------------- 交渉依頼 ----------------
@@ -4254,6 +4378,7 @@
   // ---------------- 新ページ：ナビから開いたときの描画・バッジ処理 ----------------
   function onOpenView(v){
     if(v==='comment'){ renderComments(); }
+    if(v==='team'){ renderTeamPage(); }
     if(v==='nego'){ renderNego(); }
     if(v==='reminder'){ renderReminders(); }
     if(v==='board'){
@@ -4273,7 +4398,15 @@
     commentTab = b.dataset.vehicle;
     renderComments();
   });
-  document.getElementById('demoCommentAutoBtn').addEventListener('click', simulateCommentAutoAssign);
+  document.getElementById('teamSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    teamView = b.dataset.group;
+    renderTeamPage();
+  });
+  document.getElementById('teamChatSend').addEventListener('click', sendTeamChat);
+  document.getElementById('teamChatInput').addEventListener('keydown', function(e){
+    if(e.key==='Enter' && !e.isComposing) sendTeamChat();
+  });
   document.getElementById('negoStatusSeg').addEventListener('click', function(e){
     var b = e.target.closest('button'); if(!b) return;
     this.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
@@ -4390,9 +4523,9 @@
       cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done && c.assignedNew;}).length +
       commentCases.filter(function(c){return !c.done && c.assignedNew && commentAssignee(c)===CURRENT_USER;}).length);
     setBadge('navBadgeNotif', notifications.filter(function(n){return n.unread;}).length);
-    // 新ページ群：コメント＝代打募集中の件数 / 交渉＝未着手の件数 /
-    // リマインダー＝本日の未確認件数 / 掲示板＝未読投稿数
-    setBadge('navBadgeComment', commentCases.filter(commentRecruiting).length);
+    // 新ページ群：コメント＝対応者未設定の件数（担当不在＋当番なしの警告） /
+    // 交渉＝未着手の件数 / リマインダー＝本日の未確認件数 / 掲示板＝未読投稿数
+    setBadge('navBadgeComment', commentCases.filter(commentUnassigned).length);
     setBadge('navBadgeNego', negoItems.filter(function(n){return n.status==='todo';}).length);
     setBadge('navBadgeReminder', reminders.filter(function(r){return r.bucket==='today' && !r.done;}).length);
     setBadge('navBadgeBoard', boardPosts.filter(function(p){return p.unread;}).length);
@@ -4664,6 +4797,7 @@
   renderMine();
   renderWorkload();
   renderTargets();
+  syncCommentNotifications();  // 自分が対応すべきコメント案件を1件ごとに通知へ
   renderMineNotifPanel();
   renderMyPage();
   applyRolePermissions();
