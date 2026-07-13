@@ -983,6 +983,142 @@
      （チップの文字はKATIX緑の濃色#2F7A47：淡緑地でも読めるコントラストを確保） */
   .stat-chip.good{ color:var(--brand-strong); background:var(--brand-soft); }
   .kpi-delta.down{ color:var(--brand-strong); }
+
+  /* ===== 新ページ群（コメント案件・交渉依頼・リマインダー・掲示板・IDストップ・目標） ===== */
+  /* サイドバー：グループ見出し。項目が増えたぶん全体をコンパクト化して1画面に収める */
+  .nav-list{ gap:4px; padding:0; }
+  .nav-item{ font-size:9.5px; gap:1px; }
+  .nav-icon{ width:31px; height:31px; border-radius:9px; }
+  .nav-item svg{ width:17px; height:17px; }
+  .nav-item .badge{ min-width:15px; height:15px; font-size:9.5px; top:-3px; right:-3px; }
+  .sidebar{ padding-top:10px; }
+  .sidebar-foot{ padding-top:6px; }
+  .nav-group-label{
+    padding:4px 0 0; font-size:9px; font-weight:800; letter-spacing:.18em;
+    color:var(--ink-faint); user-select:none; text-align:center;
+  }
+  .nav-group-label:first-child{ padding-top:0; }
+
+  /* 代打（不在カバー）バッジ */
+  .sub-badge{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+  .sub-badge.recruit{ color:var(--critical); background:var(--critical-soft); }
+  .sub-badge.sub{ color:var(--hold-chip); background:var(--hold-chip-soft); }
+  .owner-absent{ color:var(--critical); font-size:11.5px; font-weight:700; margin-left:4px; }
+
+  /* お客様コメントの本文抜粋（Slack通知の引用ブロック相当） */
+  .comment-msg{
+    font-size:13px; color:var(--ink); background:var(--paper);
+    border-left:3px solid var(--border-strong); padding:6px 10px;
+    border-radius:0 8px 8px 0; margin:4px 0 2px;
+  }
+
+  /* 交渉依頼のステータス */
+  .nego-status{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+  .nego-status.todo{ color:var(--critical); background:var(--critical-soft); }
+  .nego-status.doing{ color:var(--warning); background:var(--warning-soft); }
+  .nego-status.done{ color:var(--neutral-chip); background:var(--neutral-chip-soft); }
+
+  /* インライン追加フォーム（交渉依頼・IDストップ・掲示板投稿） */
+  .inline-form{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+    padding:14px 16px; margin-bottom:14px; display:flex; flex-direction:column; gap:8px;
+  }
+  .inline-form[hidden]{ display:none; }
+  .inline-form-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .inline-form input[type="text"], .inline-form input[type="number"], .inline-form select, .inline-form textarea{
+    font:inherit; font-size:13px; padding:7px 10px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface); color:var(--ink);
+  }
+  .inline-form input:focus, .inline-form textarea:focus, .inline-form select:focus{ outline:none; border-color:var(--accent); }
+  .inline-form textarea{ resize:vertical; min-height:52px; width:100%; }
+  .inline-form-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .inline-form .grow{ flex:1; min-width:180px; }
+
+  /* リマインダー */
+  .remind-card{
+    display:flex; gap:14px; align-items:flex-start; background:var(--surface);
+    border:1px solid var(--border); border-radius:var(--radius-m); padding:12px 16px; margin-bottom:10px;
+  }
+  .remind-card.is-done{ opacity:.55; background:var(--neutral-chip-soft); }
+  .remind-time{ font-size:15px; font-weight:800; min-width:82px; font-variant-numeric:tabular-nums; }
+  .remind-time .remind-date{ display:block; font-size:11px; color:var(--ink-faint); font-weight:600; }
+  .remind-body{ flex:1; min-width:0; }
+  .remind-text{ font-size:13.5px; font-weight:600; }
+  .remind-meta{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+  .remind-meta a{ color:var(--accent-ink); }
+
+  /* 掲示板 */
+  .board-post{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); padding:14px 18px; margin-bottom:12px; }
+  .board-post.pinned{ border-color:var(--brand); }
+  .board-post-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .board-pin{ color:var(--brand-strong); font-size:11px; font-weight:800; background:var(--brand-soft); padding:2px 8px; border-radius:6px; }
+  .board-cat{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; color:var(--accent-ink); background:var(--accent-soft); }
+  .board-title{ font-size:14.5px; font-weight:800; }
+  .board-unread-dot{ width:8px; height:8px; border-radius:50%; background:var(--critical); flex:none; }
+  .board-meta{ font-size:11.5px; color:var(--ink-faint); margin-top:3px; }
+  .board-body{ font-size:13.5px; margin-top:8px; white-space:pre-wrap; }
+  .board-foot{ display:flex; align-items:center; gap:8px; margin-top:10px; }
+  .board-react{ font-size:12px; border:1px solid var(--border); background:var(--paper); border-radius:14px; padding:2px 10px; cursor:pointer; }
+  .board-react.on{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-ink); }
+  .board-comments{ margin-top:10px; border-top:1px dashed var(--border); padding-top:8px; display:flex; flex-direction:column; gap:6px; }
+  .board-comment{ font-size:12.5px; }
+  .board-comment b{ margin-right:6px; }
+  .board-comment-time{ color:var(--ink-faint); font-size:11px; margin-left:6px; }
+  .board-comment-input{ display:flex; gap:6px; margin-top:8px; }
+  .board-comment-input input{ flex:1; font:inherit; font-size:12.5px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); }
+  .board-comment-input input:focus{ outline:none; border-color:var(--accent); }
+
+  /* IDストップリスト */
+  .idstop-wrap{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; }
+  .idstop-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .idstop-table th{ text-align:left; font-size:11.5px; color:var(--ink-faint); font-weight:700; padding:10px 12px; border-bottom:1px solid var(--border); background:var(--paper); white-space:nowrap; }
+  .idstop-table td{ padding:10px 12px; border-bottom:1px solid var(--gridline); vertical-align:top; }
+  .idstop-table tr:last-child td{ border-bottom:none; }
+  .idstop-table tr.cleared td{ opacity:.5; background:var(--neutral-chip-soft); }
+  .idstop-url{ font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; color:var(--accent-ink); word-break:break-all; }
+  .idstop-search{ font:inherit; font-size:13px; padding:7px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); min-width:220px; }
+  .idstop-search:focus{ outline:none; border-color:var(--accent); }
+
+  /* 目標ページ */
+  .goal-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  @media (max-width:1100px){ .goal-grid{ grid-template-columns:1fr; } }
+  .goal-panel{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l); box-shadow:var(--shadow-card); padding:18px 20px; }
+  .goal-panel-title{ font-size:13px; font-weight:800; margin-bottom:12px; }
+  .goal-panel-note{ font-size:11.5px; color:var(--ink-faint); margin-top:8px; line-height:1.7; }
+  .goal-num-row{ display:flex; gap:28px; flex-wrap:wrap; }
+  .goal-num .lbl{ font-size:11.5px; color:var(--ink-faint); font-weight:700; }
+  .goal-num .val{ font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.2; }
+  .goal-num .val small{ font-size:13px; font-weight:700; color:var(--ink-soft); }
+  .goal-sim-result{ font-size:13.5px; margin-top:10px; background:var(--paper); border-radius:10px; padding:10px 14px; line-height:1.8; }
+  .goal-sim-result b.ok{ color:var(--brand-strong); }
+  .goal-sim-result b.ng{ color:var(--critical); }
+  input[type="range"].goal-slider{ width:100%; accent-color:var(--brand); margin:8px 0 2px; }
+  .goal-slider-label{ font-size:13px; font-weight:700; }
+  .goal-slider-label .tnum{ font-size:18px; }
+  .goal-cal{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .goal-cal-dow{ text-align:center; font-size:11px; color:var(--ink-faint); font-weight:700; padding-bottom:2px; }
+  .goal-cal-day{ border:1px solid var(--border); border-radius:8px; min-height:52px; padding:4px 7px; font-size:11px; color:var(--ink-faint); background:var(--surface); }
+  .goal-cal-day.empty{ border:none; background:transparent; min-height:0; }
+  .goal-cal-day .d{ font-weight:700; }
+  .goal-cal-day .a{ display:block; font-size:14px; font-weight:800; color:var(--ink); margin-top:2px; font-variant-numeric:tabular-nums; }
+  .goal-cal-day.hit{ background:var(--brand-soft); border-color:var(--brand); }
+  .goal-cal-day.hit .a{ color:var(--brand-strong); }
+  .goal-cal-day.miss{ background:var(--critical-soft); border-color:var(--critical); }
+  .goal-cal-day.miss .a{ color:var(--critical); }
+  .goal-cal-day.off{ background:var(--paper); }
+  .goal-cal-day.today-mark{ outline:2px solid var(--accent); outline-offset:1px; }
+  .goal-legend{ display:flex; gap:14px; font-size:11.5px; color:var(--ink-faint); margin-top:10px; }
+  .goal-legend .sw{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+
+  /* 通知：新しい種別のアイコン・左ライン色 */
+  .case-card.kind-notif-reminder::before{ background:var(--warning); }
+  .case-card.kind-notif-nego::before{ background:var(--hold-chip); }
+  .case-card.kind-notif-board::before{ background:var(--brand); }
+  .case-card.kind-notif-sub::before{ background:var(--critical); }
+  .notif-type-icon.reminder{ background:var(--warning-soft); color:var(--warning); }
+  .notif-type-icon.nego{ background:var(--hold-chip-soft); color:var(--hold-chip); }
+  .notif-type-icon.board{ background:var(--brand-soft); color:var(--brand-strong); }
+  .notif-type-icon.sub{ background:var(--critical-soft); color:var(--critical); }
 </style>
 
 <div class="app">
@@ -1007,6 +1143,7 @@
     <!-- ===== Sidebar ===== -->
     <nav class="sidebar">
       <ul class="nav-list">
+        <li class="nav-group-label">案件</li>
         <li class="nav-item active" data-view="mine">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
@@ -1033,11 +1170,53 @@
           </span>
           車案件
         </li>
+        <li class="nav-item" data-view="comment">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+            <span class="badge" id="navBadgeComment">0</span>
+          </span>
+          コメント案件
+        </li>
+        <li class="nav-item" data-view="nego">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l-4 4 4 4"/><path d="M3 14h11"/><path d="M17 4l4 4-4 4"/><path d="M21 8H10"/></svg>
+            <span class="badge" id="navBadgeNego">0</span>
+          </span>
+          交渉依頼
+        </li>
+        <li class="nav-group-label">ツール</li>
+        <li class="nav-item" data-view="reminder">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/></svg>
+            <span class="badge" id="navBadgeReminder">0</span>
+          </span>
+          リマインダー
+        </li>
+        <li class="nav-item" data-view="board">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 8h10"/><path d="M7 12h6"/><path d="M12 18v3"/><path d="M8 21h8"/></svg>
+            <span class="badge" id="navBadgeBoard">0</span>
+          </span>
+          掲示板
+        </li>
+        <li class="nav-item" data-view="idstop">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+          </span>
+          IDストップ
+        </li>
+        <li class="nav-group-label">分析</li>
         <li class="nav-item" data-view="kpi">
           <span class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
           </span>
           KPI
+        </li>
+        <li class="nav-item" data-view="goal">
+          <span class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+          </span>
+          目標
         </li>
         <li class="nav-item" data-view="settings" id="navSettings">
           <span class="nav-icon">
@@ -1267,6 +1446,191 @@
           <!-- 個人別の指標（担当者別負荷・目標と応援）は設定＞管理タブ（leaderのみ）へ移設 -->
         </div>
         <div class="tip" id="kpiTip" role="tooltip"></div>
+      </section>
+
+      <!-- ============ コメント案件（バイク/車） ============ -->
+      <section class="view" id="view-comment">
+        <div class="view-head">
+          <div>
+            <div class="view-title">コメント案件</div>
+          </div>
+          <div class="view-head-actions">
+            <button type="button" class="btn sm" id="demoCommentAutoBtn" title="代打募集のまま30分経過した場合の自動振り分けをシミュレートします">▶ デモ：30分拾われなかった場合</button>
+          </div>
+        </div>
+        <div class="queue-filters" style="margin-top:10px;">
+          <div class="segmented" id="commentVehicleSeg">
+            <button class="active" data-vehicle="bike">バイク</button>
+            <button data-vehicle="car">車</button>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:14px;">
+          <div class="case-cards" id="commentList"></div>
+        </div>
+      </section>
+
+      <!-- ============ 交渉依頼 ============ -->
+      <section class="view" id="view-nego">
+        <div class="view-head">
+          <div>
+            <div class="view-title">交渉依頼</div>
+          </div>
+          <div class="view-head-actions">
+            <button type="button" class="btn sm primary" id="negoAddBtn">＋ 交渉を依頼</button>
+          </div>
+        </div>
+        <div class="queue-filters" style="margin-top:10px;">
+          <div class="segmented" id="negoStatusSeg">
+            <button class="active" data-status="all">すべて</button>
+            <button data-status="todo">未着手</button>
+            <button data-status="doing">対応中</button>
+            <button data-status="done">完了</button>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:14px;">
+          <div class="inline-form" id="negoForm" hidden>
+            <div class="inline-form-row">
+              <select id="negoFormVehicle">
+                <option value="bike">バイク</option>
+                <option value="car">車</option>
+              </select>
+              <input type="text" id="negoFormShop" placeholder="店舗名・お客様名" class="grow">
+              <input type="text" id="negoFormUrl" placeholder="案件URL（admin）" class="grow">
+            </div>
+            <textarea id="negoFormNote" placeholder="依頼内容（例：ユーザー希望70万円。上限確認お願いします）"></textarea>
+            <div class="inline-form-actions">
+              <button type="button" class="btn sm" id="negoFormCancel">閉じる</button>
+              <button type="button" class="btn sm primary" id="negoFormSubmit">依頼を登録</button>
+            </div>
+          </div>
+          <div class="case-cards" id="negoList"></div>
+        </div>
+      </section>
+
+      <!-- ============ リマインダー ============ -->
+      <section class="view" id="view-reminder">
+        <div class="view-head">
+          <div>
+            <div class="view-title">リマインダー</div>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:6px;">
+          <div id="reminderList"></div>
+        </div>
+      </section>
+
+      <!-- ============ 掲示板 ============ -->
+      <section class="view" id="view-board">
+        <div class="view-head">
+          <div>
+            <div class="view-title">掲示板</div>
+          </div>
+          <div class="view-head-actions">
+            <button type="button" class="btn sm primary" id="boardAddBtn">＋ 投稿する</button>
+          </div>
+        </div>
+        <div class="queue-filters" style="margin-top:10px;">
+          <div class="segmented" id="boardTabSeg">
+            <button class="active" data-cat="notice">お知らせ</button>
+            <button data-cat="free">自由投稿</button>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:14px;">
+          <div class="inline-form" id="boardForm" hidden>
+            <div class="inline-form-row">
+              <select id="boardFormCat">
+                <option value="notice">お知らせ</option>
+                <option value="free">自由投稿</option>
+              </select>
+              <input type="text" id="boardFormTitle" placeholder="タイトル" class="grow">
+            </div>
+            <textarea id="boardFormBody" placeholder="本文"></textarea>
+            <div class="inline-form-actions">
+              <button type="button" class="btn sm" id="boardFormCancel">閉じる</button>
+              <button type="button" class="btn sm primary" id="boardFormSubmit">投稿</button>
+            </div>
+          </div>
+          <div id="boardList"></div>
+        </div>
+      </section>
+
+      <!-- ============ IDストップリスト ============ -->
+      <section class="view" id="view-idstop">
+        <div class="view-head">
+          <div>
+            <div class="view-title">IDストップリスト</div>
+          </div>
+          <div class="view-head-actions">
+            <button type="button" class="btn sm primary" id="idstopAddBtn">＋ 案件を追加</button>
+          </div>
+        </div>
+        <div class="queue-filters" style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="segmented" id="idstopFilterSeg">
+            <button class="active" data-filter="active">ストップ中のみ</button>
+            <button data-filter="all">すべて</button>
+          </div>
+          <input type="text" class="idstop-search" id="idstopSearch" placeholder="案件URL・担当・備考で検索">
+        </div>
+        <div class="table-scroll" style="padding-top:14px;">
+          <div class="inline-form" id="idstopForm" hidden>
+            <div class="inline-form-row">
+              <input type="text" id="idstopFormUrl" placeholder="案件URL（admin）" class="grow">
+              <input type="text" id="idstopFormNote" placeholder="止めている理由（備考）" class="grow">
+            </div>
+            <div class="inline-form-actions">
+              <button type="button" class="btn sm" id="idstopFormCancel">閉じる</button>
+              <button type="button" class="btn sm primary" id="idstopFormSubmit">追加</button>
+            </div>
+          </div>
+          <div class="idstop-wrap">
+            <table class="idstop-table">
+              <thead>
+                <tr><th style="width:70px;">入力日</th><th>案件URL</th><th style="width:90px;">担当</th><th>備考</th><th style="width:110px;">発行していいよ</th></tr>
+              </thead>
+              <tbody id="idstopBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 目標 ============ -->
+      <section class="view" id="view-goal">
+        <div class="view-head">
+          <div>
+            <div class="view-title">目標</div>
+          </div>
+        </div>
+        <div class="table-scroll" style="padding-top:14px;">
+          <div class="goal-grid">
+            <div class="goal-panel">
+              <div class="goal-panel-title">今月の目標と実績（7月）</div>
+              <div class="goal-num-row" id="goalSummaryNums"></div>
+              <div class="goal-panel-note">成約数・成約率は現在の実績をリアルタイムで反映します（マイページの「私の達成状況」と同じ数字）。</div>
+            </div>
+            <div class="goal-panel">
+              <div class="goal-panel-title">telシミュレーター — 1日何件で目標に届く？</div>
+              <div class="goal-slider-label">1日のtel対応：<span class="tnum" id="goalSimTelLabel">8</span> 件</div>
+              <input type="range" class="goal-slider" id="goalSimSlider" min="1" max="20" step="1" value="8">
+              <div class="goal-sim-result" id="goalSimResult"></div>
+              <div class="goal-panel-note" id="goalSimNote"></div>
+            </div>
+          </div>
+          <div class="goal-panel">
+            <div class="goal-panel-title">日次tel目標カレンダー（7月）</div>
+            <div class="inline-form-row" style="margin-bottom:12px;">
+              <span style="font-size:12.5px; color:var(--ink-soft);">今月の1日あたりtel目標（月に1度設定）：</span>
+              <input type="number" id="goalTelPerDayInput" min="1" max="30" value="8" style="width:70px; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--border); border-radius:8px;">
+              <span style="font-size:12.5px; color:var(--ink-soft);">件</span>
+              <button type="button" class="btn sm" id="goalTelPerDaySave">設定</button>
+            </div>
+            <div class="goal-cal" id="goalCalendar"></div>
+            <div class="goal-legend">
+              <span><span class="sw" style="background:var(--brand-soft); border:1px solid var(--brand);"></span>目標達成</span>
+              <span><span class="sw" style="background:var(--critical-soft); border:1px solid var(--critical);"></span>未達</span>
+              <span><span class="sw" style="background:var(--paper); border:1px solid var(--border);"></span>休日・実績なし</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ============ 設定（運用管理） ============ -->
@@ -1990,9 +2354,12 @@
   var STAR_METER_COUNT = 10;
   var ICON_STAR = '<svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m8.587 8.236l2.598-5.232a.911.911 0 0 1 1.63 0l2.598 5.232l5.808.844a.902.902 0 0 1 .503 1.542l-4.202 4.07l.992 5.75c.127.738-.653 1.3-1.32.952L12 18.678l-5.195 2.716c-.666.349-1.446-.214-1.319-.953l.992-5.75l-4.202-4.07a.902.902 0 0 1 .503-1.54z"/></svg>';
   function renderMineProgress(){
+    // tel案件＋コメント案件（自分が対応するもの）を合算。交渉依頼は完了時点でマイ案件から
+    // 消える運用のため進捗の母数には入れない。
     var mineAll = cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER; });
-    var total = mineAll.length;
-    var doneCount = mineAll.filter(function(c){ return c.done; }).length;
+    var mineComments = commentCases.filter(function(c){ return commentAssignee(c)===CURRENT_USER; });
+    var total = mineAll.length + mineComments.length;
+    var doneCount = mineAll.filter(function(c){ return c.done; }).length + mineComments.filter(function(c){ return c.done; }).length;
     var pct = total ? Math.round(doneCount/total*100) : 0;
     document.getElementById('mineProgressNum').innerHTML = '現在のマイ案件 <b class="tnum">'+total+'</b>件中 <b class="tnum">'+doneCount+'</b>件対応済み';
     var baseEl = document.getElementById('mineStarBase');
@@ -2031,7 +2398,29 @@
       listEl.appendChild(card);
       bindRowActions(card, c);
     });
-    if(mine.length===0){
+    // コメント案件・交渉依頼のうち自分が対応するものを統合表示（種別チップ・代打バッジで区別）
+    var mineComments = commentCases.filter(function(c){ return !c.done && commentAssignee(c)===CURRENT_USER; });
+    var mineNego = negoItems.filter(function(n){ return n.status==='doing' && n.assignee===CURRENT_USER; });
+    mineComments.forEach(function(c){
+      var wrap = document.createElement('div');
+      wrap.innerHTML = commentCardHtml(c, true);
+      listEl.appendChild(wrap.firstChild);
+    });
+    mineNego.forEach(function(n){
+      var wrap = document.createElement('div');
+      wrap.innerHTML = negoCardHtml(n);
+      listEl.appendChild(wrap.firstChild);
+    });
+    listEl.querySelectorAll('.nego-done-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var n = negoItems.find(function(x){ return x.id===btn.dataset.id; });
+        if(!n || n.status==='done') return;
+        n.status = 'done'; n.doneAt = 'たった今';
+        showSyncToast('交渉完了。依頼者の'+n.requester+'さんに通知を送りました');
+        renderNego(); renderMine(); updateNavBadges();
+      });
+    });
+    if(mine.length===0 && mineComments.length===0 && mineNego.length===0){
       listEl.innerHTML = '<div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div>';
     }
     renderMineProgress();
@@ -2887,12 +3276,18 @@
   })();
 
   // ---------------- 通知センター（設定内） ----------------
-  // 通知タブに出すのは次の3種類のみ（すべて本人宛のため通知設定のミュート対象外＝lockedType）。
-  //   sla     … 自分の案件の対応リミット30分前
-  //   assign  … 自分に振り分けられていた案件が他の担当者に変わった
-  //   mention … スレッドで自分または自分のチームがメンションされた
+  // 通知タブに出す種別（すべて本人宛のため通知設定のミュート対象外＝lockedType）。
+  //   sla      … 自分の案件の対応リミット30分前
+  //   assign   … 自分に振り分けられていた案件が他の担当者に変わった
+  //   mention  … スレッドで自分または自分のチームがメンションされた
+  //   reminder … adminで設定されたリマインダーの時刻到来
+  //   nego     … 自分が依頼した交渉の完了
+  //   sub      … 自分のチームでコメント案件の代打募集が発生
+  //   board    … 掲示板の重要なお知らせ（ピン留め投稿）
   // 案件一覧（バイク・車）の新着はここには出さない。マイ案件への新規追加はマイ案件のバッジで知らせる。
   var notifications = [
+    {day:"today", vehicle:null, cls:"reminder", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>', text:'リマインダー：<b>15:00 長谷川商店に折り返しtel</b>（adminで設定・設定者：中村 優子）', time:"09:50", unread:true, lockedType:true},
+    {day:"today", vehicle:"bike", cls:"sub", caseId:null, icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/><path d="M18 8h4"/></svg>', text:'<b>田中 太郎</b>さんが本日不在のため、コメント案件 <b>527451</b> が代打募集になっています', time:"09:35", unread:true, lockedType:true},
     {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'急', text:'<b>311998</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"assign", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当があなたから <b>鈴木 花子</b>さんに変わりました。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>', text:'<b>鈴木 花子</b>さんがスレッドであなたをメンションしました', time:"08:24", unread:true, lockedType:true},
@@ -3452,6 +3847,550 @@
     rateView.group = b.dataset.group; renderRate();
   });
 
+  // ================================================================
+  // 新ページ群：コメント案件・交渉依頼・リマインダー・掲示板・IDストップ・目標
+  // データはすべてモック（実運用ではサーバーAPI・admin Webhookの結果を差し込む想定）
+  // ================================================================
+
+  // ---------------- コメント案件（バイク/車） ----------------
+  // お客様コメントはtelで担当者が決まっている前提 → 担当者へ通知が基本。
+  // 担当者が不在（away/offline）の場合はハイブリッド方式：
+  //   1) 「代打募集」としてチームの誰でも「対応します」で引き取れる
+  //   2) SUB_WAIT_MIN分拾われなければ出勤中メンバーへ自動振り分け（代打バッジ付き）
+  var SUB_WAIT_MIN = 30;
+  var commentTab = 'bike';
+  // sub: 代打が確定している場合 {name, auto:自動振り分けか}
+  var commentCases = [
+    {id:'CM-01', vehicle:'bike', no:'525586', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/525586', msg:'どうしても70万以上がいいんですけど、その場合はどうすればいいですか？', owner:'山田 太郎', sub:null, received:'07/04 09:42', elapsedMin:10, done:false, assignedNew:true},
+    {id:'CM-02', vehicle:'bike', no:'527451', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527451', msg:'交渉お願い致します。', owner:'田中 太郎', sub:null, received:'07/04 09:35', elapsedMin:17, done:false},
+    {id:'CM-03', vehicle:'bike', no:'526879', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/526879', msg:'岡山県倉敷市中島1590-11　ブリーゼモールC107', owner:'高橋 健一', sub:{name:'山田 太郎', auto:true}, received:'07/04 08:55', elapsedMin:57, done:false, assignedNew:true},
+    {id:'CM-04', vehicle:'bike', no:'527009', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527009', msg:'金額提示の件、承知しました。よろしくお願いします。', owner:'山田 太郎', sub:null, received:'07/04 08:20', elapsedMin:92, done:true},
+    {id:'CM-05', vehicle:'car', no:'527780', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527780', msg:'引き取りの日程を変更できますか？来週の平日希望です。', owner:'鈴木 花子', sub:null, received:'07/04 09:30', elapsedMin:22, done:false},
+    {id:'CM-06', vehicle:'car', no:'526312', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/526312', msg:'振込先の口座情報を変更したいです。', owner:'伊藤 誠', sub:null, received:'07/04 08:40', elapsedMin:72, done:true},
+    {id:'CM-07', vehicle:'car', no:'527455', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527455', msg:'書類は再送済みです。ご確認お願いします。', owner:'中村 優子', sub:null, received:'07/04 09:12', elapsedMin:40, done:false},
+  ];
+  function presenceOf(name){
+    var t = team.find(function(x){ return x.name===name; });
+    return t ? t.status : 'online';
+  }
+  // 実際にこのコメントを対応する人。担当者が出勤中なら担当者、代打が決まっていれば代打、
+  // 担当者不在で代打未定なら null（＝代打募集中）
+  function commentAssignee(c){
+    if(c.sub) return c.sub.name;
+    return presenceOf(c.owner)==='online' ? c.owner : null;
+  }
+  function commentRecruiting(c){ return !c.done && !commentAssignee(c); }
+  function commentCardHtml(c, inMine){
+    var assignee = commentAssignee(c);
+    var recruiting = commentRecruiting(c);
+    var absent = presenceOf(c.owner)!=='online';
+    var ownerLine = '担当者：'+personChip(c.owner)+(absent ? '<span class="owner-absent">本日不在</span>' : '');
+    if(c.sub){
+      ownerLine += ' <span class="sub-badge sub">代打：'+escapeHtml(c.sub.name)+(c.sub.auto?'（自動振り分け）':'')+'</span>';
+    }
+    var head =
+      '<div class="case-card-head">'+
+        (inMine ? vtag(c.vehicle) : '')+
+        '<span class="case-card-kind">お客様コメント</span>'+
+        (recruiting ? '<span class="sub-badge recruit">代打募集中</span>' : '')+
+        '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
+      '</div>';
+    var actions = '';
+    if(recruiting){
+      actions = '<div class="case-card-actions">'+
+        '<button type="button" class="btn sm primary comment-pickup-btn" data-id="'+c.id+'">対応します</button>'+
+        '<span style="font-size:11.5px; color:var(--ink-faint);">'+SUB_WAIT_MIN+'分拾われなければ出勤中のメンバーに自動で振り分けられます</span>'+
+      '</div>';
+    }
+    return '<div class="case-card queue-card kind-upload'+(c.done?' is-done':'')+(c.elapsedMin>120?' elapsed-over':'')+'" data-id="'+c.id+'">'+
+      (c.done ? '<div class="case-done-icon" title="対応済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' : '')+
+      '<div class="case-card-main">'+
+        head+
+        '<div class="case-card-line">'+
+          '<span>査定依頼ID：<span class="tnum">'+c.no+'</span></span>'+
+          '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
+        '</div>'+
+        '<div class="comment-msg">'+escapeHtml(c.msg)+'</div>'+
+        '<div class="case-card-line case-card-owner">'+ownerLine+'</div>'+
+        actions+
+      '</div>'+
+    '</div>';
+  }
+  function renderComments(){
+    var listEl = document.getElementById('commentList');
+    var list = commentCases.filter(function(c){ return c.vehicle===commentTab; });
+    // 代打募集中 → 未対応 → 対応済み の順
+    list.sort(function(a,b){
+      var pa = commentRecruiting(a)?0:(a.done?2:1);
+      var pb = commentRecruiting(b)?0:(b.done?2:1);
+      if(pa!==pb) return pa-pb;
+      return b.elapsedMin - a.elapsedMin;
+    });
+    if(list.length===0){
+      listEl.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v10H8l-4 4z"/></svg><div class="empty-state-title">コメント案件はありません</div>お客様からコメントが届くと、ここに表示されます。</div>';
+      return;
+    }
+    listEl.innerHTML = list.map(function(c){ return commentCardHtml(c, false); }).join('');
+    listEl.querySelectorAll('.comment-pickup-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var c = commentCases.find(function(x){ return x.id===btn.dataset.id; });
+        if(!c) return;
+        c.sub = {name:CURRENT_USER, auto:false};
+        c.assignedNew = true;
+        showSyncToast('コメント案件 '+c.no+' の代打を引き受けました（マイ案件に追加されます）');
+        renderComments(); renderMine(); updateNavBadges();
+      });
+    });
+  }
+  // デモ：代打募集のまま30分経過 → 出勤中のチームメンバーへ自動振り分け
+  function simulateCommentAutoAssign(){
+    var targets = commentCases.filter(commentRecruiting);
+    if(targets.length===0){ showSyncToast('代打募集中のコメント案件がありません（デモ）'); return; }
+    targets.forEach(function(c){
+      var next = team
+        .filter(function(t){ return t.name!==c.owner && t.status==='online' && t.role===c.vehicle; })
+        .sort(function(a,b){ return pendingCountOf(a.name) - pendingCountOf(b.name); })[0];
+      if(next){ c.sub = {name:next.name, auto:true}; if(next.name===CURRENT_USER) c.assignedNew = true; }
+    });
+    showSyncToast(SUB_WAIT_MIN+'分拾われなかったため、出勤中のメンバーに自動で振り分けました（デモ）');
+    renderComments(); renderMine(); updateNavBadges();
+  }
+
+  // ---------------- 交渉依頼 ----------------
+  // お客様担当者が依頼を登録 → 交渉担当が対応開始 → 完了 → 依頼者に通知。
+  // （Slack交渉チャンネル＋katix-cs-boardの流れをこのページに置き換える想定）
+  var negoFilter = 'all';
+  var negoStatusMeta = {
+    todo:{label:'未着手', cls:'todo'},
+    doing:{label:'対応中', cls:'doing'},
+    done:{label:'完了', cls:'done'},
+  };
+  var negoItems = [
+    {id:'NG-01', vehicle:'bike', shop:'長谷川商店', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527479', note:'ユーザー希望70万円。上限の確認をお願いします。', requester:'中村 優子', assignee:null, status:'todo', requested:'07/04 08:55', doneAt:null},
+    {id:'NG-02', vehicle:'bike', shop:'RSオートバイ', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527779', note:'再交渉希望。前回提示から＋3万円まで可。', requester:'山田 太郎', assignee:'伊藤 誠', status:'doing', requested:'07/04 08:10', doneAt:null},
+    {id:'NG-03', vehicle:'bike', shop:'バイクプラザ丸亀', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527347', note:'落札額の相談。至急お願いします。', requester:'渡辺 美咲', assignee:null, status:'todo', requested:'07/04 09:20', doneAt:null},
+    {id:'NG-04', vehicle:'car', shop:'合同会社新潟オート', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/526306', note:'減額提案あり。事実確認のうえ交渉お願いします。', requester:'鈴木 花子', assignee:'渡辺 美咲', status:'done', requested:'07/03 16:40', doneAt:'07/04 09:00'},
+  ];
+  var negoSeq = 5;
+  function negoCardHtml(n){
+    var sm = negoStatusMeta[n.status];
+    var action = '';
+    if(n.status==='todo'){
+      action = '<button type="button" class="btn sm nego-start-btn" data-id="'+n.id+'">対応開始</button>';
+    } else if(n.status==='doing'){
+      action = '<button type="button" class="btn sm primary nego-done-btn" data-id="'+n.id+'">完了（依頼者に通知）</button>';
+    } else {
+      action = '<span style="font-size:11.5px; color:var(--ink-faint);">'+(n.doneAt||'')+' 完了・依頼者に通知済み</span>';
+    }
+    return '<div class="case-card queue-card kind-other'+(n.status==='done'?' is-done':'')+'" data-id="'+n.id+'">'+
+      (n.status==='done' ? '<div class="case-done-icon" title="完了"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' : '')+
+      '<div class="case-card-main">'+
+        '<div class="case-card-head">'+
+          vtag(n.vehicle)+
+          '<span class="case-card-kind">'+escapeHtml(n.shop)+'</span>'+
+          '<span class="nego-status '+sm.cls+'">'+sm.label+'</span>'+
+          '<span class="case-card-time tnum">'+n.requested+'</span>'+
+        '</div>'+
+        (n.adminUrl ? '<div class="case-card-line"><a class="case-card-url" href="'+n.adminUrl+'" target="_blank" rel="noopener">'+n.adminUrl+'</a></div>' : '')+
+        '<div class="comment-msg">'+escapeHtml(n.note)+'</div>'+
+        '<div class="case-card-line case-card-owner">依頼者：'+personChip(n.requester)+
+          (n.assignee ? '　交渉担当：'+personChip(n.assignee) : '')+
+        '</div>'+
+        '<div class="case-card-actions">'+action+'</div>'+
+      '</div>'+
+    '</div>';
+  }
+  function renderNego(){
+    var listEl = document.getElementById('negoList');
+    var list = negoItems.filter(function(n){ return negoFilter==='all' || n.status===negoFilter; });
+    // 未着手 → 対応中 → 完了 の順
+    var order = {todo:0, doing:1, done:2};
+    list.sort(function(a,b){ return order[a.status]-order[b.status]; });
+    if(list.length===0){
+      listEl.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l-4 4 4 4"/><path d="M3 14h11"/><path d="M17 4l4 4-4 4"/><path d="M21 8H10"/></svg><div class="empty-state-title">この条件の交渉依頼はありません</div>「＋ 交渉を依頼」から登録できます。</div>';
+      return;
+    }
+    listEl.innerHTML = list.map(negoCardHtml).join('');
+    listEl.querySelectorAll('.nego-start-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var n = negoItems.find(function(x){ return x.id===btn.dataset.id; });
+        if(!n) return;
+        n.status = 'doing'; n.assignee = CURRENT_USER;
+        showSyncToast('交渉依頼（'+n.shop+'）の対応を開始しました');
+        renderNego(); renderMine(); updateNavBadges();
+      });
+    });
+    listEl.querySelectorAll('.nego-done-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var n = negoItems.find(function(x){ return x.id===btn.dataset.id; });
+        if(!n) return;
+        n.status = 'done'; n.doneAt = 'たった今';
+        showSyncToast('交渉完了。依頼者の'+n.requester+'さんに通知を送りました');
+        if(n.requester===CURRENT_USER){
+          notifications.unshift({day:'today', vehicle:n.vehicle, cls:'nego', caseId:null,
+            icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l-4 4 4 4"/><path d="M3 14h11"/><path d="M17 4l4 4-4 4"/><path d="M21 8H10"/></svg>',
+            text:'あなたが依頼した交渉（<b>'+escapeHtml(n.shop)+'</b>）が完了しました', time:'たった今', unread:true, lockedType:true});
+          renderMineNotifPanel();
+        }
+        renderNego(); renderMine(); updateNavBadges();
+      });
+    });
+  }
+
+  // ---------------- リマインダー ----------------
+  // adminで設定されたリマインダーの受信一覧（Relayは受け側のみ・作成はadminから）。
+  var reminders = [
+    {id:'RM-1', bucket:'today', when:'15:00', date:'今日', text:'長谷川商店に折り返しtel（減額の件）', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527479', setBy:'中村 優子', done:false},
+    {id:'RM-2', bucket:'today', when:'17:30', date:'今日', text:'527009 の入金確認ステータスをチェック', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527009', setBy:'山田 太郎', done:false},
+    {id:'RM-3', bucket:'upcoming', when:'10:00', date:'明日', text:'RSオートバイに再交渉の結果を連絡', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527779', setBy:'伊藤 誠', done:false},
+    {id:'RM-4', bucket:'done', when:'13:00', date:'07/03', text:'バイクプラザ丸亀の書類到着確認', adminUrl:'https://www.bikehikaku.com/admins/upload_assessment_requests/527347', setBy:'山田 太郎', done:true},
+  ];
+  function renderReminders(){
+    var el = document.getElementById('reminderList');
+    var sections = [
+      {key:'today', label:'本日'},
+      {key:'upcoming', label:'今後'},
+      {key:'done', label:'完了済み'},
+    ];
+    var html = '';
+    sections.forEach(function(sec){
+      var list = reminders.filter(function(r){ return sec.key==='done' ? r.done : (!r.done && r.bucket===sec.key); });
+      if(list.length===0) return;
+      html += '<div class="notif-daylabel">'+sec.label+'</div>';
+      html += list.map(function(r){
+        return '<div class="remind-card'+(r.done?' is-done':'')+'">'+
+          '<div class="remind-time tnum">'+r.when+'<span class="remind-date">'+r.date+'</span></div>'+
+          '<div class="remind-body">'+
+            '<div class="remind-text">'+escapeHtml(r.text)+'</div>'+
+            '<div class="remind-meta">adminで設定（設定者：'+escapeHtml(r.setBy)+'）　<a href="'+r.adminUrl+'" target="_blank" rel="noopener">内容確認ページ '+ICON_EXT+'</a></div>'+
+          '</div>'+
+          (r.done ? '' : '<button type="button" class="btn sm remind-done-btn" data-id="'+r.id+'">確認した</button>')+
+        '</div>';
+      }).join('');
+    });
+    if(!html){
+      html = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg><div class="empty-state-title">リマインダーはありません</div>adminでリマインダーが設定されると、ここに表示されます。</div>';
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('.remind-done-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var r = reminders.find(function(x){ return x.id===btn.dataset.id; });
+        if(!r) return;
+        r.done = true;
+        showSyncToast('リマインダーを確認済みにしました');
+        renderReminders(); updateNavBadges();
+      });
+    });
+  }
+
+  // ---------------- 掲示板 ----------------
+  // お知らせ（リーダー/管理者の周知・ピン留めあり）と自由投稿（全員）の2カテゴリ。
+  var boardTab = 'notice';
+  var boardSeq = 4;
+  var boardPosts = [
+    {id:'BP-1', cat:'notice', pinned:true, title:'7月の減額対応フローが変わります', body:'7/15以降、減額時の事実確認は必ず「減額フォーム」経由で行ってください。口頭・スレッドのみでの確認はNGです。\n詳細は運用ドキュメントを参照。', author:'鈴木 花子', time:'07/03 09:00', unread:false, reactCount:4, myReact:false, comments:[{name:'伊藤 誠', time:'07/03 10:12', text:'承知しました。'}]},
+    {id:'BP-2', cat:'notice', pinned:false, title:'来週の朝会は10:00開始に変更', body:'7/7（月）の朝会のみ、システムメンテナンスのため10:00開始です。', author:'山田 太郎', time:'07/04 08:30', unread:true, reactCount:1, myReact:false, comments:[]},
+    {id:'BP-3', cat:'free', pinned:false, title:'査定写真の確認ポイント共有', body:'最近多いパターン：メーター写真がブレていて走行距離が読めない→再アップロード依頼になりがちです。受信時にまずメーター写真から確認すると手戻りが減ります。', author:'渡辺 美咲', time:'07/04 09:10', unread:true, reactCount:2, myReact:false, comments:[{name:'中村 優子', time:'07/04 09:20', text:'たしかに！車側でも同じことが多いです。'}]},
+  ];
+  function renderBoard(){
+    var el = document.getElementById('boardList');
+    var list = boardPosts.filter(function(p){ return p.cat===boardTab; });
+    // ピン留め → 新しい順
+    list.sort(function(a,b){
+      if(a.pinned!==b.pinned) return a.pinned ? -1 : 1;
+      return a.time < b.time ? 1 : -1;
+    });
+    if(list.length===0){
+      el.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 8h10"/><path d="M7 12h6"/></svg><div class="empty-state-title">投稿はまだありません</div>「＋ 投稿する」から最初の投稿ができます。</div>';
+      return;
+    }
+    el.innerHTML = list.map(function(p){
+      return '<div class="board-post'+(p.pinned?' pinned':'')+'" data-id="'+p.id+'">'+
+        '<div class="board-post-head">'+
+          (p.unread ? '<span class="board-unread-dot" title="未読"></span>' : '')+
+          (p.pinned ? '<span class="board-pin">📌 ピン留め</span>' : '')+
+          '<span class="board-cat">'+(p.cat==='notice'?'お知らせ':'自由投稿')+'</span>'+
+          '<span class="board-title">'+escapeHtml(p.title)+'</span>'+
+        '</div>'+
+        '<div class="board-meta">'+personChip(p.author)+'　<span class="tnum">'+p.time+'</span></div>'+
+        '<div class="board-body">'+escapeHtml(p.body)+'</div>'+
+        '<div class="board-foot">'+
+          '<button type="button" class="board-react'+(p.myReact?' on':'')+'" data-id="'+p.id+'">👍 <span class="tnum">'+p.reactCount+'</span></button>'+
+        '</div>'+
+        '<div class="board-comments">'+
+          p.comments.map(function(cm){
+            return '<div class="board-comment"><b>'+escapeHtml(cm.name)+'</b>'+escapeHtml(cm.text)+'<span class="board-comment-time tnum">'+cm.time+'</span></div>';
+          }).join('')+
+          '<div class="board-comment-input"><input type="text" placeholder="コメントを書く…" data-id="'+p.id+'"><button type="button" class="btn sm board-comment-btn" data-id="'+p.id+'">送信</button></div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    el.querySelectorAll('.board-react').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var p = boardPosts.find(function(x){ return x.id===btn.dataset.id; });
+        if(!p) return;
+        p.myReact = !p.myReact;
+        p.reactCount += p.myReact ? 1 : -1;
+        renderBoard();
+      });
+    });
+    el.querySelectorAll('.board-comment-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var input = el.querySelector('.board-comment-input input[data-id="'+btn.dataset.id+'"]');
+        var val = input ? input.value.trim() : '';
+        if(!val) return;
+        var p = boardPosts.find(function(x){ return x.id===btn.dataset.id; });
+        if(!p) return;
+        p.comments.push({name:CURRENT_USER, time:'たった今', text:val});
+        renderBoard();
+      });
+    });
+  }
+
+  // ---------------- IDストップリスト ----------------
+  // ウェルネットのID発行を止めてほしい案件リスト（スプレッドシートの置き換え）。
+  // 担当はモックでは文字列（実運用ではユーザーマスタと連携する想定）。
+  var idstopFilter = 'active';
+  var idstopQuery = '';
+  var idstopRows = [
+    {date:'07/04', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/525597', owner:'五十嵐', note:'純正パーツを含めた金額になってないため', cleared:false},
+    {date:'07/04', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/522153', owner:'ツェテン', note:'引き上げ前減額', cleared:false},
+    {date:'07/03', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/522193', owner:'香田', note:'所有権解除待ち', cleared:false},
+    {date:'07/02', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/524413', owner:'五十嵐', note:'引き上げ前減額', cleared:false},
+    {date:'07/01', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/518224', owner:'香田', note:'減額事実確認中', cleared:true},
+    {date:'06/28', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/514075', owner:'柏木', note:'減額フォームまち → 承認済みを確認', cleared:true},
+    {date:'06/27', url:'https://www.bikehikaku.com/admins/upload_assessment_requests/518251', owner:'秋元', note:'業者から減額提案をしていたため事実確認中', cleared:true},
+  ];
+  function renderIdstop(){
+    var body = document.getElementById('idstopBody');
+    var q = idstopQuery.trim().toLowerCase();
+    var list = idstopRows.filter(function(r){
+      if(idstopFilter==='active' && r.cleared) return false;
+      if(!q) return true;
+      return r.url.toLowerCase().indexOf(q)>=0 || r.owner.toLowerCase().indexOf(q)>=0 || r.note.toLowerCase().indexOf(q)>=0;
+    });
+    // ストップ中 → 解除済み、同区分内は入力日の新しい順
+    list.sort(function(a,b){
+      if(a.cleared!==b.cleared) return a.cleared ? 1 : -1;
+      return a.date < b.date ? 1 : -1;
+    });
+    if(list.length===0){
+      body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--ink-faint); padding:28px;">該当する案件がありません</td></tr>';
+      return;
+    }
+    body.innerHTML = list.map(function(r){
+      var idx = idstopRows.indexOf(r);
+      return '<tr class="'+(r.cleared?'cleared':'')+'">'+
+        '<td class="tnum">'+r.date+'</td>'+
+        '<td><a class="idstop-url" href="'+r.url+'" target="_blank" rel="noopener">'+r.url+'</a></td>'+
+        '<td>'+escapeHtml(r.owner)+'</td>'+
+        '<td>'+escapeHtml(r.note)+'</td>'+
+        '<td style="text-align:center;"><input type="checkbox" class="idstop-clear-chk" data-idx="'+idx+'"'+(r.cleared?' checked':'')+'></td>'+
+      '</tr>';
+    }).join('');
+    body.querySelectorAll('.idstop-clear-chk').forEach(function(chk){
+      chk.addEventListener('change', function(){
+        var r = idstopRows[Number(chk.dataset.idx)];
+        if(!r) return;
+        r.cleared = chk.checked;
+        showSyncToast(r.cleared ? '「発行していいよ」にしました（ストップ解除）' : 'ストップ中に戻しました');
+        renderIdstop();
+      });
+    });
+  }
+
+  // ---------------- 目標 ----------------
+  // 月次目標＝成約数・成約率（個人ごと）。モックの「今月」は7月・「今日」は7/4（他ページと同じ世界観）。
+  // telシミュレーター＝直近実績の成約率（今月の成約数÷tel対応数）×残り営業日で月末見込みを試算。
+  var GOAL_STATE = {
+    dealTarget: 20,    // 月間成約数目標
+    rateTarget: 40,    // 成約率目標(%)
+    telPerDay: 8,      // 月に1度設定する「1日のtel対応目標」
+    simTel: 8,         // シミュレーターのスライダー値
+  };
+  var GOAL_DAILY = {1:9, 2:7, 3:10, 4:6};  // 日別tel実績（今月・モック）
+  var GOAL_MONTH = {days:31, startDow:2, today:4, workdaysLeft:19}; // 2026年7月：1日=水曜（月曜起点で空き2マス）・残り営業日はモック値
+  function goalConvRate(){
+    var m = myKpi.month;
+    return m.handled ? m.deal / m.handled : 0;  // tel対応→成約の割合（直近実績）
+  }
+  function renderGoalSummary(){
+    var m = myKpi.month;
+    var rate = pctOf(m.deal, m.bid);
+    var rateOk = rate >= GOAL_STATE.rateTarget;
+    var dealOk = m.deal >= GOAL_STATE.dealTarget;
+    document.getElementById('goalSummaryNums').innerHTML =
+      '<div class="goal-num"><div class="lbl">成約数（実績／目標）</div>'+
+        '<div class="val" style="color:'+(dealOk?'var(--brand-strong)':'var(--ink)')+'">'+m.deal+'<small> ／ '+GOAL_STATE.dealTarget+'件</small></div></div>'+
+      '<div class="goal-num"><div class="lbl">成約率（現在／目標）</div>'+
+        '<div class="val" style="color:'+(rateOk?'var(--brand-strong)':'var(--critical)')+'">'+rate+'<small>% ／ '+GOAL_STATE.rateTarget+'%</small></div></div>'+
+      '<div class="goal-num"><div class="lbl">今月のtel対応</div>'+
+        '<div class="val">'+m.handled+'<small>件</small></div></div>';
+  }
+  function renderGoalSim(){
+    var m = myKpi.month;
+    var conv = goalConvRate();
+    var tel = GOAL_STATE.simTel;
+    var projected = m.deal + Math.round(tel * GOAL_MONTH.workdaysLeft * conv);
+    var ok = projected >= GOAL_STATE.dealTarget;
+    var needed = conv > 0 ? Math.ceil(Math.max(0, GOAL_STATE.dealTarget - m.deal) / (conv * GOAL_MONTH.workdaysLeft)) : null;
+    document.getElementById('goalSimTelLabel').textContent = tel;
+    document.getElementById('goalSimResult').innerHTML =
+      '1日 <b class="tnum">'+tel+'</b> 件のペースだと、月末見込みは <b class="'+(ok?'ok':'ng')+' tnum">'+projected+'件</b>（目標 '+GOAL_STATE.dealTarget+'件・'+(ok?'達成見込み':'あと'+(GOAL_STATE.dealTarget-projected)+'件不足')+'）<br>'+
+      (needed!==null ? '目標達成には1日あたり <b class="tnum">'+needed+'</b> 件のtel対応が必要です' : '');
+    document.getElementById('goalSimNote').textContent =
+      '試算の前提：直近実績の成約率（今月 tel'+m.handled+'件→成約'+m.deal+'件＝'+Math.round(conv*100)+'%）× 残り営業日'+GOAL_MONTH.workdaysLeft+'日。実運用では集計APIの値を使用します。';
+  }
+  function renderGoalCalendar(){
+    var cal = document.getElementById('goalCalendar');
+    var dows = ['月','火','水','木','金','土','日'];
+    var html = dows.map(function(d){ return '<div class="goal-cal-dow">'+d+'</div>'; }).join('');
+    for(var i=0; i<GOAL_MONTH.startDow; i++) html += '<div class="goal-cal-day empty"></div>';
+    for(var d=1; d<=GOAL_MONTH.days; d++){
+      var dow = (GOAL_MONTH.startDow + d - 1) % 7;
+      var isWeekend = dow >= 5;
+      var actual = GOAL_DAILY[d];
+      var cls = 'goal-cal-day';
+      var val = '';
+      if(d <= GOAL_MONTH.today && actual != null){
+        cls += actual >= GOAL_STATE.telPerDay ? ' hit' : ' miss';
+        val = '<span class="a tnum">'+actual+'</span>';
+      } else if(isWeekend || d <= GOAL_MONTH.today){
+        cls += ' off';
+      }
+      if(d === GOAL_MONTH.today) cls += ' today-mark';
+      html += '<div class="'+cls+'"><span class="d tnum">'+d+'</span>'+val+'</div>';
+    }
+    cal.innerHTML = html;
+  }
+  function renderGoal(){ renderGoalSummary(); renderGoalSim(); renderGoalCalendar(); }
+
+  // ---------------- 新ページ：ナビから開いたときの描画・バッジ処理 ----------------
+  function onOpenView(v){
+    if(v==='comment'){ renderComments(); }
+    if(v==='nego'){ renderNego(); }
+    if(v==='reminder'){ renderReminders(); }
+    if(v==='board'){
+      renderBoard();
+      // 未読ドットは今回の表示では見せたまま、バッジだけ既読扱いにする
+      boardPosts.forEach(function(p){ p.unread = false; });
+      updateNavBadges();
+    }
+    if(v==='idstop'){ renderIdstop(); }
+    if(v==='goal'){ renderGoal(); }
+  }
+
+  // 新ページのイベント（タブ・フォーム・スライダー）
+  document.getElementById('commentVehicleSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    this.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    commentTab = b.dataset.vehicle;
+    renderComments();
+  });
+  document.getElementById('demoCommentAutoBtn').addEventListener('click', simulateCommentAutoAssign);
+  document.getElementById('negoStatusSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    this.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    negoFilter = b.dataset.status;
+    renderNego();
+  });
+  document.getElementById('negoAddBtn').addEventListener('click', function(){
+    var f = document.getElementById('negoForm');
+    f.hidden = !f.hidden;
+  });
+  document.getElementById('negoFormCancel').addEventListener('click', function(){
+    document.getElementById('negoForm').hidden = true;
+  });
+  document.getElementById('negoFormSubmit').addEventListener('click', function(){
+    var shop = document.getElementById('negoFormShop').value.trim();
+    var url = document.getElementById('negoFormUrl').value.trim();
+    var note = document.getElementById('negoFormNote').value.trim();
+    if(!shop || !note){ showSyncToast('店舗名と依頼内容を入力してください'); return; }
+    negoItems.unshift({
+      id:'NG-'+(negoSeq++), vehicle:document.getElementById('negoFormVehicle').value,
+      shop:shop, adminUrl:url || null, note:note,
+      requester:CURRENT_USER, assignee:null, status:'todo', requested:'たった今', doneAt:null,
+    });
+    document.getElementById('negoFormShop').value = '';
+    document.getElementById('negoFormUrl').value = '';
+    document.getElementById('negoFormNote').value = '';
+    document.getElementById('negoForm').hidden = true;
+    showSyncToast('交渉依頼を登録しました。交渉担当が対応するとここで進捗が見られます');
+    renderNego(); updateNavBadges();
+  });
+  document.getElementById('boardTabSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    this.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    boardTab = b.dataset.cat;
+    document.getElementById('boardFormCat').value = boardTab;
+    renderBoard();
+  });
+  document.getElementById('boardAddBtn').addEventListener('click', function(){
+    var f = document.getElementById('boardForm');
+    f.hidden = !f.hidden;
+    if(!f.hidden) document.getElementById('boardFormCat').value = boardTab;
+  });
+  document.getElementById('boardFormCancel').addEventListener('click', function(){
+    document.getElementById('boardForm').hidden = true;
+  });
+  document.getElementById('boardFormSubmit').addEventListener('click', function(){
+    var title = document.getElementById('boardFormTitle').value.trim();
+    var bodyTxt = document.getElementById('boardFormBody').value.trim();
+    if(!title || !bodyTxt){ showSyncToast('タイトルと本文を入力してください'); return; }
+    var cat = document.getElementById('boardFormCat').value;
+    boardPosts.unshift({id:'BP-'+(boardSeq++), cat:cat, pinned:false, title:title, body:bodyTxt, author:CURRENT_USER, time:'たった今', unread:false, reactCount:0, myReact:false, comments:[]});
+    document.getElementById('boardFormTitle').value = '';
+    document.getElementById('boardFormBody').value = '';
+    document.getElementById('boardForm').hidden = true;
+    boardTab = cat;
+    document.querySelectorAll('#boardTabSeg button').forEach(function(x){ x.classList.toggle('active', x.dataset.cat===cat); });
+    showSyncToast('投稿しました');
+    renderBoard();
+  });
+  document.getElementById('idstopFilterSeg').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    this.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+    b.classList.add('active');
+    idstopFilter = b.dataset.filter;
+    renderIdstop();
+  });
+  document.getElementById('idstopSearch').addEventListener('input', function(e){
+    idstopQuery = e.target.value;
+    renderIdstop();
+  });
+  document.getElementById('idstopAddBtn').addEventListener('click', function(){
+    var f = document.getElementById('idstopForm');
+    f.hidden = !f.hidden;
+  });
+  document.getElementById('idstopFormCancel').addEventListener('click', function(){
+    document.getElementById('idstopForm').hidden = true;
+  });
+  document.getElementById('idstopFormSubmit').addEventListener('click', function(){
+    var url = document.getElementById('idstopFormUrl').value.trim();
+    var note = document.getElementById('idstopFormNote').value.trim();
+    if(!url){ showSyncToast('案件URLを入力してください'); return; }
+    idstopRows.unshift({date:'07/04', url:url, owner:CURRENT_USER.split(' ')[0], note:note || '—', cleared:false});
+    document.getElementById('idstopFormUrl').value = '';
+    document.getElementById('idstopFormNote').value = '';
+    document.getElementById('idstopForm').hidden = true;
+    showSyncToast('IDストップリストに追加しました');
+    renderIdstop();
+  });
+  document.getElementById('goalSimSlider').addEventListener('input', function(e){
+    GOAL_STATE.simTel = Number(e.target.value);
+    renderGoalSim();
+  });
+  document.getElementById('goalTelPerDaySave').addEventListener('click', function(){
+    var v = Number(document.getElementById('goalTelPerDayInput').value);
+    if(!v || v < 1){ showSyncToast('1以上の数字を入力してください'); return; }
+    GOAL_STATE.telPerDay = v;
+    showSyncToast('今月の1日あたりtel目標を'+v+'件に設定しました');
+    renderGoalCalendar();
+  });
+
   // ---------------- Nav ----------------
   function updateNavBadges(){
     // バッジを出すのはマイ案件と通知の2つだけ（案件一覧のバイク・車には出さない）。
@@ -3462,8 +4401,16 @@
       el.textContent = count;
       el.style.display = count > 0 ? '' : 'none';
     }
-    setBadge('navBadgeMine', cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done && c.assignedNew;}).length);
+    setBadge('navBadgeMine',
+      cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done && c.assignedNew;}).length +
+      commentCases.filter(function(c){return !c.done && c.assignedNew && commentAssignee(c)===CURRENT_USER;}).length);
     setBadge('navBadgeNotif', notifications.filter(function(n){return n.unread;}).length);
+    // 新ページ群：コメント＝代打募集中の件数 / 交渉＝未着手の件数 /
+    // リマインダー＝本日の未確認件数 / 掲示板＝未読投稿数
+    setBadge('navBadgeComment', commentCases.filter(commentRecruiting).length);
+    setBadge('navBadgeNego', negoItems.filter(function(n){return n.status==='todo';}).length);
+    setBadge('navBadgeReminder', reminders.filter(function(r){return r.bucket==='today' && !r.done;}).length);
+    setBadge('navBadgeBoard', boardPosts.filter(function(p){return p.unread;}).length);
   }
   document.querySelectorAll('.nav-item[data-view]').forEach(function(item){
     item.addEventListener('click', function(){
@@ -3475,12 +4422,14 @@
       // タブを開いたらバッジを消す（マイ案件＝新規追加を確認済みに / 通知＝既読に）
       if(item.dataset.view==='mine'){
         cases.forEach(function(c){ if(c.owner && c.owner.name===CURRENT_USER) c.assignedNew = false; });
+        commentCases.forEach(function(c){ if(commentAssignee(c)===CURRENT_USER) c.assignedNew = false; });
         updateNavBadges();
       }
       if(item.dataset.view==='notif'){
         notifications.forEach(function(n){ n.unread = false; });
         updateNavBadges();
       }
+      onOpenView(item.dataset.view);
     });
   });
 
