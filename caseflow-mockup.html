@@ -811,7 +811,7 @@
   .rule-num-row input[type=number]{ width:60px; height:30px; font-family:inherit; font-size:13px; font-weight:700; padding:0 7px; border:1px solid var(--border-strong); border-radius:7px; text-align:right; background:var(--surface); }
 
   /* ---------- 内部レート（隠しページ・システム管理者のみ） ----------
-     設定＞自動振り分け設定タブを3回続けてクリックすると解錠。
+     設定タブバーの右側の空欄を5回続けてクリック→パスワード入力の2段階で解錠。
      採点セグメントの色は自動振り分け設定カード4と同じ青系（funnel ramp）で統一 */
   .rate-body{ padding:18px 22px 28px; }
   .rate-secret-badge{
@@ -841,6 +841,16 @@
   .rate-pts{ width:72px; flex:none; text-align:right; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; }
   .rate-pts .max{ font-size:10.5px; color:var(--ink-faint); font-weight:600; }
   .rate-pts.low{ color:var(--warning); }
+  /* 解錠パスワードのポップアップ（2段階目） */
+  .rate-login-modal{ width:min(360px, calc(100vw - 48px)); }
+  .rate-login-sub{ font-size:12.5px; color:var(--ink-soft); margin-top:6px; }
+  .rate-login-input{
+    width:100%; height:40px; margin-top:14px; padding:0 12px;
+    font-family:inherit; font-size:14px;
+    border:1px solid var(--border-strong); border-radius:8px; background:var(--surface);
+  }
+  .rate-login-input:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .rate-login-error{ margin-top:8px; font-size:12px; font-weight:700; color:var(--critical); }
 
   .sim-modal{ width:min(560px, calc(100vw - 48px)); text-align:left; padding:24px 26px; }
   .sim-modal .modal-title{ text-align:left; }
@@ -1225,7 +1235,7 @@
             <button data-tab="admin">管理</button>
             <button data-tab="teams">チーム編成</button>
             <button data-tab="rules">自動振り分け設定</button>
-            <!-- 内部レート：通常は非表示。自動振り分け設定タブを3回続けてクリックすると解錠される隠しタブ -->
+            <!-- 内部レート：通常は非表示。このタブバー右側の空欄を5回続けてクリック→パスワード入力で解錠される隠しタブ -->
             <button data-tab="rate" style="display:none;">内部レート</button>
           </div>
         </div>
@@ -1459,7 +1469,8 @@
           </div>
 
           <!-- 内部レート管理（隠しページ）：自動振り分けの採点をメンバー別に可視化。
-               本人・リーダーには見せない前提のため、タブは通常非表示（3連続クリックで解錠） -->
+               本人・リーダーには見せない前提のため、タブは通常非表示
+               （タブバー右の空欄5連続クリック→パスワード入力の2段階で解錠） -->
           <div class="settings-panel" id="tab-rate">
             <div class="rate-body">
               <div class="rules-head" style="padding:0;">
@@ -1563,6 +1574,20 @@
     <div class="modal-title" id="simModalTitle">シミュレーション：次に来る3件の割り当て予測</div>
     <div class="sim-card" id="simCard"></div>
     <button type="button" class="btn" id="simModalClose">閉じる</button>
+  </div>
+</div>
+
+<!-- ===== 内部レート：解錠パスワード（隠しページの2段階目。空欄5連続クリックで表示） ===== -->
+<div class="modal-backdrop" id="rateLoginModal" hidden>
+  <div class="modal rate-login-modal" role="dialog" aria-modal="true" aria-labelledby="rateLoginTitle">
+    <div class="modal-title" id="rateLoginTitle">内部レート管理</div>
+    <div class="rate-login-sub">閲覧用パスワードを入力してください</div>
+    <input type="password" id="rateLoginInput" class="rate-login-input" placeholder="パスワード" autocomplete="off">
+    <div class="rate-login-error" id="rateLoginError" hidden>パスワードが違います</div>
+    <div class="modal-actions">
+      <button type="button" class="btn primary" id="rateLoginSubmit">表示する</button>
+      <button type="button" class="btn" id="rateLoginCancel">閉じる</button>
+    </div>
   </div>
 </div>
 
@@ -3047,28 +3072,60 @@
   }
 
   // ---------------- 内部レート（隠しページ） ----------------
-  // 自動振り分け設定タブを短時間（1.2秒以内）に3回クリックすると解錠。
+  // 解錠は2段階：設定タブバーの右側の空欄（ボタンのない部分）を短時間に5回クリック
+  // →パスワード入力ポップアップ→正しいパスワードでタブが出現。
   // 解錠はこのセッション（開いている間）だけ有効で、リロードすると再び隠れる。
   var rateUnlocked = false;
   var rateView = {unit:'person', scope:'all', group:'all'};
-  var RATE_CLICK_WINDOW_MS = 1200;
+  var RATE_CLICK_COUNT = 5;
+  var RATE_CLICK_WINDOW_MS = 2500;
   var RATE_MAX_TOTAL = 110;      // 100点満点＋私いけます！10点
+  // モック用の閲覧パスワード。実装ではフロントに埋め込まず、サーバー側で認証すること
+  var RATE_PASSWORD = 'relay2026';
   var rateClickTimes = [];
   (function(){
-    var rulesBtn = document.querySelector('#settingsTabs button[data-tab="rules"]');
+    var tabsBar = document.getElementById('settingsTabs');
     var rateBtn = document.querySelector('#settingsTabs button[data-tab="rate"]');
-    rulesBtn.addEventListener('click', function(){
-      var now = Date.now();
-      rateClickTimes = rateClickTimes.filter(function(ts){ return now - ts < RATE_CLICK_WINDOW_MS; });
-      rateClickTimes.push(now);
-      if(rateClickTimes.length >= 3){
-        rateClickTimes = [];
+    var modal = document.getElementById('rateLoginModal');
+    var input = document.getElementById('rateLoginInput');
+    var errorEl = document.getElementById('rateLoginError');
+    function openRateLogin(){
+      input.value = '';
+      errorEl.hidden = true;
+      modal.hidden = false;
+      input.focus();
+    }
+    function closeRateLogin(){ modal.hidden = true; }
+    function submitRateLogin(){
+      if(input.value === RATE_PASSWORD){
+        closeRateLogin();
         rateUnlocked = true;
         applyRolePermissions();
         renderRate();
         openSettings('rate');
+      } else {
+        errorEl.hidden = false;
+        input.select();
+      }
+    }
+    // 1段階目：タブボタン以外（＝右側の空欄）のクリックだけを数える
+    tabsBar.addEventListener('click', function(e){
+      if(e.target.closest('button')) return;
+      if(viewerRole !== 'sysadmin' || rateUnlocked) return;
+      var now = Date.now();
+      rateClickTimes = rateClickTimes.filter(function(ts){ return now - ts < RATE_CLICK_WINDOW_MS; });
+      rateClickTimes.push(now);
+      if(rateClickTimes.length >= RATE_CLICK_COUNT){
+        rateClickTimes = [];
+        openRateLogin();
       }
     });
+    // 2段階目：パスワード入力
+    document.getElementById('rateLoginSubmit').addEventListener('click', submitRateLogin);
+    document.getElementById('rateLoginCancel').addEventListener('click', closeRateLogin);
+    input.addEventListener('keydown', function(e){ if(e.key === 'Enter') submitRateLogin(); });
+    modal.addEventListener('click', function(e){ if(e.target === modal) closeRateLogin(); });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !modal.hidden) closeRateLogin(); });
     // 解錠後にタブから開き直した時も、チーム編成や稼働状況の変更を反映して描き直す
     rateBtn.addEventListener('click', renderRate);
   })();
