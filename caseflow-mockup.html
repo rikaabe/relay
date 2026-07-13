@@ -413,6 +413,14 @@
     position:absolute; left:1px; top:42px; width:40px;
     text-align:center; font-size:10.5px; color:var(--ink-faint);
   }
+  /* 案件一覧：縦ラインの左に対応済みチェックを表示（未対応はアイコンなし＝空欄） */
+  .case-card.queue-card{ padding-left:60px; }
+  .case-card.queue-card::before{ left:47px; }
+  .case-done-icon{
+    position:absolute; left:6px; top:9px; width:30px; height:30px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--success-soft); color:var(--success);
+  }
   .case-card .elapsed-tag{ display:inline; margin:0; }
   .case-card.elapsed-over .elapsed-tag{ color:var(--warning); }
   .case-card-line{ font-size:12.5px; margin-top:3px; color:var(--ink); display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
@@ -1852,14 +1860,14 @@
     list.forEach(function(c){
       var card = document.createElement('div');
       var km = kindRowMeta(c.kind);
-      card.className = 'case-card ' + km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
+      card.className = 'case-card queue-card ' + km.cls + (c.elapsedMin>120 ? ' elapsed-over' : '');
       card.dataset.id = c.id;
       card.innerHTML =
+        (c.done ? '<div class="case-done-icon" title="対応済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' : '')+
         '<div class="case-card-main">'+
           '<div class="case-card-head">'+
             '<span class="case-card-kind">'+km.label+'</span>'+
             '<span class="case-card-time tnum">'+c.received+'（<span class="elapsed-tag">'+elapsedLabel(c.elapsedMin)+'</span>）</span>'+
-            (c.done ? chip('done') : '')+
           '</div>'+
           '<div class="case-card-line">'+
             '<span>査定依頼ID：<span class="tnum">'+caseNo(c)+'</span></span>'+
