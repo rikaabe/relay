@@ -842,6 +842,12 @@
   .rate-total{ width:64px; flex:none; text-align:right; font-size:14.5px; font-weight:800; font-variant-numeric:tabular-nums; }
   .rate-total .u{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-left:1px; }
   .rate-hold-note{ flex:1; font-size:11.5px; color:var(--ink-faint); }
+  /* 表示中メンバー全体のサマリー（平均・中央値）。基準値としてグラフの上に置く */
+  .rate-overall{
+    display:inline-flex; align-items:center; gap:6px; margin:10px 0 4px;
+    padding:4px 12px; border-radius:999px; background:var(--paper);
+    font-size:12px; font-weight:700; color:var(--ink-soft); font-variant-numeric:tabular-nums;
+  }
   /* スピード行：棒の長さ＝平均対応時間（短いほど良い） */
   .rate-speed-fill{ height:14px; margin:2px 0; border-radius:0 4px 4px 0; min-width:3px; }
   .rate-nums{ width:118px; flex:none; text-align:right; font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.4; white-space:nowrap; }
@@ -1533,11 +1539,13 @@
                 <div class="panel">
                   <div class="panel-title">telの対応スピード（直近20件）</div>
                   <div class="panel-sub">届いてから最初の対応までの平均時間。棒が短いほど早い。下段は中央値、右は採点（20点満点）</div>
+                  <div class="rate-overall" id="rateTelOverall">—</div>
                   <div id="rateTelBody"></div>
                 </div>
                 <div class="panel">
                   <div class="panel-title">コメントの対応スピード（直近10出勤日）</div>
                   <div class="panel-sub">お客様コメントに返信するまでの平均時間。棒が短いほど早い。下段は中央値、右は採点（40点満点）</div>
+                  <div class="rate-overall" id="rateCommentOverall">—</div>
                   <div id="rateCommentBody"></div>
                 </div>
               </div>
@@ -3142,7 +3150,8 @@
 
   function fmtDur(sec){
     if(sec == null) return '—';
-    var m = Math.floor(sec/60), s = Math.round(sec%60);
+    var total = Math.round(sec);   // 平均値の小数で「1分60秒」にならないよう秒単位で丸めてから分解
+    var m = Math.floor(total/60), s = total%60;
     if(m === 0) return s+'秒';
     return m+'分'+(s>0 ? (s<10?'0':'')+s+'秒' : '');
   }
@@ -3166,6 +3175,12 @@
     if(!vals.length) return null;
     return vals.reduce(function(a,b){ return a+b; }, 0) / vals.length;
   }
+  function rateMedian(list, pick){
+    var vals = list.map(pick).filter(function(v){ return v != null; }).sort(function(a,b){ return a-b; });
+    if(!vals.length) return null;
+    var mid = Math.floor(vals.length / 2);
+    return vals.length % 2 ? vals[mid] : (vals[mid-1] + vals[mid]) / 2;
+  }
 
   // フィルタ後のメンバー（個人別）。行データ＝{label, score, tel, comment, holdNote}
   function ratePersonRows(){
@@ -3175,8 +3190,9 @@
       return true;
     }).map(function(t){
       var score = rateScoreOf(t);
+      // 内部レートでは絵文字スタンプは使わず、名前の左に担当区分（車/バイク）アイコンを置く
       return {
-        label: personChip(t.name) + (rateView.scope === 'all' ? ' ' + vtag(t.role, true) : ''),
+        label: vtag(t.role, true) + '<span>'+t.name+'</span>',
         name: t.name,
         score: score,
         tel: t.rate.tel,
@@ -3284,8 +3300,9 @@
     document.getElementById('rateScoreBody').innerHTML =
       rows.length ? scored.concat(holds).map(rateScoreRowHtml).join('') : emptyHtml;
     var subUnit = rateView.unit === 'person' ? '点数の高い順。' : 'チーム所属メンバーの平均点。点数の高い順。';
+    var avgTotal = rateAvg(scored, function(r){ return rateTotalOf(r.score); });
     document.getElementById('rateScoreSub').textContent = subUnit +
-      (scored.length ? '現在のトップは '+scored[0].name+'（'+rateTotalOf(scored[0].score)+'点）' : 'ー') +
+      (scored.length ? '全体平均 '+rateRound(avgTotal)+'点／現在のトップは '+scored[0].name+'（'+rateTotalOf(scored[0].score)+'点）' : 'ー') +
       (holds.length ? '／評価保留 '+holds.length+(rateView.unit==='person'?'人':'チーム') : '');
 
     // データ表（グラフの双子）
@@ -3310,6 +3327,11 @@
       el.innerHTML = rows.length
         ? speedRows.concat(holds).map(function(r){ return rateSpeedRowHtml(r, kind, maxAvg, color, maxPts); }).join('')
         : emptyHtml;
+      // 表示中メンバー全体の平均対応スピードと中央値（評価保留は除外）
+      var avgAll = rateAvg(speedRows, function(r){ return r[kind].avgSec; });
+      var medAll = rateMedian(speedRows, function(r){ return r[kind].avgSec; });
+      document.getElementById(kind === 'tel' ? 'rateTelOverall' : 'rateCommentOverall').textContent =
+        avgAll != null ? '全体：平均 '+fmtDur(avgAll)+'／中央値 '+fmtDur(medAll) : '全体：—';
     });
   }
   // フィルタ操作（ボタンは描画のたびに作り直すため、押下は親で受ける）
