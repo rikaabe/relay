@@ -1127,9 +1127,6 @@
   .notif-type-icon.comment{ background:var(--car-soft); color:var(--car); }
   .case-card.kind-notif-tel::before{ background:var(--brand); }
   .notif-type-icon.tel{ background:var(--brand-soft); color:var(--brand-strong); }
-  /* 通知の「要対応」セクション見出しと日付小見出し */
-  .notif-daylabel.todo{ color:var(--critical); }
-  .notif-daylabel.sub{ padding:8px 0 6px; font-weight:600; }
   .case-card.kind-notif-reminder::before{ background:var(--warning); }
   .case-card.kind-notif-nego::before{ background:var(--hold-chip); }
   .case-card.kind-notif-board::before{ background:var(--brand); }
@@ -1311,15 +1308,6 @@
         <div class="view-head">
           <div>
             <div class="view-title">通知</div>
-          </div>
-        </div>
-        <div class="queue-filters" style="margin-top:10px;">
-          <div class="segmented" id="notifTypeSeg">
-            <button class="active" data-type="all">すべて</button>
-            <button data-type="tel">tel</button>
-            <button data-type="comment">コメント</button>
-            <button data-type="reminder">リマインダー</button>
-            <button data-type="info">その他</button>
           </div>
         </div>
         <div class="table-scroll" style="padding-top:16px;">
@@ -2342,7 +2330,6 @@
     renderQueue('bike');
     renderQueue('car');
     renderWorkload();
-    renderMineNotifPanel();  // 案件の対応状況に応じて要対応通知を自動解決
     updateNavBadges();
     renderMypageStats();
   }
@@ -2397,6 +2384,20 @@
   function renderMine(){
     var listEl = document.getElementById('mineList');
     listEl.innerHTML = "";
+    // 自分宛リマインダー（時刻到来分）はマイ案件の最上部。「確認した」を押すまで残る
+    var myReminders = reminders.filter(function(r){ return r.bucket==='today' && !r.done; });
+    myReminders.forEach(function(r){
+      var wrap = document.createElement('div');
+      wrap.innerHTML = '<div class="remind-card">'+
+        '<div class="remind-time tnum">'+r.when+'<span class="remind-date">'+r.date+'</span></div>'+
+        '<div class="remind-body">'+
+          '<div class="remind-text">リマインダー：'+escapeHtml(r.text)+'</div>'+
+          '<div class="remind-meta">adminで設定（設定者：'+escapeHtml(r.setBy)+'）　<a href="'+r.adminUrl+'" target="_blank" rel="noopener">内容確認ページ '+ICON_EXT+'</a></div>'+
+        '</div>'+
+        '<button type="button" class="btn sm mine-remind-done" data-id="'+r.id+'">確認した</button>'+
+      '</div>';
+      listEl.appendChild(wrap.firstChild);
+    });
     var mine = sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }));
     mine.forEach(function(c){
       var card = document.createElement('div');
@@ -2442,7 +2443,16 @@
         renderNego(); renderMine(); updateNavBadges();
       });
     });
-    if(mine.length===0 && mineComments.length===0 && mineNego.length===0){
+    listEl.querySelectorAll('.mine-remind-done').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var r = reminders.find(function(x){ return x.id===btn.dataset.id; });
+        if(!r) return;
+        r.done = true;
+        showSyncToast('リマインダーを確認済みにしました');
+        renderMine(); updateNavBadges();
+      });
+    });
+    if(mine.length===0 && mineComments.length===0 && mineNego.length===0 && myReminders.length===0){
       listEl.innerHTML = '<div class="empty-state celebrate"><div class="empty-state-emoji">🎉</div><div class="empty-state-title">今日の担当分はすべて対応済みです</div>新しい案件が割り当てられると、ここに表示され通知が届きます。</div>';
     }
     renderMineProgress();
@@ -3298,102 +3308,38 @@
   })();
 
   // ---------------- 通知センター ----------------
-  // 通知タブは「取りこぼし防止」を最優先に、2層で表示する。
-  //   要対応   … tel割当（tel）・お客様コメント（comment）・リマインダー（reminder）。
-  //              既読では消えず、対応が済む（案件が対応済みになる／確認ボタン）まで最上部に残る。
-  //   お知らせ … sla/assign/mention/nego/board などの情報通知と、対応済みになった要対応。
-  // バッジ＝未対応の件数＋未読のお知らせ数。タブを開いても未対応分のバッジは消えない。
-  // 要対応の通知は syncNotifications() が案件・リマインダーのデータから自動生成・自動解決する
-  // （実運用ではサーバーのプッシュ通知に置き換わる想定）。
+  // マイ案件と通知の役割分担（重複させない）：
+  //   マイ案件 … 「自分がやること」そのもの。tel対応依頼・再アップロード・自分担当の
+  //              コメント・自分宛リマインダー・当番として受ける不在メンバーの分。
+  //              対応が済む（案件done／リマインダー確認）までカードが残る。
+  //   通知     … 状況の変化を知らせるお知らせのみ。sla=対応期限まで残り30分／
+  //              assign=担当者変更／mention=スレッドへのメンション。
+  //              （交渉完了(nego)・掲示板のお知らせ(board)も性質上ここに入る）
   var notifications = [
     {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'急', text:'<b>311998</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"assign", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当があなたから <b>鈴木 花子</b>さんに変わりました。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>', text:'<b>鈴木 花子</b>さんがスレッドであなたをメンションしました', time:"08:24", unread:true, lockedType:true},
     {day:"yesterday", vehicle:"bike", cls:"mention", caseId:"#B-0005", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>', text:'<b>伊藤 誠</b>さんがスレッドで <b>バイクチーム</b> をメンションしました', time:"17:40", unread:false, lockedType:true},
   ];
-  var notifTypeFilter = 'all';
-  var notifIndex = {};   // key（tel:／cm:／rm:＋ID）→ 生成済みの要対応通知
-  function ensureNotif(key, props){
-    if(notifIndex[key]) return notifIndex[key];
-    var n = Object.assign({day:'today', unread:true, lockedType:true, resolved:false, needsAction:true}, props);
-    notifIndex[key] = n;
-    notifications.unshift(n);
-    return n;
-  }
-  var ICON_TEL_NOTIF = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
-  var ICON_COMMENT_NOTIF = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>';
-  var ICON_REMIND_NOTIF = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>';
-  // 解決＝要対応から外れて既読扱いになる（バッジが正しく減る）
-  function resolveNotif(key){
-    var n = notifIndex[key];
-    if(n){ n.resolved = true; n.unread = false; }
-  }
-  function syncNotifications(){
-    // tel：自分に割り当てられた案件 → 1件ごとに要対応通知。対応済みで自動解決
-    cases.forEach(function(c){
-      if(!(c.owner && c.owner.name===CURRENT_USER)) return;
-      var key = 'tel:'+c.id;
-      if(c.done){ resolveNotif(key); return; }
-      ensureNotif(key, {kind:'tel', cls:'tel', vehicle:c.vehicle, caseId:c.id, icon:ICON_TEL_NOTIF,
-        text:'<b>'+caseNo(c)+'</b> のtel対応があなたに割り当てられています', time:(c.received.split(' ')[1]||c.received)});
-    });
-    // コメント：自分が対応すべきコメント案件（担当本人 or チーム当番）
-    commentCases.forEach(function(c){
-      var key = 'cm:'+c.id;
-      var mine = commentAssignee(c)===CURRENT_USER;
-      if(c.done || !mine){ resolveNotif(key); return; }
-      var covering = c.owner!==CURRENT_USER;
-      var g = covering ? groupById(groupOf(c.owner)) : null;
-      var n = ensureNotif(key, {kind:'comment', cls:'comment', vehicle:c.vehicle, adminUrl:c.adminUrl, no:c.no, icon:ICON_COMMENT_NOTIF,
-        text:'<b>'+c.no+'</b> にお客様からコメントが届きました'+(covering ? '（担当の<b>'+escapeHtml(c.owner)+'</b>さんが不在のため、'+escapeHtml(g?g.name:'チーム')+'の当番のあなたが対応）' : ''),
-        time:(c.received.split(' ')[1]||c.received)});
-      n.resolved = false;  // 当番が自分に戻った場合は再び要対応へ
-    });
-    // リマインダー：本日の時刻到来分。「確認した」ボタンで解決
-    reminders.forEach(function(r){
-      if(r.bucket!=='today') return;  // 今後の分は時刻が来るまで通知しない
-      var key = 'rm:'+r.id;
-      if(r.done){ resolveNotif(key); return; }
-      ensureNotif(key, {kind:'reminder', cls:'reminder', vehicle:null, adminUrl:r.adminUrl, remindId:r.id, icon:ICON_REMIND_NOTIF,
-        text:'リマインダー：<b>'+r.when+' '+escapeHtml(r.text)+'</b>（adminで設定・設定者：'+escapeHtml(r.setBy)+'）', time:r.when});
-    });
-  }
-  function notifMatchesFilter(n){
-    if(notifTypeFilter==='all') return true;
-    if(notifTypeFilter==='info') return !n.kind;
-    return n.kind===notifTypeFilter;
-  }
   // 通知は左の「通知」タブに一本化。案件タブと同じカード表示にし、種別ラベルの位置に通知本文が入る。
   function notifRowHtml(n, mode){
     var c = n.caseId ? cases.find(function(cc){ return cc.id===n.caseId; }) : null;
-    var uid = mode+'_'+(n.caseId||n.no||'none').toString().replace(/[^A-Za-z0-9]/g,'')+'_'+n.time.replace(':','');
-    var adminUrl = c ? c.adminUrl : n.adminUrl;
-    var caseNoText = c ? caseNo(c) : n.no;
-    var caseLine = adminUrl ?
+    var uid = mode+'_'+(n.caseId||'none').replace(/[^A-Za-z0-9]/g,'')+'_'+n.time.replace(':','');
+    var caseLine = c ?
       '<div class="case-card-line">'+
-        (caseNoText ? '<span>査定依頼ID：<span class="tnum">'+caseNoText+'</span></span>' : '')+
-        '<a class="case-card-url" href="'+adminUrl+'" target="_blank" rel="noopener">'+adminUrl+'</a>'+
+        '<span>査定依頼ID：<span class="tnum">'+caseNo(c)+'</span></span>'+
+        '<a class="case-card-url" href="'+c.adminUrl+'" target="_blank" rel="noopener">'+c.adminUrl+'</a>'+
       '</div>' : '';
-    var isTodo = n.needsAction && !n.resolved;
-    var actions = '';
-    if(n.kind==='reminder' && isTodo){
-      actions = '<button type="button" class="btn sm notif-remind-done" data-rm="'+n.remindId+'">確認した</button>';
-    }
-    if(c){
-      actions += '<button type="button" class="btn sm notif-thread-btn" data-case="'+c.id+'">スレッド</button>';
-    }
-    return '<div class="case-card notif-card kind-notif-'+n.cls+(n.resolved ? ' is-done' : '')+'" data-uid="'+uid+'">'+
-        (n.resolved ? '<div class="case-done-icon" title="対応済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>' : '')+
+    return '<div class="case-card notif-card kind-notif-'+n.cls+'" data-uid="'+uid+'">'+
         '<div class="notif-type-icon '+n.cls+'">'+n.icon+'</div>'+
         '<div class="notif-type-time tnum">'+n.time+'</div>'+
         '<div class="case-card-main">'+
           '<div class="case-card-head">'+
-            (isTodo ? '<span class="sub-badge recruit">要対応</span>' : '')+
             (n.vehicle ? vtag(n.vehicle,true) : '')+
             '<span class="case-card-kind notif-kind">'+n.text+'</span>'+
           '</div>'+
           caseLine+
-          (actions ? '<div class="case-card-actions">'+actions+'</div>' : '')+
+          (c ? '<div class="case-card-actions"><button type="button" class="btn sm notif-thread-btn" data-case="'+c.id+'">スレッド</button></div>' : '')+
         '</div>'+
       '</div>';
   }
@@ -3402,37 +3348,18 @@
       if(!btn.dataset.case) return;
       btn.addEventListener('click', function(){ openRail(btn.dataset.case); });
     });
-    container.querySelectorAll('.notif-remind-done').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var r = reminders.find(function(x){ return x.id===btn.dataset.rm; });
-        if(!r) return;
-        r.done = true;
-        showSyncToast('リマインダーを確認済みにしました');
-        renderMineNotifPanel(); updateNavBadges();
-      });
-    });
   }
   function renderMineNotifPanel(){
-    syncNotifications();
     var list = document.getElementById('mineNotifList');
-    var todo = notifications.filter(function(n){ return n.needsAction && !n.resolved && notifMatchesFilter(n); });
-    var rest = notifications.filter(function(n){ return (!n.needsAction || n.resolved) && notifMatchesFilter(n); });
-    var html = '<div class="notif-daylabel todo">要対応（'+todo.length+'件）— 対応が済むまでここに残ります</div>';
-    if(todo.length===0){
-      html += '<div class="team-empty">🎉 要対応の通知はありません。</div>';
-    } else {
-      todo.forEach(function(n){ html += notifRowHtml(n, 'mine'); });
+    if(notifications.length===0){
+      list.innerHTML = '<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg><div class="empty-state-title">表示できる通知はありません</div>期限アラート・担当変更・メンションが届くと、ここに表示されます。</div>';
+      return;
     }
-    html += '<div class="notif-daylabel" style="margin-top:14px;">お知らせ・対応済み</div>';
-    if(rest.length===0){
-      html += '<div class="team-empty">表示できる通知はありません。</div>';
-    } else {
-      var lastDay = null, dayLabel = {today:"今日", yesterday:"昨日"};
-      rest.forEach(function(n){
-        if(n.day !== lastDay){ html += '<div class="notif-daylabel sub">'+(dayLabel[n.day]||n.day)+'</div>'; lastDay = n.day; }
-        html += notifRowHtml(n, 'mine');
-      });
-    }
+    var html = "", lastDay = null, dayLabel = {today:"今日", yesterday:"昨日"};
+    notifications.forEach(function(n){
+      if(n.day !== lastDay){ html += '<div class="notif-daylabel">'+(dayLabel[n.day]||n.day)+'</div>'; lastDay = n.day; }
+      html += notifRowHtml(n, 'mine');
+    });
     list.innerHTML = html;
     bindNotifRowActions(list);
   }
@@ -3950,7 +3877,7 @@
 
   // ---------------- コメント案件（バイク/車） ----------------
   // お客様コメントはtelで担当者が決まっている前提 → 対応漏れ防止のため、対応すべき人に
-  // 案件ごとの通知を送る（通知センターの syncNotifications が生成・解決する）。
+  // 案件ごとにマイ案件へ入れる（担当本人 or チーム当番）。
   // 担当者が不在（away/offline）の場合はチーム単位でカバーする：各チームに「本日の
   // コメント対応（当番）」を1人設定でき、チームページ（チャット）から切り替えられる。
   var commentTab = 'bike';
@@ -4026,8 +3953,8 @@
     }
     listEl.innerHTML = list.map(function(c){ return commentCardHtml(c, false); }).join('');
   }
-  // 対応漏れ防止：自分が対応すべきコメント案件は1件ごとに通知タブの「要対応」へ届く
-  // （生成・解決は通知センターの syncNotifications() が担当）。
+  // 対応漏れ防止：自分が対応すべきコメント案件は1件ごとにマイ案件へ入り、
+  // 対応済みになるまでカードが残る（マイ案件バッジにも反映）。
 
   // ---------------- チーム（チャット＋コメント当番の切り替え） ----------------
   // Slackのチームチャンネル相当。コメント対応の調整会話と当番の切り替えを同じ場所で行う。
@@ -4195,8 +4122,8 @@
 
   // ---------------- リマインダー（データのみ・タブは廃止） ----------------
   // adminで設定されたリマインダー（Relayは受け側のみ・作成はadminから）。
-  // 専用タブは持たず、時刻が来たものが通知タブの「要対応」に1件ずつ届く。
-  // bucket:'today'＝時刻到来（通知対象）／'upcoming'＝まだ通知しない／done:true＝確認済み。
+  // 専用タブは持たず、時刻が来たものがマイ案件の最上部に1件ずつカードで届く。
+  // bucket:'today'＝時刻到来（マイ案件に表示）／'upcoming'＝まだ表示しない／done:true＝確認済み。
   var reminders = [
     {id:'RM-1', bucket:'today', when:'15:00', date:'今日', text:'サンライズ商会に折り返しtel（減額の件）', adminUrl:'https://admin.example.com/cases/527479', setBy:'中村 優子', done:false},
     {id:'RM-2', bucket:'today', when:'17:30', date:'今日', text:'527009 の入金確認ステータスをチェック', adminUrl:'https://admin.example.com/cases/527009', setBy:'山田 太郎', done:false},
@@ -4408,13 +4335,6 @@
     commentTab = b.dataset.vehicle;
     renderComments();
   });
-  document.getElementById('notifTypeSeg').addEventListener('click', function(e){
-    var b = e.target.closest('button'); if(!b) return;
-    this.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
-    b.classList.add('active');
-    notifTypeFilter = b.dataset.type;
-    renderMineNotifPanel();
-  });
   document.getElementById('teamSeg').addEventListener('click', function(e){
     var b = e.target.closest('button'); if(!b) return;
     teamView = b.dataset.group;
@@ -4536,15 +4456,13 @@
       el.textContent = count;
       el.style.display = count > 0 ? '' : 'none';
     }
+    // マイ案件バッジ＝まだ開いて確認していない「自分がやること」の数
+    // （tel新規割当・自分担当の新着コメント・時刻が来た自分宛リマインダー）
     setBadge('navBadgeMine',
       cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done && c.assignedNew;}).length +
-      commentCases.filter(function(c){return !c.done && c.assignedNew && commentAssignee(c)===CURRENT_USER;}).length);
-    // 通知バッジ＝未対応の要対応件数＋未読のお知らせ数。
-    // タブを開いても要対応分は消えない（対応して初めて減る＝取りこぼし防止）
-    syncNotifications();
-    setBadge('navBadgeNotif',
-      notifications.filter(function(n){return n.needsAction && !n.resolved;}).length +
-      notifications.filter(function(n){return (!n.needsAction || n.resolved) && n.unread;}).length);
+      commentCases.filter(function(c){return !c.done && c.assignedNew && commentAssignee(c)===CURRENT_USER;}).length +
+      reminders.filter(function(r){return r.bucket==='today' && !r.done && !r.seenMine;}).length);
+    setBadge('navBadgeNotif', notifications.filter(function(n){return n.unread;}).length);
     // 新ページ群：コメント＝対応者未設定の件数（担当不在＋当番なしの警告） /
     // 交渉＝未着手の件数 / 掲示板＝未読投稿数
     setBadge('navBadgeComment', commentCases.filter(commentUnassigned).length);
@@ -4562,11 +4480,11 @@
       if(item.dataset.view==='mine'){
         cases.forEach(function(c){ if(c.owner && c.owner.name===CURRENT_USER) c.assignedNew = false; });
         commentCases.forEach(function(c){ if(commentAssignee(c)===CURRENT_USER) c.assignedNew = false; });
+        reminders.forEach(function(r){ r.seenMine = true; });
         updateNavBadges();
       }
       if(item.dataset.view==='notif'){
-        // 開いただけで既読になるのは「お知らせ」だけ。要対応は対応するまでバッジに残る
-        notifications.forEach(function(n){ if(!n.needsAction || n.resolved) n.unread = false; });
+        notifications.forEach(function(n){ n.unread = false; });
         updateNavBadges();
       }
       onOpenView(item.dataset.view);
@@ -4819,7 +4737,7 @@
   renderMine();
   renderWorkload();
   renderTargets();
-  renderMineNotifPanel();  // 要対応通知（tel・コメント・リマインダー）はここで自動生成される
+  renderMineNotifPanel();
   renderMyPage();
   applyRolePermissions();
   updateNavBadges();
