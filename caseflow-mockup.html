@@ -467,6 +467,30 @@
   .modal-title .tnum{ font-size:20px; margin:0 2px; }
   .modal-actions{ display:flex; flex-direction:column; gap:8px; margin-top:18px; }
   .modal-actions .btn{ width:100%; height:40px; justify-content:center; font-size:13.5px; }
+  /* 退勤ポップアップ：未対応案件ごとの引き継ぎ先セレクタ */
+  .clockout-modal{ width:min(520px, calc(100vw - 48px)); }
+  .clockout-sub{ font-size:12.5px; color:var(--ink-faint); line-height:1.7; margin-top:8px; }
+  .clockout-list{
+    margin-top:14px; max-height:46vh; overflow-y:auto;
+    display:flex; flex-direction:column; gap:8px; text-align:left;
+  }
+  .clockout-item{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--border); border-radius:var(--radius-m); padding:10px 12px;
+  }
+  .clockout-item-type{ flex:none; font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .clockout-item-type.tel{ background:#E7F6EF; color:#1D7A55; }
+  .clockout-item-type.comment{ background:#EEF0FD; color:var(--accent-ink); }
+  .clockout-item-type.remind{ background:#FDF3E3; color:#B26E00; }
+  .clockout-item-type.nego{ background:#EEF1F5; color:var(--ink-faint); }
+  .clockout-item-label{
+    flex:1; min-width:0; font-size:12.5px; line-height:1.5;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .clockout-item select{
+    flex:none; width:158px; height:32px; border:1px solid var(--border); border-radius:8px;
+    background:var(--surface); font-size:12.5px; padding:0 6px; cursor:pointer;
+  }
 
   /* ---------- Settings overlay ---------- */
   #view-settings{ background:var(--surface); }
@@ -1174,7 +1198,7 @@
       案件番号・顧客名・キーワードで検索
     </div>
     <!-- 稼働状況はワンクリックで切り替えられるよう右上に常設（自動振り分けに反映） -->
-    <div class="online-toggle topbar-status" id="onlineToggle" title="稼働状況（自動振り分けに反映）。営業時間内に退勤すると未対応の案件は確認のうえ即・別の担当へ振り直されます">
+    <div class="online-toggle topbar-status" id="onlineToggle" title="稼働状況（自動振り分けに反映）。営業時間内に退勤するときは、未対応の案件（tel・コメント・交渉・リマインダー）の引き継ぎ先を選んでから退勤します">
       <button type="button" data-state="online"><span class="status-icon online"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg></span>出勤</button>
       <button type="button" data-state="away"><span class="status-icon away"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2"/><path d="M10 2v2"/><path d="M14 2v2"/></svg></span>離席</button>
       <button type="button" data-state="offline"><span class="status-icon offline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span>退勤</button>
@@ -1895,7 +1919,7 @@
                 <div class="rule-card fixed-rule">
                   <div class="rule-head">
                     <div class="rule-order">6</div>
-                    <div class="rule-name">営業時間内の退勤は、未対応telを即振り直し</div>
+                    <div class="rule-name">営業時間内の退勤は、未対応案件の引き継ぎ先を選択してから</div>
                     <span class="rule-fixed-badge">常時適用</span>
                   </div>
                 </div>
@@ -2001,13 +2025,17 @@
   <span id="undoToastText"></span>
 </div>
 
-<!-- ===== 退勤確認ポップアップ（未対応が残っているときだけ画面中央に表示） ===== -->
+<!-- ===== 退勤確認ポップアップ（未対応が残っているときだけ画面中央に表示） =====
+     シフト勤務で翌日の出勤が不確定なため、未対応案件（tel・コメント・交渉・リマインダー）は
+     案件ごとに引き継ぎ先を選んでから退勤する。基本は同じチームの他メンバーへ。 -->
 <div class="modal-backdrop" id="clockoutModal" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="clockoutModalTitle">
+  <div class="modal clockout-modal" role="dialog" aria-modal="true" aria-labelledby="clockoutModalTitle">
     <div class="modal-title" id="clockoutModalTitle">未対応案件が<span id="clockoutCount" class="tnum">0</span>件あります。</div>
+    <div class="clockout-sub">退勤する場合は、案件ごとに引き継ぎ先を選んでください（基本は同じチームのメンバー）。引き継ぎ先には通知が届きます。</div>
+    <div class="clockout-list" id="clockoutList"></div>
     <div class="modal-actions">
       <button type="button" class="btn primary" id="clockoutStayBtn">未対応案件を対応してから退勤する</button>
-      <button type="button" class="btn" id="clockoutHandoffBtn">未対応案件は別の人に渡す</button>
+      <button type="button" class="btn" id="clockoutHandoffBtn">選んだ相手に引き継いで退勤する</button>
     </div>
   </div>
 </div>
@@ -2382,19 +2410,16 @@
   var toastTimer = null;
   function findCase(id){ return cases.find(function(c){ return c.id===id; }); }
   function pendingCountOf(name){ return cases.filter(function(c){ return c.owner && c.owner.name===name && !c.done; }).length; }
-  // 営業時間内の退勤時の自動振り直し（振り分けロジック第4章）。実際はその時点の点数で次点の
-  // 人へ渡す。モックでは「出勤中・車種が合う・抱え上限未満」の中で未対応が最も少ない人を次点とみなす。
-  function reassignPendingFrom(name){
-    var moved = 0;
-    cases.forEach(function(c){
-      if(!(c.owner && c.owner.name===name && !c.done)) return;
-      var next = team
-        .filter(function(t){ return t.name!==name && t.status==='online' && t.role===c.vehicle && pendingCountOf(t.name) < MAX_PENDING; })
-        .sort(function(a,b){ return pendingCountOf(a.name) - pendingCountOf(b.name); })[0];
-      c.owner = next ? {name:next.name} : null; // 受けられる人がいなければ未割り当てで待機
-      moved++;
-    });
-    return moved;
+  // 退勤時の引き継ぎ（振り分けロジック第4章の改訂）。シフト勤務で翌日の出勤が不確定なため、
+  // 自動振り直しではなく本人が案件ごとに引き継ぎ先を選ぶ。初期値は「同じチームの出勤中で
+  // 未対応が最も少ない人」（チーム全員が不在なら先頭のメンバー）。
+  function defaultHandoffTarget(){
+    var g = myself().group;
+    var mates = team.filter(function(t){ return t.name!==CURRENT_USER && t.group===g; });
+    var online = mates
+      .filter(function(t){ return t.status==='online'; })
+      .sort(function(a,b){ return pendingCountOf(a.name) - pendingCountOf(b.name); })[0];
+    return online || mates[0] || null;
   }
   function refreshAllCaseViews(){
     renderMine();
@@ -2455,8 +2480,9 @@
   function renderMine(){
     var listEl = document.getElementById('mineList');
     listEl.innerHTML = "";
-    // 自分宛リマインダー（時刻到来分）はマイ案件の最上部。「確認した」を押すまで残る
-    var myReminders = reminders.filter(function(r){ return r.bucket==='today' && !r.done; });
+    // 自分宛リマインダー（時刻到来分）はマイ案件の最上部。「確認した」を押すまで残る。
+    // owner は退勤時の引き継ぎで付く（未設定＝自分宛）
+    var myReminders = reminders.filter(function(r){ return r.bucket==='today' && !r.done && (!r.owner || r.owner===CURRENT_USER); });
     // 表示は「時間＋設定時のコメント／adminURL」のみのシンプル構成（車種タブの履歴と共通）
     myReminders.forEach(function(r){
       var wrap = document.createElement('div');
@@ -4574,7 +4600,7 @@
     setBadge('navBadgeMine',
       cases.filter(function(c){return c.owner && c.owner.name===CURRENT_USER && !c.done && c.assignedNew;}).length +
       commentCases.filter(function(c){return !c.done && c.assignedNew && commentAssignee(c)===CURRENT_USER;}).length +
-      reminders.filter(function(r){return r.bucket==='today' && !r.done && !r.seenMine;}).length);
+      reminders.filter(function(r){return r.bucket==='today' && !r.done && !r.seenMine && (!r.owner || r.owner===CURRENT_USER);}).length);
     setBadge('navBadgeNotif', notifications.filter(function(n){return n.unread;}).length);
     // バイク/車案件＝コメントの「対応者未設定」警告数（担当不在＋当番なし）。
     // 交渉＝未着手の件数 / 掲示板＝未読投稿数
@@ -4725,35 +4751,91 @@
       btn.classList.toggle('active', btn.dataset.state===me.status);
     });
   }
-  // 退勤（営業時間内）＝未対応があるときだけ画面中央のポップアップで確認（振り分けロジック第4章）。
-  // 「別の人に渡す」を選んだ場合のみ即・自動振り直し。未対応が0件ならポップアップは出さずそのまま退勤。
-  // 離席では振り直さない（離席にコストを付けると誰も押さなくなるため）。
+  // 退勤（営業時間内）＝未対応（tel・コメント・交渉・リマインダー）が残っているときだけ
+  // 画面中央のポップアップで確認し、案件ごとに引き継ぎ先を選んでから退勤する。
+  // 未対応が0件ならポップアップは出さずそのまま退勤。
+  // 離席では引き継がない（離席にコストを付けると誰も押さなくなるため）。
   var clockoutModal = document.getElementById('clockoutModal');
-  function openClockoutModal(count){
-    document.getElementById('clockoutCount').textContent = count;
+  var clockoutItems = [];
+  function collectPendingHandoffItems(){
+    var items = [];
+    reminders.forEach(function(r){
+      if(r.bucket==='today' && !r.done && (!r.owner || r.owner===CURRENT_USER)){
+        items.push({type:'remind', typeLabel:'リマインダー', obj:r, label:r.when+' '+r.text});
+      }
+    });
+    sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }))
+      .forEach(function(c){
+        items.push({type:'tel', typeLabel:'tel', obj:c, label:kindRowMeta(c.kind).label+'（査定依頼ID '+caseNo(c)+'）'});
+      });
+    commentCases.forEach(function(c){
+      if(!c.done && commentAssignee(c)===CURRENT_USER){
+        items.push({type:'comment', typeLabel:'コメント', obj:c, label:'お客様コメント（査定依頼ID '+c.no+'）'});
+      }
+    });
+    negoItems.forEach(function(n){
+      if(n.status==='doing' && n.assignee===CURRENT_USER){
+        items.push({type:'nego', typeLabel:'交渉', obj:n, label:'交渉依頼（'+n.shop+'）'});
+      }
+    });
+    return items;
+  }
+  // 引き継ぎ先の選択肢＝自分以外の全メンバー（同じチームを先頭に）。シフト勤務のため、
+  // いま退勤中の人にも引き継げる（明日の出勤者に渡すケース）。稼働状況を名前に併記して判断材料にする。
+  function handoffSelectHtml(){
+    var g = myself().group;
+    var def = defaultHandoffTarget();
+    function opt(t){
+      return '<option value="'+escapeHtml(t.name)+'"'+(def && def.name===t.name ? ' selected' : '')+'>'+
+        escapeHtml(t.name)+'（'+PRESENCE_META[t.status].label+'）</option>';
+    }
+    var mates = team.filter(function(t){ return t.name!==CURRENT_USER && t.group===g; });
+    var others = team.filter(function(t){ return t.name!==CURRENT_USER && t.group!==g; });
+    return '<select>'+
+      (mates.length ? '<optgroup label="同じチーム">'+mates.map(opt).join('')+'</optgroup>' : '')+
+      (others.length ? '<optgroup label="他のメンバー">'+others.map(opt).join('')+'</optgroup>' : '')+
+    '</select>';
+  }
+  function openClockoutModal(){
+    clockoutItems = collectPendingHandoffItems();
+    document.getElementById('clockoutCount').textContent = clockoutItems.length;
+    document.getElementById('clockoutList').innerHTML = clockoutItems.map(function(it){
+      return '<div class="clockout-item">'+
+        '<span class="clockout-item-type '+it.type+'">'+it.typeLabel+'</span>'+
+        '<span class="clockout-item-label" title="'+escapeHtml(it.label)+'">'+escapeHtml(it.label)+'</span>'+
+        handoffSelectHtml()+
+      '</div>';
+    }).join('');
     clockoutModal.hidden = false;
   }
   function closeClockoutModal(){ clockoutModal.hidden = true; }
   document.getElementById('clockoutStayBtn').addEventListener('click', closeClockoutModal);
   document.getElementById('clockoutHandoffBtn').addEventListener('click', function(){
+    var selects = clockoutModal.querySelectorAll('.clockout-item select');
+    var names = [];
+    clockoutItems.forEach(function(it, i){
+      var to = selects[i].value;
+      if(names.indexOf(to)===-1) names.push(to);
+      if(it.type==='tel') it.obj.owner = {name:to};
+      else if(it.type==='comment') it.obj.owner = to;
+      else if(it.type==='nego') it.obj.assignee = to;
+      else if(it.type==='remind') it.obj.owner = to;
+    });
+    var moved = clockoutItems.length;
     closeClockoutModal();
     myself().status = 'offline';
-    var moved = reassignPendingFrom(CURRENT_USER);
     renderOnlineToggle();
     refreshAllCaseViews();
-    showSyncToast('退勤しました。未対応の'+moved+'件を別の担当へ振り直しました（あなたと新しい担当に通知が届きます）');
+    showSyncToast('退勤しました。未対応の'+moved+'件を'+names.join('さん・')+'さんに引き継ぎました（あなたと引き継ぎ先に通知が届きます）');
   });
   clockoutModal.addEventListener('click', function(e){ if(e.target===clockoutModal) closeClockoutModal(); });
   document.querySelectorAll('#onlineToggle button').forEach(function(btn){
     btn.addEventListener('click', function(){
       var me = myself();
       var next = btn.dataset.state;
-      if(next==='offline' && me.status!=='offline'){
-        var pendingList = cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; });
-        if(pendingList.length){
-          openClockoutModal(pendingList.length);
-          return;
-        }
+      if(next==='offline' && me.status!=='offline' && collectPendingHandoffItems().length){
+        openClockoutModal();
+        return;
       }
       me.status = next;
       renderOnlineToggle();
