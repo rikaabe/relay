@@ -2086,12 +2086,14 @@
   // elapsedMin: 受信からの経過分数。経過セルの背景色判定に使用（2時間＝120分が基準）。
   // assignedNew: 自分に振り分けられてからまだマイ案件タブを開いていない＝マイ案件バッジの対象。
   var cases = [
-    {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"山田 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/311742"},
+    {id:"#C-0001", vehicle:"car", recMin:0, title:"査定アップロード確認、承認・入札開始済み", customer:"松本 直樹", kind:"査定アップロード確認", status:"reviewing", received:"07/04 05:10", elapsedMin:280, due:null, dueLabel:"—", owner:{name:"鈴木 花子"}, done:true, adminUrl:"https://admin.example.com/cases/311742"},
     // 再アップロード案件は既存案件（元の担当者が再アップロードを依頼した案件）のため、必ず担当者を持つ
     {id:"#B-0007", vehicle:"bike", recMin:1, title:"写真の再アップロードが完了、内容未確認", customer:"早木 良太", kind:"再アップロード確認", status:"reviewing", received:"07/04 06:40", elapsedMin:193, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, adminUrl:"https://admin.example.com/cases/524170"},
     {id:"#B-0012", vehicle:"bike", recMin:3, title:"アップロード内容の確認依頼", customer:"伊藤 誠", kind:"査定アップロード確認", status:"reupload", received:"07/04 03:20", elapsedMin:393, due:"ok", dueLabel:"本日18:00", owner:{name:"鈴木 花子"}, adminUrl:"https://admin.example.com/cases/521769"},
     {id:"#B-0005", vehicle:"bike", recMin:6, title:"再アップロード完了、内容確認済み", customer:"渡辺 美咲", kind:"再アップロード確認", status:"reviewing", received:"07/04 07:20", elapsedMin:153, due:null, dueLabel:"—", owner:{name:"田中 太郎"}, done:true, adminUrl:"https://admin.example.com/cases/523371"},
-    {id:"#C-0002", vehicle:"car", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, assignedNew:true, adminUrl:"https://admin.example.com/cases/311998"},
+    // 山田（バイク担当）のマイ案件用。自動振り分けは担当区分（role）が合う人にしか行われないため、
+    // 山田が持つtel案件はバイクで統一する（車を持つのは応援=垣根越えの明示操作があった場合のみ）
+    {id:"#B-0002", vehicle:"bike", recMin:9, title:"査定アップロード完了、価格提示について相談したい", customer:"佐藤 花子", kind:"査定アップロード確認", status:"reupload", received:"07/04 09:15", elapsedMin:37, due:"warn", dueLabel:"2時間以内", owner:{name:"山田 太郎"}, assignedNew:true, adminUrl:"https://admin.example.com/cases/524365"},
     {id:"#B-0001", vehicle:"bike", recMin:10, title:"査定依頼アップロードの内容を確認してほしい", customer:"田中 一郎", kind:"査定アップロード確認", status:"reviewing", received:"07/04 09:30", elapsedMin:22, due:null, dueLabel:"—", owner:null, adminUrl:"https://admin.example.com/cases/524187"},
   ];
   function shortUrl(url){ return url.replace(/^https?:\/\/(www\.)?/,''); }
@@ -2104,7 +2106,7 @@
       {name:"山田 太郎", time:"08:20", text:"@鈴木 花子 この案件の対応をお願いできますか。自分は今バイクの対応が2件重なっていて手が回りません。@バイクチーム 他にも手が空いている人がいたら教えてください。", handoff:true},
       {name:"鈴木 花子", time:"08:24", text:"承知しました、こちらで巻き取ります。期限が近いので優先的に対応します。"},
     ]},
-    {caseId:"#C-0002", messages:[
+    {caseId:"#B-0002", messages:[
       {name:"山田 太郎", time:"09:20", text:"佐藤様の査定アップロードの内容、二重チェックをお願いできますか。書類に不足がないか見てほしいです。"},
       {name:"鈴木 花子", time:"09:25", text:"確認しました。書類は問題なさそうです。"},
     ]},
@@ -3065,13 +3067,13 @@
   // 書き込む。画面には一覧表示せず、運用サマリー・メンバー別進捗の算出（振り直し件数など）にのみ使う。
   var auditLog = [
     {day:"today", time:"09:30", type:"waiting",  vehicle:"bike", caseNo:"524187", text:"受けられる人がいないため未割り当てで待機（出勤中のバイク担当が全員抱え上限）", person:null},
-    {day:"today", time:"09:15", type:"assign",   vehicle:"car",  caseNo:"311998", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
+    {day:"today", time:"09:15", type:"assign",   vehicle:"bike", caseNo:"524365", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
     {day:"today", time:"09:05", type:"reassign", vehicle:"bike", caseNo:"521769", text:"期限超過のため自動振り直し：鈴木 花子 → 山田 太郎（新しい期限 10:05）", person:"山田 太郎", from:"鈴木 花子"},
     {day:"today", time:"08:47", type:"done",     vehicle:"bike", caseNo:"523371", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"田中 太郎"},
     {day:"today", time:"08:10", type:"assign",   vehicle:"bike", caseNo:"515694", text:"自動割り当て（鈴木 71点：早さ51＋動ける20）", person:"鈴木 花子"},
     {day:"today", time:"07:50", type:"assign",   vehicle:"car",  caseNo:"317204", text:"自動割り当て（伊藤 68点：早さ38＋動ける20＋私いけます10）", person:"伊藤 誠"},
-    {day:"today", time:"07:20", type:"done",     vehicle:"car",  caseNo:"311742", text:"adminで承認・入札開始を検知し、対応済みに更新", person:"山田 太郎"},
-    {day:"today", time:"06:58", type:"assign",   vehicle:"car",  caseNo:"315560", text:"自動割り当て（山田 64点：早さ44＋動ける20）", person:"山田 太郎"},
+    {day:"today", time:"07:20", type:"done",     vehicle:"car",  caseNo:"311742", text:"adminで承認・入札開始を検知し、対応済みに更新", person:"鈴木 花子"},
+    {day:"today", time:"06:58", type:"assign",   vehicle:"car",  caseNo:"315560", text:"自動割り当て（渡辺 66点：早さ46＋動ける20）", person:"渡辺 美咲"},
     {day:"yesterday", time:"18:12", type:"reassign", vehicle:"car", caseNo:"318822", text:"営業時間内の退勤による自動振り直し：中村 優子 → 伊藤 誠", person:"伊藤 誠", from:"中村 優子"},
     {day:"yesterday", time:"17:40", type:"done",     vehicle:"car", caseNo:"312310", text:"adminでお客様へチャット送信（comment.reply_sent）を検知し、対応済みに更新", person:"渡辺 美咲"},
   ];
@@ -3380,7 +3382,7 @@
   //              assign=担当者変更／mention=スレッドへのメンション。
   //              （交渉完了(nego)・掲示板のお知らせ(board)も性質上ここに入る）
   var notifications = [
-    {day:"today", vehicle:"car", cls:"sla", caseId:"#C-0002", icon:'急', text:'<b>311998</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
+    {day:"today", vehicle:"bike", cls:"sla", caseId:"#B-0002", icon:'急', text:'<b>524365</b> の対応期限まで残り30分です（期限 本日 10:15）', time:"09:45", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"assign", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M21 7H9"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h12"/></svg>', text:'<b>521769</b> の担当があなたから <b>鈴木 花子</b>さんに変わりました。行き違い防止のため、この案件への新しい連絡はしないでください', time:"09:05", unread:true, lockedType:true},
     {day:"today", vehicle:"bike", cls:"mention", caseId:"#B-0012", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>', text:'<b>鈴木 花子</b>さんがスレッドであなたをメンションしました', time:"08:24", unread:true, lockedType:true},
     {day:"yesterday", vehicle:"bike", cls:"mention", caseId:"#B-0005", icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6M9 17v1a3 3 0 0 0 6 0v-1"/></svg>', text:'<b>伊藤 誠</b>さんがスレッドで <b>バイクチーム</b> をメンションしました', time:"17:40", unread:false, lockedType:true},
