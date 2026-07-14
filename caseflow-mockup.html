@@ -1052,8 +1052,11 @@
   .remind-card::before{ content:""; position:absolute; left:47px; top:8px; bottom:8px; width:4px; border-radius:4px; background:#FFA500; }
   .remind-card.is-done{ opacity:.55; background:var(--neutral-chip-soft); }
   .remind-card.is-done::before{ background:var(--border-strong); }
-  /* 「確認した」は通知時刻の直下に表示 */
+  /* 「確認した」は通知時刻の直下に表示。サイズはスレッドボタンと同じ、
+     色はオレンジ塗りつぶし（リマインダーのテーマ色）でスレッドと明確に区別する */
   .remind-time .btn{ display:block; margin-top:6px; }
+  .btn.mine-remind-done{ height:24px; padding:0 10px; font-size:12px; background:#E08E00; border-color:#E08E00; color:#fff; }
+  .btn.mine-remind-done:hover{ background:#C97C00; border-color:#C97C00; }
   .remind-time{ font-size:15px; font-weight:800; min-width:82px; font-variant-numeric:tabular-nums; }
   .remind-time .remind-date{ display:block; font-size:11px; color:var(--ink-faint); font-weight:600; }
   .remind-body{ flex:1; min-width:0; }
