@@ -2346,13 +2346,10 @@
       sections.push({label:'コメント', count:cmList.length, html:cmList.map(function(c){ return commentCardHtml(c, false); }).join('')});
     }
     if(type==='all' || type==='reminder'){
-      var rmList = reminders.filter(function(r){ return r.vehicle===vehicle; });
-      var rmOrder = {today:0, upcoming:1};
-      rmList.sort(function(a,b){
-        var pa = a.done ? 2 : rmOrder[a.bucket];
-        var pb = b.done ? 2 : rmOrder[b.bucket];
-        return pa - pb;
-      });
+      // リマインダーは指定時刻になって初めて通知として流れてくる想定。
+      // まだ時刻が来ていない分（bucket:'upcoming'）は履歴にも表示しない
+      var rmList = reminders.filter(function(r){ return r.vehicle===vehicle && r.bucket!=='upcoming'; });
+      rmList.sort(function(a,b){ return (a.done?1:0) - (b.done?1:0); });
       sections.push({label:'リマインダー', count:rmList.length, html:rmList.map(function(r){ return reminderCardHtml(r, true); }).join('')});
     }
     var html = '';
