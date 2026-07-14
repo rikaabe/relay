@@ -1043,16 +1043,17 @@
   .inline-form-actions{ display:flex; gap:8px; justify-content:flex-end; }
   .inline-form .grow{ flex:1; min-width:180px; }
 
-  /* リマインダー：case-card（queue-card）と同じジオメトリに揃える
-     （左に種別アイコン60px＋縦ライン。マイ案件・車種タブでtel/コメントと縦位置が揃う） */
+  /* リマインダー：case-card（queue-card）と同じ見た目・ジオメトリに揃える
+     （枠・背景なし＋左に種別アイコン60px＋縦ライン。マイ案件・車種タブでtel/コメントと揃う） */
   .remind-card{
-    display:flex; gap:14px; align-items:flex-start; background:var(--surface);
-    border:1px solid var(--border); border-radius:var(--radius-m);
+    display:flex; gap:14px; align-items:flex-start; border-radius:var(--radius-m);
     padding:7px 12px 7px 60px; position:relative;
   }
   .remind-card::before{ content:""; position:absolute; left:47px; top:8px; bottom:8px; width:4px; border-radius:4px; background:#FFA500; }
   .remind-card.is-done{ opacity:.55; background:var(--neutral-chip-soft); }
   .remind-card.is-done::before{ background:var(--border-strong); }
+  /* 「確認した」は通知時刻の直下に表示 */
+  .remind-time .btn{ display:block; margin-top:6px; }
   .remind-time{ font-size:15px; font-weight:800; min-width:82px; font-variant-numeric:tabular-nums; }
   .remind-time .remind-date{ display:block; font-size:11px; color:var(--ink-faint); font-weight:600; }
   .remind-body{ flex:1; min-width:0; }
@@ -4200,12 +4201,14 @@
     return '<div class="remind-card'+(r.done?' is-done':'')+'">'+
       (r.done ? '<div class="case-done-icon" title="確認済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>'
               : taskTypeIconHtml('remind'))+
-      '<div class="remind-time tnum">'+r.when+'<span class="remind-date">'+r.date+'</span></div>'+
+      '<div class="remind-time tnum">'+r.when+'<span class="remind-date">'+r.date+'</span>'+
+        (showBtn ? '<button type="button" class="btn sm mine-remind-done" data-id="'+r.id+'">確認した</button>' : '')+
+      '</div>'+
       '<div class="remind-body">'+
         '<div class="remind-text">'+escapeHtml(r.text)+'</div>'+
         '<div class="remind-meta"><a class="case-card-url" href="'+r.adminUrl+'" target="_blank" rel="noopener">'+r.adminUrl+'</a></div>'+
       '</div>'+
-      (showBtn ? '<button type="button" class="btn sm mine-remind-done" data-id="'+r.id+'">確認した</button>' : stateNote)+
+      (showBtn ? '' : stateNote)+
     '</div>';
   }
   // 「確認した」は誤タップ防止のため2段階（ポップアップで最終確認してから確定）
