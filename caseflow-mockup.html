@@ -483,13 +483,11 @@
     margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);
     display:flex; flex-direction:column; gap:5px;
   }
-  .clockout-detail-line{
-    font-size:12px; line-height:1.5; color:var(--ink-faint);
-    display:flex; align-items:baseline; gap:8px; min-width:0;
-  }
-  .clockout-detail-line .tnum{ flex:none; font-weight:700; }
-  .clockout-detail-text{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .clockout-detail-line .case-card-url{ flex:none; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* 内容は省略せず折り返して全文表示。リンクは次の行に全文で置く */
+  .clockout-detail-line{ font-size:12px; line-height:1.6; color:var(--ink-faint); }
+  .clockout-detail-line .tnum{ font-weight:700; margin-right:6px; }
+  .clockout-detail-text{ overflow-wrap:break-word; }
+  .clockout-detail-line .case-card-url{ display:block; word-break:break-all; }
   .clockout-item-type{ flex:none; font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; }
   .clockout-item-type.tel{ background:#E7F6EF; color:#1D7A55; }
   .clockout-item-type.comment{ background:#EEF0FD; color:var(--accent-ink); }
