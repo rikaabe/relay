@@ -4197,9 +4197,8 @@
   // inHistory=true のときは「予定／確認済み」の状態も表示する
   function reminderCardHtml(r, inHistory){
     var stateNote = '';
-    if(inHistory){
-      if(r.done) stateNote = '<span style="font-size:11.5px; color:var(--ink-faint); white-space:nowrap;">確認済み</span>';
-      else if(r.bucket==='upcoming') stateNote = '<span class="chip waiting">予定</span>';
+    if(inHistory && r.done){
+      stateNote = '<span style="font-size:11.5px; color:var(--ink-faint); white-space:nowrap;">確認済み</span>';
     }
     var showBtn = !r.done && r.bucket==='today';
     return '<div class="remind-card'+(r.done?' is-done':'')+'">'+
