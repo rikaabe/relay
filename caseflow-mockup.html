@@ -482,13 +482,12 @@
   .clockout-item-type.tel{ background:#E7F6EF; color:#1D7A55; }
   .clockout-item-type.comment{ background:#EEF0FD; color:var(--accent-ink); }
   .clockout-item-type.remind{ background:#FDF3E3; color:#B26E00; }
-  .clockout-item-type.nego{ background:#EEF1F5; color:var(--ink-faint); }
   .clockout-item-label{
     flex:1; min-width:0; font-size:12.5px; line-height:1.5;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .clockout-item select{
-    flex:none; width:158px; height:32px; border:1px solid var(--border); border-radius:8px;
+    flex:none; width:210px; height:32px; border:1px solid var(--border); border-radius:8px;
     background:var(--surface); font-size:12.5px; padding:0 6px; cursor:pointer;
   }
 
@@ -2026,12 +2025,13 @@
 </div>
 
 <!-- ===== 退勤確認ポップアップ（未対応が残っているときだけ画面中央に表示） =====
-     シフト勤務で翌日の出勤が不確定なため、未対応案件（tel・コメント・交渉・リマインダー）は
-     案件ごとに引き継ぎ先を選んでから退勤する。基本は同じチームの他メンバーへ。 -->
+     シフト勤務で翌日の出勤が不確定なため、未対応はリマインダー・tel・コメントの種別ごとに
+     引き継ぎ先を選んでから退勤する。基本は同じチームの他メンバーへ。
+     リマインダーは引き継がない（自分宛のまま残す）のが基本想定。 -->
 <div class="modal-backdrop" id="clockoutModal" hidden>
   <div class="modal clockout-modal" role="dialog" aria-modal="true" aria-labelledby="clockoutModalTitle">
     <div class="modal-title" id="clockoutModalTitle">未対応案件が<span id="clockoutCount" class="tnum">0</span>件あります。</div>
-    <div class="clockout-sub">退勤する場合は、案件ごとに引き継ぎ先を選んでください（基本は同じチームのメンバー）。引き継ぎ先には通知が届きます。</div>
+    <div class="clockout-sub">退勤する場合は、種別ごとに引き継ぎ先を選んでください（基本は同じチームのメンバー）。引き継ぎ先には通知が届きます。</div>
     <div class="clockout-list" id="clockoutList"></div>
     <div class="modal-actions">
       <button type="button" class="btn primary" id="clockoutStayBtn">未対応案件を対応してから退勤する</button>
@@ -4751,40 +4751,29 @@
       btn.classList.toggle('active', btn.dataset.state===me.status);
     });
   }
-  // 退勤（営業時間内）＝未対応（tel・コメント・交渉・リマインダー）が残っているときだけ
-  // 画面中央のポップアップで確認し、案件ごとに引き継ぎ先を選んでから退勤する。
+  // 退勤（営業時間内）＝未対応（リマインダー・tel・コメント）が残っているときだけ
+  // 画面中央のポップアップで確認し、種別ごとに引き継ぎ先を選んでから退勤する。
+  // リマインダーは「引き継がない（自分宛のまま残す）」が基本想定のため、既定は引き継がない。
   // 未対応が0件ならポップアップは出さずそのまま退勤。
   // 離席では引き継がない（離席にコストを付けると誰も押さなくなるため）。
   var clockoutModal = document.getElementById('clockoutModal');
-  var clockoutItems = [];
-  function collectPendingHandoffItems(){
-    var items = [];
-    reminders.forEach(function(r){
-      if(r.bucket==='today' && !r.done && (!r.owner || r.owner===CURRENT_USER)){
-        items.push({type:'remind', typeLabel:'リマインダー', obj:r, label:r.when+' '+r.text});
-      }
-    });
-    sortCases(cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; }))
-      .forEach(function(c){
-        items.push({type:'tel', typeLabel:'tel', obj:c, label:kindRowMeta(c.kind).label+'（査定依頼ID '+caseNo(c)+'）'});
-      });
-    commentCases.forEach(function(c){
-      if(!c.done && commentAssignee(c)===CURRENT_USER){
-        items.push({type:'comment', typeLabel:'コメント', obj:c, label:'お客様コメント（査定依頼ID '+c.no+'）'});
-      }
-    });
-    negoItems.forEach(function(n){
-      if(n.status==='doing' && n.assignee===CURRENT_USER){
-        items.push({type:'nego', typeLabel:'交渉', obj:n, label:'交渉依頼（'+n.shop+'）'});
-      }
-    });
-    return items;
+  var clockoutGroups = [];
+  function collectPendingHandoffGroups(){
+    var remind = reminders.filter(function(r){ return r.bucket==='today' && !r.done && (!r.owner || r.owner===CURRENT_USER); });
+    var tel = cases.filter(function(c){ return c.owner && c.owner.name===CURRENT_USER && !c.done; });
+    var cm = commentCases.filter(function(c){ return !c.done && commentAssignee(c)===CURRENT_USER; });
+    var groups = [];
+    if(remind.length) groups.push({type:'remind', typeLabel:'リマインダー', items:remind, keepable:true});
+    if(tel.length) groups.push({type:'tel', typeLabel:'tel', items:tel});
+    if(cm.length) groups.push({type:'comment', typeLabel:'コメント', items:cm});
+    return groups;
   }
   // 引き継ぎ先の選択肢＝自分以外の全メンバー（同じチームを先頭に）。シフト勤務のため、
   // いま退勤中の人にも引き継げる（明日の出勤者に渡すケース）。稼働状況を名前に併記して判断材料にする。
-  function handoffSelectHtml(){
+  // keepable（リマインダー）は「引き継がない」を先頭に置き、それを既定にする。
+  function handoffSelectHtml(keepable){
     var g = myself().group;
-    var def = defaultHandoffTarget();
+    var def = keepable ? null : defaultHandoffTarget();
     function opt(t){
       return '<option value="'+escapeHtml(t.name)+'"'+(def && def.name===t.name ? ' selected' : '')+'>'+
         escapeHtml(t.name)+'（'+PRESENCE_META[t.status].label+'）</option>';
@@ -4792,18 +4781,20 @@
     var mates = team.filter(function(t){ return t.name!==CURRENT_USER && t.group===g; });
     var others = team.filter(function(t){ return t.name!==CURRENT_USER && t.group!==g; });
     return '<select>'+
+      (keepable ? '<option value="" selected>引き継がない（自分宛のまま）</option>' : '')+
       (mates.length ? '<optgroup label="同じチーム">'+mates.map(opt).join('')+'</optgroup>' : '')+
       (others.length ? '<optgroup label="他のメンバー">'+others.map(opt).join('')+'</optgroup>' : '')+
     '</select>';
   }
   function openClockoutModal(){
-    clockoutItems = collectPendingHandoffItems();
-    document.getElementById('clockoutCount').textContent = clockoutItems.length;
-    document.getElementById('clockoutList').innerHTML = clockoutItems.map(function(it){
+    clockoutGroups = collectPendingHandoffGroups();
+    var total = clockoutGroups.reduce(function(sum, g){ return sum + g.items.length; }, 0);
+    document.getElementById('clockoutCount').textContent = total;
+    document.getElementById('clockoutList').innerHTML = clockoutGroups.map(function(g){
       return '<div class="clockout-item">'+
-        '<span class="clockout-item-type '+it.type+'">'+it.typeLabel+'</span>'+
-        '<span class="clockout-item-label" title="'+escapeHtml(it.label)+'">'+escapeHtml(it.label)+'</span>'+
-        handoffSelectHtml()+
+        '<span class="clockout-item-type '+g.type+'">'+g.typeLabel+'</span>'+
+        '<span class="clockout-item-label">未対応 <b class="tnum">'+g.items.length+'</b>件</span>'+
+        handoffSelectHtml(g.keepable)+
       '</div>';
     }).join('');
     clockoutModal.hidden = false;
@@ -4812,28 +4803,32 @@
   document.getElementById('clockoutStayBtn').addEventListener('click', closeClockoutModal);
   document.getElementById('clockoutHandoffBtn').addEventListener('click', function(){
     var selects = clockoutModal.querySelectorAll('.clockout-item select');
-    var names = [];
-    clockoutItems.forEach(function(it, i){
+    var handedParts = [];
+    var keptRemind = 0;
+    clockoutGroups.forEach(function(g, i){
       var to = selects[i].value;
-      if(names.indexOf(to)===-1) names.push(to);
-      if(it.type==='tel') it.obj.owner = {name:to};
-      else if(it.type==='comment') it.obj.owner = to;
-      else if(it.type==='nego') it.obj.assignee = to;
-      else if(it.type==='remind') it.obj.owner = to;
+      if(!to){ keptRemind += g.items.length; return; } // リマインダー：引き継がず自分宛のまま
+      g.items.forEach(function(o){
+        if(g.type==='tel') o.owner = {name:to};
+        else o.owner = to; // comment / remind は文字列owner
+      });
+      handedParts.push(g.typeLabel+g.items.length+'件を'+to+'さんへ');
     });
-    var moved = clockoutItems.length;
     closeClockoutModal();
     myself().status = 'offline';
     renderOnlineToggle();
     refreshAllCaseViews();
-    showSyncToast('退勤しました。未対応の'+moved+'件を'+names.join('さん・')+'さんに引き継ぎました（あなたと引き継ぎ先に通知が届きます）');
+    var msg = '退勤しました。';
+    if(handedParts.length) msg += handedParts.join('・')+'引き継ぎました（引き継ぎ先に通知が届きます）。';
+    if(keptRemind) msg += 'リマインダー'+keptRemind+'件はあなた宛のまま残ります。';
+    showSyncToast(msg);
   });
   clockoutModal.addEventListener('click', function(e){ if(e.target===clockoutModal) closeClockoutModal(); });
   document.querySelectorAll('#onlineToggle button').forEach(function(btn){
     btn.addEventListener('click', function(){
       var me = myself();
       var next = btn.dataset.state;
-      if(next==='offline' && me.status!=='offline' && collectPendingHandoffItems().length){
+      if(next==='offline' && me.status!=='offline' && collectPendingHandoffGroups().length){
         openClockoutModal();
         return;
       }
