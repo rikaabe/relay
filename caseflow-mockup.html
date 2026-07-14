@@ -475,9 +475,21 @@
     display:flex; flex-direction:column; gap:8px; text-align:left;
   }
   .clockout-item{
-    display:flex; align-items:center; gap:10px;
     border:1px solid var(--border); border-radius:var(--radius-m); padding:10px 12px;
   }
+  .clockout-item-head{ display:flex; align-items:center; gap:10px; }
+  /* リマインダー・telは中身を一覧表示（退勤前に対応する判断材料）。コメントは件数のみ */
+  .clockout-item-details{
+    margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .clockout-detail-line{
+    font-size:12px; line-height:1.5; color:var(--ink-faint);
+    display:flex; align-items:baseline; gap:8px; min-width:0;
+  }
+  .clockout-detail-line .tnum{ flex:none; font-weight:700; }
+  .clockout-detail-text{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .clockout-detail-line .case-card-url{ flex:none; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .clockout-item-type{ flex:none; font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; }
   .clockout-item-type.tel{ background:#E7F6EF; color:#1D7A55; }
   .clockout-item-type.comment{ background:#EEF0FD; color:var(--accent-ink); }
@@ -4786,15 +4798,40 @@
       (others.length ? '<optgroup label="他のメンバー">'+others.map(opt).join('')+'</optgroup>' : '')+
     '</select>';
   }
+  // リマインダー・telは中身（時刻・内容・adminリンク）を一覧表示する。退勤前に
+  // 「これなら今対応してから帰ろう」と判断できるようにするため。コメントは件数が
+  // 多くキリがない想定のため件数のみ。
+  function clockoutDetailLine(time, text, url){
+    return '<div class="clockout-detail-line">'+
+      '<span class="tnum">'+escapeHtml(time)+'</span>'+
+      '<span class="clockout-detail-text" title="'+escapeHtml(text)+'">'+escapeHtml(text)+'</span>'+
+      (url ? '<a class="case-card-url" href="'+url+'" target="_blank" rel="noopener">'+url+'</a>' : '')+
+    '</div>';
+  }
+  function clockoutDetailsHtml(g){
+    if(g.type==='remind'){
+      return g.items.map(function(r){ return clockoutDetailLine(r.when, r.text, r.adminUrl); }).join('');
+    }
+    if(g.type==='tel'){
+      return sortCases(g.items).map(function(c){
+        return clockoutDetailLine(c.received, kindRowMeta(c.kind).label+'（査定依頼ID '+caseNo(c)+'）', c.adminUrl);
+      }).join('');
+    }
+    return '';
+  }
   function openClockoutModal(){
     clockoutGroups = collectPendingHandoffGroups();
     var total = clockoutGroups.reduce(function(sum, g){ return sum + g.items.length; }, 0);
     document.getElementById('clockoutCount').textContent = total;
     document.getElementById('clockoutList').innerHTML = clockoutGroups.map(function(g){
+      var details = clockoutDetailsHtml(g);
       return '<div class="clockout-item">'+
-        '<span class="clockout-item-type '+g.type+'">'+g.typeLabel+'</span>'+
-        '<span class="clockout-item-label">未対応 <b class="tnum">'+g.items.length+'</b>件</span>'+
-        handoffSelectHtml(g.keepable)+
+        '<div class="clockout-item-head">'+
+          '<span class="clockout-item-type '+g.type+'">'+g.typeLabel+'</span>'+
+          '<span class="clockout-item-label">未対応 <b class="tnum">'+g.items.length+'</b>件</span>'+
+          handoffSelectHtml(g.keepable)+
+        '</div>'+
+        (details ? '<div class="clockout-item-details">'+details+'</div>' : '')+
       '</div>';
     }).join('');
     clockoutModal.hidden = false;
