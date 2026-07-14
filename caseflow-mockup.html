@@ -387,7 +387,8 @@
     display:flex; align-items:center; gap:12px;
   }
   .case-card::before{ content:""; position:absolute; left:9px; top:8px; bottom:8px; width:4px; border-radius:4px; background:var(--border); }
-  .case-card.kind-upload::before{ background:#ECB22E; }
+  /* tel系（アップロード完了・再アップロード完了）は緑（リマインダーのオレンジと区別） */
+  .case-card.kind-upload::before{ background:#2EB67D; }
   .case-card.kind-reupload::before{ background:#2EB67D; }
   .case-card.kind-notif-sla::before{ background:var(--critical); }
   .case-card.kind-notif-assign::before{ background:var(--accent); }
@@ -431,7 +432,7 @@
     position:absolute; left:6px; top:9px; width:30px; height:30px; border-radius:8px;
     display:flex; align-items:center; justify-content:center;
   }
-  .task-type-icon.tel{ background:#FBF1D4; color:#A2790E; }
+  .task-type-icon.tel{ background:#DFF3EA; color:#1F8A5F; }
   .task-type-icon.reup{ background:#DFF3EA; color:#1F8A5F; }
   .task-type-icon.comment{ background:var(--accent-soft); color:var(--accent-ink); }
   .task-type-icon.remind{ background:#FFF1DB; color:#E08E00; }
@@ -4204,7 +4205,8 @@
     return '<div class="remind-card'+(r.done?' is-done':'')+'">'+
       (r.done ? '<div class="case-done-icon" title="確認済み"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>'
               : taskTypeIconHtml('remind'))+
-      '<div class="remind-time tnum">'+r.when+'<span class="remind-date">'+r.date+'</span>'+
+      '<div class="remind-time tnum">'+r.when+
+        (inHistory ? '<span class="remind-date">'+r.date+'</span>' : '')+
         (showBtn ? '<button type="button" class="btn sm mine-remind-done" data-id="'+r.id+'">確認した</button>' : '')+
       '</div>'+
       '<div class="remind-body">'+
