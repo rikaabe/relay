@@ -497,9 +497,20 @@
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .clockout-item select{
-    flex:none; width:210px; height:32px; border:1px solid var(--border); border-radius:8px;
+    flex:none; width:230px; height:32px; border:1px solid var(--border); border-radius:8px;
     background:var(--surface); font-size:12.5px; padding:0 6px; cursor:pointer;
   }
+  /* ステップ切り替え（.modal-actions等はdisplay指定を持つためhiddenを明示的に効かせる） */
+  .clockout-modal .modal-actions[hidden], .clockout-list[hidden], .clockout-confirm[hidden]{ display:none; }
+  /* ステップ2：最終確認の一覧 */
+  .clockout-confirm{ margin-top:14px; display:flex; flex-direction:column; gap:8px; text-align:left; }
+  .clockout-confirm-line{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    border:1px solid var(--border); border-radius:var(--radius-m); padding:10px 12px;
+    font-size:12.5px; line-height:1.6;
+  }
+  .clockout-confirm-line .clockout-arrow{ color:var(--ink-faint); }
+  .clockout-confirm-dest{ font-weight:700; }
 
   /* ---------- Settings overlay ---------- */
   #view-settings{ background:var(--surface); }
@@ -2041,11 +2052,18 @@
 <div class="modal-backdrop" id="clockoutModal" hidden>
   <div class="modal clockout-modal" role="dialog" aria-modal="true" aria-labelledby="clockoutModalTitle">
     <div class="modal-title" id="clockoutModalTitle">未対応案件が<span id="clockoutCount" class="tnum">0</span>件あります。</div>
-    <div class="clockout-sub">退勤する場合は、種別ごとに引き継ぎ先を選んでください（基本は同じチームのメンバー）。引き継ぎ先には通知が届きます。</div>
+    <div class="clockout-sub" id="clockoutSub"></div>
+    <!-- ステップ1：種別ごとに「引き継がない／引き継ぎ先」を選ぶ -->
     <div class="clockout-list" id="clockoutList"></div>
-    <div class="modal-actions">
-      <button type="button" class="btn primary" id="clockoutStayBtn">未対応案件を対応してから退勤する</button>
-      <button type="button" class="btn" id="clockoutHandoffBtn">選んだ相手に引き継いで退勤する</button>
+    <div class="modal-actions" id="clockoutEditActions">
+      <button type="button" class="btn primary" id="clockoutSaveBtn">保存（最終確認へ）</button>
+      <button type="button" class="btn" id="clockoutCancelBtn">キャンセル（退勤しない）</button>
+    </div>
+    <!-- ステップ2：引き継ぎがどうなるかの最終確認 → 送信 -->
+    <div class="clockout-confirm" id="clockoutConfirm" hidden></div>
+    <div class="modal-actions" id="clockoutConfirmActions" hidden>
+      <button type="button" class="btn primary" id="clockoutSendBtn">送信（この内容で退勤する）</button>
+      <button type="button" class="btn" id="clockoutBackBtn">戻って選び直す</button>
     </div>
   </div>
 </div>
@@ -4778,20 +4796,24 @@
     if(cm.length) groups.push({type:'comment', typeLabel:'コメント', items:cm});
     return groups;
   }
-  // 引き継ぎ先の選択肢＝自分以外の全メンバー（同じチームを先頭に）。シフト勤務のため、
-  // いま退勤中の人にも引き継げる（明日の出勤者に渡すケース）。稼働状況を名前に併記して判断材料にする。
-  // keepable（リマインダー）は「引き継がない」を先頭に置き、それを既定にする。
-  function handoffSelectHtml(keepable){
-    var g = myself().group;
-    var def = keepable ? null : defaultHandoffTarget();
+  // 引き継ぎ先の選択肢＝「引き継がない」＋自分以外の全メンバー（同じチームを先頭に）。
+  // シフト勤務のため、いま退勤中の人にも引き継げる（明日の出勤者に渡すケース）。
+  // 稼働状況を名前に併記して判断材料にする。
+  // 既定：リマインダー＝引き継がない／tel・コメント＝同じチームの推奨メンバー。
+  function clockoutKeepLabel(type){
+    return type==='remind' ? '引き継がない（自分宛のまま）' : '引き継がない（自分で対応する）';
+  }
+  function handoffSelectHtml(g){
+    var grp = myself().group;
+    var def = g.type==='remind' ? null : defaultHandoffTarget();
     function opt(t){
       return '<option value="'+escapeHtml(t.name)+'"'+(def && def.name===t.name ? ' selected' : '')+'>'+
         escapeHtml(t.name)+'（'+PRESENCE_META[t.status].label+'）</option>';
     }
-    var mates = team.filter(function(t){ return t.name!==CURRENT_USER && t.group===g; });
-    var others = team.filter(function(t){ return t.name!==CURRENT_USER && t.group!==g; });
+    var mates = team.filter(function(t){ return t.name!==CURRENT_USER && t.group===grp; });
+    var others = team.filter(function(t){ return t.name!==CURRENT_USER && t.group!==grp; });
     return '<select>'+
-      (keepable ? '<option value="" selected>引き継がない（自分宛のまま）</option>' : '')+
+      '<option value=""'+(def ? '' : ' selected')+'>'+clockoutKeepLabel(g.type)+'</option>'+
       (mates.length ? '<optgroup label="同じチーム">'+mates.map(opt).join('')+'</optgroup>' : '')+
       (others.length ? '<optgroup label="他のメンバー">'+others.map(opt).join('')+'</optgroup>' : '')+
     '</select>';
@@ -4817,37 +4839,69 @@
     }
     return '';
   }
+  // ステップ切り替え：edit＝種別ごとの選択／confirm＝引き継ぎ内容の最終確認
+  var clockoutTotal = 0;
+  var clockoutChoices = [];
+  function setClockoutStep(step){
+    var edit = step==='edit';
+    document.getElementById('clockoutList').hidden = !edit;
+    document.getElementById('clockoutEditActions').hidden = !edit;
+    document.getElementById('clockoutConfirm').hidden = edit;
+    document.getElementById('clockoutConfirmActions').hidden = edit;
+    document.getElementById('clockoutModalTitle').innerHTML = edit
+      ? '未対応案件が<span id="clockoutCount" class="tnum">'+clockoutTotal+'</span>件あります。'
+      : '引き継ぎ内容の最終確認';
+    document.getElementById('clockoutSub').textContent = edit
+      ? '種別ごとに「引き継がない」か引き継ぎ先を選び、保存を押してください（基本は同じチームのメンバー）。'
+      : 'この内容で確定します。引き継ぎ先には通知が届きます。よろしければ送信してください。';
+  }
   function openClockoutModal(){
     clockoutGroups = collectPendingHandoffGroups();
-    var total = clockoutGroups.reduce(function(sum, g){ return sum + g.items.length; }, 0);
-    document.getElementById('clockoutCount').textContent = total;
+    clockoutTotal = clockoutGroups.reduce(function(sum, g){ return sum + g.items.length; }, 0);
     document.getElementById('clockoutList').innerHTML = clockoutGroups.map(function(g){
       var details = clockoutDetailsHtml(g);
       return '<div class="clockout-item">'+
         '<div class="clockout-item-head">'+
           '<span class="clockout-item-type '+g.type+'">'+g.typeLabel+'</span>'+
           '<span class="clockout-item-label">未対応 <b class="tnum">'+g.items.length+'</b>件</span>'+
-          handoffSelectHtml(g.keepable)+
+          handoffSelectHtml(g)+
         '</div>'+
         (details ? '<div class="clockout-item-details">'+details+'</div>' : '')+
       '</div>';
     }).join('');
+    setClockoutStep('edit');
     clockoutModal.hidden = false;
   }
   function closeClockoutModal(){ clockoutModal.hidden = true; }
-  document.getElementById('clockoutStayBtn').addEventListener('click', closeClockoutModal);
-  document.getElementById('clockoutHandoffBtn').addEventListener('click', function(){
-    var selects = clockoutModal.querySelectorAll('.clockout-item select');
-    var handedParts = [];
-    var keptRemind = 0;
-    clockoutGroups.forEach(function(g, i){
-      var to = selects[i].value;
-      if(!to){ keptRemind += g.items.length; return; } // リマインダー：引き継がず自分宛のまま
-      g.items.forEach(function(o){
-        if(g.type==='tel') o.owner = {name:to};
-        else o.owner = to; // comment / remind は文字列owner
+  document.getElementById('clockoutCancelBtn').addEventListener('click', closeClockoutModal);
+  // 保存＝選択内容を確定し、最終確認画面へ
+  document.getElementById('clockoutSaveBtn').addEventListener('click', function(){
+    var selects = document.querySelectorAll('#clockoutList select');
+    clockoutChoices = clockoutGroups.map(function(g, i){ return {g:g, to:selects[i].value}; });
+    document.getElementById('clockoutConfirm').innerHTML = clockoutChoices.map(function(ch){
+      var dest = ch.to
+        ? '<span class="clockout-confirm-dest">'+escapeHtml(ch.to)+'</span>さんへ引き継ぐ'
+        : clockoutKeepLabel(ch.g.type);
+      return '<div class="clockout-confirm-line">'+
+        '<span class="clockout-item-type '+ch.g.type+'">'+ch.g.typeLabel+'</span>'+
+        '<span>未対応 <b class="tnum">'+ch.g.items.length+'</b>件</span>'+
+        '<span class="clockout-arrow">→</span>'+
+        '<span>'+dest+'</span>'+
+      '</div>';
+    }).join('');
+    setClockoutStep('confirm');
+  });
+  document.getElementById('clockoutBackBtn').addEventListener('click', function(){ setClockoutStep('edit'); });
+  // 送信＝引き継ぎを実行して退勤
+  document.getElementById('clockoutSendBtn').addEventListener('click', function(){
+    var handedParts = [], keptParts = [];
+    clockoutChoices.forEach(function(ch){
+      if(!ch.to){ keptParts.push(ch.g.typeLabel+ch.g.items.length+'件'); return; } // 引き継がない
+      ch.g.items.forEach(function(o){
+        if(ch.g.type==='tel') o.owner = {name:ch.to};
+        else o.owner = ch.to; // comment / remind は文字列owner
       });
-      handedParts.push(g.typeLabel+g.items.length+'件を'+to+'さんへ');
+      handedParts.push(ch.g.typeLabel+ch.g.items.length+'件を'+ch.to+'さんへ');
     });
     closeClockoutModal();
     myself().status = 'offline';
@@ -4855,7 +4909,7 @@
     refreshAllCaseViews();
     var msg = '退勤しました。';
     if(handedParts.length) msg += handedParts.join('・')+'引き継ぎました（引き継ぎ先に通知が届きます）。';
-    if(keptRemind) msg += 'リマインダー'+keptRemind+'件はあなた宛のまま残ります。';
+    if(keptParts.length) msg += keptParts.join('・')+'はあなた宛のまま残ります。';
     showSyncToast(msg);
   });
   clockoutModal.addEventListener('click', function(e){ if(e.target===clockoutModal) closeClockoutModal(); });
