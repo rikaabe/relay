@@ -1,9 +1,9 @@
 <title>Relay — 案件管理UIモックアップ</title>
 <style>
   :root{
-    /* ===== デザインシステム：KATIX × Warm（Minimal SaaS Dashboardベース） =====
+    /* ===== デザインシステム：Warm（Minimal SaaS Dashboardベース） =====
        基調＝ウォームニュートラル紙色、文字＝グラファイト墨色（Warm Graphite案と同じ）。
-       ハイライト＝KATIXブランド緑 #389656（bike.katix.co.jp のCTA・下線と同色）。
+       ハイライト＝ブランド緑 #389656。
        意味色（状態・車/バイク・編集可否の青）の役割は従来のまま */
     --ink:#1C1B17;
     --ink-soft:#66655B;
@@ -15,7 +15,7 @@
     --accent:#4C5FD5;
     --accent-ink:#2F3FA8;
     --accent-soft:#EBEDFB;
-    --brand:#389656;        /* KATIXグリーン：ナビ現在地・主要ボタン専用 */
+    --brand:#389656;        /* ブランドグリーン：ナビ現在地・主要ボタン専用 */
     --brand-strong:#2F7A47; /* hover・アクティブ文字用の濃い緑 */
     --brand-soft:#E7F3EB;
     --success:#17845A;
@@ -37,7 +37,7 @@
     --radius-l:16px;
     --shadow-panel:0 1px 2px rgba(38,35,25,0.04), 0 8px 24px -12px rgba(38,35,25,0.12);
     --shadow-card:0 1px 2px rgba(38,35,25,0.04), 0 12px 32px -20px rgba(38,35,25,0.18);
-    /* KPIデータ系列（成約＝KATIXグリーンに統一） */
+    /* KPIデータ系列（成約＝ブランドグリーンに統一） */
     --series-upload:#4C5FD5;
     --series-deal:#389656;
     --funnel-1:#A9B4EF;   /* ordinal ramp 薄→濃（対白 2.01:1 クリア） */
@@ -1010,34 +1010,34 @@
   .star-meter .star-fill{ position:absolute; left:0; top:0; height:100%; overflow:hidden; color:#E6BE52; transition:width .4s ease; }
   .progress-pct{ font-size:13px; font-weight:700; color:var(--success); white-space:nowrap; }
 
-  /* ===== クローム調整（KATIX × Warm） =====
+  /* ===== クローム調整（Warm） =====
      骨格・レイアウト・機能は不変。サイドバーは自社サイト同様の白基調レール、
-     ハイライト（現在地・主要ボタン）＝KATIXグリーン。
+     ハイライト（現在地・主要ボタン）＝ブランドグリーン。
      青は「情報・編集可否・データ」の意味色に専念させる */
 
-  /* ブランドマーク：KATIXグリーン */
+  /* ブランドマーク：ブランドグリーン */
   .brand .mark{ background:linear-gradient(135deg,#389656,#02A852); }
 
-  /* サイドバー：白基調レール＋現在地はKATIXグリーンのピル */
+  /* サイドバー：白基調レール＋現在地はブランドグリーンのピル */
   /* バイク/車アイコンも他のナビアイコンと同じ配色（色分けはバッジ・チップ側に任せる） */
   .nav-item.bike svg, .nav-item.car svg{ color:inherit; }
   .nav-item.active{ color:var(--brand-strong); }
   .nav-item.active .nav-icon{ background:var(--brand); }
   .nav-item.active svg, .nav-item.active.car svg, .nav-item.active.bike svg{ color:#fff; }
 
-  /* 主要アクション＝KATIXグリーン（自社サイトのCTAと同じ） */
+  /* 主要アクション＝ブランドグリーン（自社サイトのCTAと同じ） */
   .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
   .btn.primary:hover{ background:var(--brand-strong); }
   .rule-edit-btn.editing{ background:var(--brand); border-color:var(--brand); color:#fff; }
   .switch input:checked + .switch-track{ background:var(--brand); }
   .topbar-boost.on{ background:var(--brand); border-color:var(--brand); color:#fff; }
 
-  /* KPIヒーローカード：KATIXチャコール面（自社サイトのダークセクションと同色） */
+  /* KPIヒーローカード：ブランドチャコール面 */
   .kpi-card.hero{ background:#333535; border-color:#333535; }
   .kpi-card.hero .kpi-label{ color:rgba(255,255,255,.72); }
 
-  /* KPI内の緑＝KATIXグリーン系に統一
-     （チップの文字はKATIX緑の濃色#2F7A47：淡緑地でも読めるコントラストを確保） */
+  /* KPI内の緑＝ブランドグリーン系に統一
+     （チップの文字はブランド緑の濃色#2F7A47：淡緑地でも読めるコントラストを確保） */
   .stat-chip.good{ color:var(--brand-strong); background:var(--brand-soft); }
   .kpi-delta.down{ color:var(--brand-strong); }
 
@@ -4155,7 +4155,7 @@
 
   // ---------------- 交渉依頼 ----------------
   // お客様担当者が依頼を登録 → 交渉担当が対応開始 → 完了 → 依頼者に通知。
-  // （Slack交渉チャンネル＋katix-cs-boardの流れをこのページに置き換える想定）
+  // （Slack交渉チャンネル＋既存CSボードの流れをこのページに置き換える想定）
   var negoFilter = 'all';
   var negoStatusMeta = {
     todo:{label:'未着手', cls:'todo'},
